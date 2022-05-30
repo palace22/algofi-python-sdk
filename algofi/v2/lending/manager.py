@@ -25,7 +25,7 @@ class Manager:
 
     # TRANSACTION BUILDERS
 
-    def getOptInTxns(self, user, storage_address):
+    def get_opt_in_txns(self, user, storage_address):
         params = get_default_params(self.algod)
         
         # fund storage account
@@ -42,7 +42,7 @@ class Manager:
         
         return TransactionGroup([txn0, txn1, txn2])
     
-    def getOptOutTxns(self, user):
+    def get_opt_out_txns(self, user):
         params = get_default_params(self.algod)
         
         # close out of manager
@@ -52,7 +52,7 @@ class Manager:
         
         return TransactionGroup([txn0])
     
-    def getMarketOptInTxns(self, user, market):
+    def get_market_opt_in_txns(self, user, market):
         params = get_default_params(self.algod)
         
         # fund storage account
@@ -73,10 +73,10 @@ class Manager:
         
         return TransactionGroup([txn0, txn1, txn2])
     
-    def getMarketOptOutTxns(self, user, market):
+    def get_market_opt_out_txns(self, user, market):
         params = get_default_params(self.algod)
         
-        page, offset = user.get_market_offset(market.app_id)
+        page, offset = user.get_market_page_offset(market.app_id)
         
         # opt out of market
         params.fee = 3000

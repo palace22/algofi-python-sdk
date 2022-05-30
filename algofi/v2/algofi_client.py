@@ -24,5 +24,5 @@ class AlgofiClient:
         # lending
         self.lending = LendingClient(self)
 
-    def getUser(self, address):
+    def get_user(self, address):
         return AlgofiUser(self, address)

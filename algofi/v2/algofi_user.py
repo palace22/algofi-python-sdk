@@ -13,14 +13,13 @@ class AlgofiUser:
         self.algofi_client = algofi_client
         self.address = address
         
-        self.loadState()
+        self.load_state()
     
-    def loadState(self):
+    def load_state(self):
         self.balances = get_balances(self.algofi_client.indexer, self.address)
-        self.states = get_local_states(self.algofi_client.indexer, self.address)
         
         # lending
         self.lending = LendingUser(self.algofi_client.lending, address)
     
-    def isOptedInToAsset(self, asset_id):
+    def is_opted_in_to_asset(self, asset_id):
         return asset_id in self.balances

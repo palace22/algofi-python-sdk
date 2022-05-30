@@ -42,6 +42,9 @@ class TransactionGroup:
     def __add__(self, other):
         return TransactionGroup(self.transactions + other.transactions)
 
+    def length(self):
+        return len(self.transactions)
+
     def sign_with_private_key(self, private_key):
         for i, txn in enumerate(self.transactions):
             self.signed_transactions[i] = txn.sign(private_key)
