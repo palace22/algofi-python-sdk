@@ -4,7 +4,7 @@
 from ..globals import Network
 
 # local
-from lending_config import MarketType
+from .lending_config import MarketType
 
 # INTERFACE
 

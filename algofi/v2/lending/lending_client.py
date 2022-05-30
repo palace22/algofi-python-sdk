@@ -7,11 +7,11 @@ from ..globals import Network
 from ..algofi_client import AlgofiClient
 
 # local
-from manager_config import MANAGER_CONFIGS
-from manager import Manager
-from market_config import MARKET_CONFIGS
-from market import Market
-from lending_user import LendingUser
+from .manager_config import MANAGER_CONFIGS
+from .manager import Manager
+from .market_config import MARKET_CONFIGS
+from .market import Market
+from .lending_user import LendingUser
 
 # INTERFACE
 

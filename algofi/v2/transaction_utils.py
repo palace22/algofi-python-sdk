@@ -5,7 +5,7 @@ from algosdk.future.transactions import *
 from algosdk.error import AlgodHTTPError
 
 # local
-from globals import ALGO_ASSET_ID
+from .globals import ALGO_ASSET_ID
 
 # FUNCTIONS
 

@@ -1,7 +1,7 @@
 # IMPORTS
 
 # local
-from lending_config import MANAGER_STRINGS, MARKET_STRINGS
+from .lending_config import MANAGER_STRINGS, MARKET_STRINGS
 
 # INTERFACE
 

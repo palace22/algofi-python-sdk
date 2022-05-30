@@ -1,7 +1,7 @@
 # IMPORTS
 
 # global
-from state_utils import *
+from .state_utils import *
 
 # lending
 from lending.lending_user import LendingUser

@@ -10,8 +10,8 @@ from ..utils import *
 from ..transaction_utils import *
 
 # local
-from lending_config import MANAGER_MIN_BALANCE, MANAGER_STRINGS
-from manager_config import ManagerConfig
+from .lending_config import MANAGER_MIN_BALANCE, MANAGER_STRINGS
+from .manager_config import ManagerConfig
 
 # INTERFACE
 

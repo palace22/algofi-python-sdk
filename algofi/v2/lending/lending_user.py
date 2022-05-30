@@ -12,10 +12,10 @@ from ..transaction_utils import *
 from ..asset_amount import AssetAmount
 
 # local
-from lending_config import MANAGER_STRINGS, MARKET_STRINGS
-from market_config import MarketConfig
-from user_market_state import UserMarketState
-from oracle import Oracle
+from .lending_config import MANAGER_STRINGS, MARKET_STRINGS
+from .market_config import MarketConfig
+from .user_market_state import UserMarketState
+from .oracle import Oracle
 
 # INTERFACE
 
