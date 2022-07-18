@@ -1,10 +1,10 @@
 # IMPORTS
 
 # global
+from .lending.v2.lending_user import LendingUser
 from .state_utils import *
 
-# lending
-from lending.lending_user import LendingUser
+
 
 # INTERFACE
 
@@ -19,7 +19,7 @@ class AlgofiUser:
         self.balances = get_balances(self.algofi_client.indexer, self.address)
         
         # lending
-        self.lending = LendingUser(self.algofi_client.lending, address)
+        self.lending = LendingUser(self.algofi_client.lending, self.address)
     
     def is_opted_in_to_asset(self, asset_id):
         return asset_id in self.balances

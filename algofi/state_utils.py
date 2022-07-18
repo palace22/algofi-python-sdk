@@ -1,9 +1,8 @@
 # IMPORTS
 
-# external
+# local
 from base64 import b64encode, b64decode
 
-# local
 from .globals import ALGO_ASSET_ID
 
 # FUNCTIONS

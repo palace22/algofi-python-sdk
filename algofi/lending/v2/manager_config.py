@@ -1,9 +1,8 @@
 # IMPORTS
 
-# global
-from ..globals import Network
-
 # INTERFACE
+from algofi.globals import Network
+
 
 class ManagerConfig:
     def __init__(self, app_id):

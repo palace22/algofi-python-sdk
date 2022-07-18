@@ -1,7 +1,7 @@
 # IMPORTS
 
 # global
-from ..globals import Network
+from globals import Network
 
 # INTERFACE
 

@@ -2,9 +2,6 @@
 
 # external
 
-# global
-from ..globals import Network
-from ..algofi_client import AlgofiClient
 
 # local
 from .manager_config import MANAGER_CONFIGS
@@ -14,6 +11,8 @@ from .market import Market
 from .lending_user import LendingUser
 
 # INTERFACE
+from ...algofi_client import AlgofiClient
+
 
 class LendingClient:
     def __init__(self, algofi_client: AlgofiClient):

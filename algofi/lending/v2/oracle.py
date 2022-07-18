@@ -1,11 +1,12 @@
 # IMPORTS
 
 # global
-from ..state_utils import *
+from algofi.state_utils import get_global_state
 
 # local
 
 # INTERFACE
+
 
 class Oracle:
     def __init__(self, indexer, app_id, price_field_name, scale_factor):

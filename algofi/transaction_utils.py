@@ -1,7 +1,6 @@
 # IMPORTS
 
 # external
-from algosdk.future.transactions import *
 from algosdk.error import AlgodHTTPError
 
 # local

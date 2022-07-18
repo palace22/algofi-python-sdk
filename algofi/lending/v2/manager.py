@@ -1,19 +1,18 @@
 # IMPORTS
 
 # external
-from algosdk.future.transactions import *
-from algosdk.logic import get_application_address
+from algosdk.future.transaction import *
 
-# global
-from ..globals import ALGO_ASSET_ID
-from ..utils import *
-from ..transaction_utils import *
+from algosdk.logic import get_application_address
 
 # local
 from .lending_config import MANAGER_MIN_BALANCE, MANAGER_STRINGS
 from .manager_config import ManagerConfig
 
 # INTERFACE
+from ...globals import ALGO_ASSET_ID
+from ...transaction_utils import get_default_params, get_payment_txn, TransactionGroup
+
 
 class Manager:
     def __init__(self, lending_client, manager_config):
@@ -38,7 +37,7 @@ class Manager:
         # user opt in
         app_args2 = [bytes(MANAGER_STRINGS.user_opt_in)]
         accounts2 = [storage_address]
-        txn2 = ApplicationOptInTxn(user.address, params, self.app_id, app_args2, account=accounts2)
+        txn2 = ApplicationOptInTxn(user.address, params, self.app_id, app_args2, accounts=accounts2)
         
         return TransactionGroup([txn0, txn1, txn2])
     
