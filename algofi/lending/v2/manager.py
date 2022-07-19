@@ -16,6 +16,12 @@ from ...transaction_utils import get_default_params, get_payment_txn, Transactio
 
 class Manager:
     def __init__(self, lending_client, manager_config):
+        """An object that encapsulates algofi lending manager contract
+        :param lending_client: a client for interacting with the algofi lending protocol
+        :type :class: `LendingClient`
+        :param manager_config: an object that stores the smart contract metadata
+        :type :class: `ManagerConfig`
+        """
         self.lending_client = lending_client
         self.algod = self.lending_client.algod
         self.indexer = self.lending_client.indexer
@@ -25,6 +31,16 @@ class Manager:
     # TRANSACTION BUILDERS
 
     def get_opt_in_txns(self, user, storage_address):
+        """Returns a :class:`TransactionGroup` object representing a lending manager opt in
+        transaction against the algofi protocol.
+
+        :param user: account for the sender
+        :type user: :class: `LendingUser`
+        :param storage_address: address created owned by the user, to be rekeyed to the manager
+        :type storage_address: str
+        :return: :class:`TransactionGroup` object representing a mint group transaction
+        :rtype: :class:`TransactionGroup`
+        """
         params = get_default_params(self.algod)
         
         # fund storage account
@@ -42,6 +58,14 @@ class Manager:
         return TransactionGroup([txn0, txn1, txn2])
     
     def get_opt_out_txns(self, user):
+        """Returns a :class:`TransactionGroup` object representing a lending manager opt out
+        transaction against the algofi protocol. The manager will close the storage account and return funds to the user
+
+        :param user: account for the sender
+        :type user: :class: `LendingUser`
+        :return: :class:`TransactionGroup` object representing a mint group transaction
+        :rtype: :class:`TransactionGroup`
+        """
         params = get_default_params(self.algod)
         
         # close out of manager

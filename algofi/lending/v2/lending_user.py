@@ -19,12 +19,20 @@ from ...utils import int_to_bytes
 
 class LendingUser:
     def __init__(self, lending_client, address):
+        """An object that encapsulates user state on the lending protocol
+        and creates transactions representing user actions
+        :param lending_client: a client for interacting with the algofi lending protocol
+        :type lending_client: :class: `LendingClient`
+        :param address: an address of the user wallet
+        :type address: str
+        """
         self.lending_client = lending_client
         self.address = address
         
         self.load_state()
     
     def load_state(self):
+        """Populates user state from the blockchain on the object"""
         states = get_local_states(self.lending_client.algofi_client.indexer, self.address)
 
         # reset state
@@ -74,12 +82,26 @@ class LendingUser:
             self.opted_in_to_manager = False
     
     def get_market_page_offset(self, market_app_id):
+        """Helper function that returns the location of the by-market state for the user
+        :param market_app_id: the market app id for which the location is being calculated
+        :type market_app_id: int
+        :rtype: Tuple[int, int]
+        """
         for i in range(len(self.opted_in_markets)):
             if self.opted_in_markets[i] == market_app_id:
                 return int(i / 3), i % 3
         return 0, 0
     
     def get_preamble_txns(self, params, target_market_app_id):
+        """Helper function that constructs a group representing the utility transactions
+        that should precede some user calls to the algofi protocol markets
+        :param params: suggested params for the algod client
+        :type params: Dict
+        :param target_market_app_id: the market contract for this group
+        :type target_market_app_id: int
+        :return preamble transaction group
+        :rtype :class: `TransactionGroup`
+        """
         page_count = int((self.opted_in_market_count - 1) / 3) + 1
         
         txns = []
