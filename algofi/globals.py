@@ -22,4 +22,5 @@ PERMISSIONLESS_SENDER_LOGIC_SIG = LogicSig(bytearray([6, 49, 16, 129, 6, 18, 68,
 class Network:
     MAINNET = 0
     MAINNET_CLONE = 1
-    TESTNET = 2
+    MAINNET_CLONE2 = 2
+    TESTNET = 3

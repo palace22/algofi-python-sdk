@@ -9,11 +9,9 @@ from .manager_config import MANAGER_CONFIGS
 from .market import Market
 from .market_config import MARKET_CONFIGS
 # INTERFACE
-from ...algofi_client import AlgofiClient
-
 
 class LendingClient:
-    def __init__(self, algofi_client: AlgofiClient):
+    def __init__(self, algofi_client):
         """Constructor for the client used to interact with algofi lending protocol
         :type algofi_client: :class: `AlgofiClient`
         """

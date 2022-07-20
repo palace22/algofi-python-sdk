@@ -7,6 +7,7 @@ from .algofi_user import AlgofiUser
 from .asset_config import ASSET_CONFIGS
 
 # lending
+from .lending.v2.lending_client import LendingClient
 
 
 class AlgofiClient:

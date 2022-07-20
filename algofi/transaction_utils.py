@@ -4,6 +4,8 @@
 from algosdk.error import AlgodHTTPError
 
 # local
+from algosdk.future.transaction import assign_group_id, PaymentTxn, AssetTransferTxn, LogicSig, LogicSigTransaction
+
 from .globals import ALGO_ASSET_ID
 
 # FUNCTIONS
@@ -18,8 +20,8 @@ def get_payment_txn(sender, params, receiver, amount, asset_id):
     if asset_id == ALGO_ASSET_ID:
         txn = PaymentTxn(sender=sender, sp=params, receiver=receiver, amt=amount)
     else:
-        txn = AssetTransferTxn(sender=sender, sp=params, receiver=receiver, amt=amount, asset_id=asset_id)
-    return TransactionGroup([txn])
+        txn = AssetTransferTxn(sender=sender, sp=params, receiver=receiver, amt=amount, index=asset_id)
+    return txn
 
 def wait_for_confirmation(algod, txid):
     last_round = algod.status().get('last-round')
@@ -34,6 +36,8 @@ def wait_for_confirmation(algod, txid):
 
 class TransactionGroup:
     def __init__(self, transactions):
+        for t in transactions:
+            t.group = None
         transactions = assign_group_id(transactions)
         self.transactions = transactions
         self.signed_transactions = [None for _ in self.transactions]
@@ -44,9 +48,14 @@ class TransactionGroup:
     def length(self):
         return len(self.transactions)
 
-    def sign_with_private_key(self, private_key):
-        for i, txn in enumerate(self.transactions):
-            self.signed_transactions[i] = txn.sign(private_key)
+    def sign_with_private_keys(self, private_keys):
+        if len(private_keys) == 1:
+            for i, txn in enumerate(self.transactions):
+                self.signed_transactions[i] = txn.sign(private_keys[0])
+        else:
+            for i, txn in enumerate(self.transactions):
+                self.signed_transactions[i] = txn.sign(private_keys[i])
+
         
     def submit(self, algod, wait=False):
         try:

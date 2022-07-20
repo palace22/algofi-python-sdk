@@ -12,6 +12,7 @@ from .manager_config import ManagerConfig
 # INTERFACE
 from ...globals import ALGO_ASSET_ID
 from ...transaction_utils import get_default_params, get_payment_txn, TransactionGroup
+from ...utils import int_to_bytes
 
 
 class Manager:
@@ -47,11 +48,11 @@ class Manager:
         txn0 = get_payment_txn(user.address, params, storage_address, MANAGER_MIN_BALANCE, ALGO_ASSET_ID)
         
         # storage account opt in and rekey
-        app_args1 = [bytes(MANAGER_STRINGS.storage_account_opt_in)]
+        app_args1 = [bytes(MANAGER_STRINGS.storage_account_opt_in, "utf-8")]
         txn1 = ApplicationOptInTxn(storage_address, params, self.app_id, app_args1, rekey_to=get_application_address(self.app_id))
         
         # user opt in
-        app_args2 = [bytes(MANAGER_STRINGS.user_opt_in)]
+        app_args2 = [bytes(MANAGER_STRINGS.user_opt_in, "utf-8")]
         accounts2 = [storage_address]
         txn2 = ApplicationOptInTxn(user.address, params, self.app_id, app_args2, accounts=accounts2)
         
@@ -79,18 +80,18 @@ class Manager:
         params = get_default_params(self.algod)
         
         # fund storage account
-        txn0 = get_payment_txn(user.address, params, user.lending.storage_address, market.local_min_balance, ALGO_ASSET_ID)
+        txn0 = get_payment_txn(user.address, params, user.storage_address, market.local_min_balance, ALGO_ASSET_ID)
         
         # validate market
-        app_args1 = [bytes(MANAGER_STRINGS.validate_market)]
+        app_args1 = [bytes(MANAGER_STRINGS.validate_market, "utf-8")]
         accounts1 = [market.address]
         foreign_apps1 = [market.app_id]
         txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, accounts=accounts1, foreign_apps=foreign_apps1)
         
         # opt into market
         params.fee = 2000
-        app_args2 = [bytes(MANAGER_STRINGS.user_market_opt_in)]
-        accounts2 = [user.lending.storage_address]
+        app_args2 = [bytes(MANAGER_STRINGS.user_market_opt_in, "utf-8")]
+        accounts2 = [user.storage_address]
         foreign_apps2 = [market.app_id]
         txn2 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args2, accounts=accounts2, foreign_apps=foreign_apps2)
         
@@ -103,7 +104,7 @@ class Manager:
         
         # opt out of market
         params.fee = 3000
-        app_args0 = [bytes(MANAGER_STRINGS.user_market_close_out), int_to_bytes(page) + int_to_bytes(offset)]
+        app_args0 = [bytes(MANAGER_STRINGS.user_market_close_out, "utf-8"), int_to_bytes(page) + int_to_bytes(offset)]
         accounts0 = [user.lending.storage_address]
         foreign_apps0 = [market.app_id]
         txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args0, accounts=accounts0, foreign_apps=foreign_apps0)

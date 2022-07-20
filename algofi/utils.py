@@ -8,6 +8,9 @@ from algosdk import account, mnemonic
 def int_to_bytes(num):
     return num.to_bytes(8, 'big')
 
+def bytes_to_int(bytes):
+    return int.from_bytes(bytes, 'big')
+
 def get_new_account():
     key, address = account.generate_account()
     passphrase = mnemonic.from_private_key(key)

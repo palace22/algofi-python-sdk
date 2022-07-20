@@ -1,7 +1,8 @@
 # IMPORTS
-from algosdk.future.transaction import ApplicationOptInTxn
+from algosdk.future.transaction import ApplicationOptInTxn, ApplicationCallTxn, ApplicationNoOpTxn
 from algosdk.logic import get_application_address
 from nacl.encoding import Base64Encoder
+from pyteal import OnComplete
 
 from .lending_config import MARKET_STRINGS, MarketType
 from .oracle import Oracle
@@ -16,10 +17,12 @@ from ...utils import int_to_bytes
 
 
 class Market:
+    local_min_balance = 414000
+
     def __init__(self, lending_client, market_config):
         """
         :param lending_client:
-        :type lending_client: :class: `LendingMarket`
+        :type lending_client: :class: `LendingClient`
         :param market_config:
         """
         self.lending_client = lending_client
@@ -61,9 +64,9 @@ class Market:
         self.target_utilization_ratio = state.get(MARKET_STRINGS.target_utilization_ratio, 0)
     
         # oracle
-        self.oracle = Oracle(self.algod,
+        self.oracle = Oracle(self.indexer,
                              state.get(MARKET_STRINGS.oracle_app_id, 0),
-                             Base64Encoder.decode(state.get(MARKET_STRINGS.oracle_price_field_name, 0)),
+                             state.get(MARKET_STRINGS.oracle_price_field_name, 'price'),
                              state.get(MARKET_STRINGS.oracle_price_scale_factor, 0))
         self.oracle.loadPrice()
     
@@ -83,12 +86,12 @@ class Market:
         
         # calculated values
         self.total_supplied = AssetAmount(
-          self.get_underlying_supplied() / (10**self.lending_client.algofi_client.assets[self.underlying_asset_id].decimals),
+          self.get_underlying_supplied() / (10 ** self.lending_client.algofi_client.assets[self.underlying_asset_id].decimals),
           self.underlying_to_usd(self.get_underlying_supplied())
         )
         
         self.total_borrowed = AssetAmount(
-          self.underlying_borrowed / 10**self.lending_client.algofi_client.assets[self.underlying_asset_id].decimals,
+          self.underlying_borrowed / (10 ** self.lending_client.algofi_client.assets[self.underlying_asset_id].decimals),
           self.underlying_to_usd(self.underlying_borrowed)
         )
         
@@ -120,7 +123,7 @@ class Market:
         if amount == 0:
             return AssetAmount(0, 0)
         raw_underlying_amount = amount * self.get_underlying_supplied() / self.b_asset_circulation
-        underlying_amount = raw_underlying_amount / 10**self.lending_client.algofi_client.assets[self.underlying_asset_id].decimals
+        underlying_amount = raw_underlying_amount / 10 ** self.lending_client.algofi_client.assets[self.underlying_asset_id].decimals
         usd_amount = self.underlying_to_usd(raw_underlying_amount)
         return AssetAmount(underlying_amount, usd_amount)
     
@@ -136,6 +139,21 @@ class Market:
         return amount * self.b_asset_circulation / self.get_underlying_supplied()
     
     # TRANSACTION BUILDERS
+    def get_b_asset_opt_in_txn(self, user):
+        """Returns a :class: `AssetTransferTxn` object representing a transfer of zero units of the b asset.
+
+        :param user: account for the sender
+        :type user: :class:`LendingUser`
+        :return: :class:`AssetTransferTxn` object representing a mint group transaction
+        :rtype: :class:`AssetTransferTxn`
+        """
+        assert self.market_type != MarketType.VAULT
+        params = get_default_params(self.algod)
+
+        # payment
+        txn0 = get_payment_txn(user.address, params, user.address, 0, self.b_asset_id)
+
+        return txn0
 
     def get_mint_txns(self, user, underlying_amount):
         """Returns a :class:`TransactionGroup` object representing a mint bank asset group
@@ -150,18 +168,17 @@ class Market:
         :rtype: :class:`TransactionGroup`
         """
         assert self.market_type != MarketType.VAULT
-        
         params = get_default_params(self.algod)
 
         # payment
         txn0 = get_payment_txn(user.address, params, self.address, underlying_amount, self.underlying_asset_id)
-        
+
         # application call
-        params.fee = 2000
-        app_args1 = [bytes(MARKET_STRINGS.mint_b_asset)]
+        params.fee = 3000
+        app_args1 = [bytes(MARKET_STRINGS.mint_b_asset, "utf-8")]
         foreign_apps1 = [self.manger_app_id]
         foreign_assets1 = [self.b_asset_id]
-        txn1 = ApplicationOptInTxn(user.address, params, self.app_id, app_args1, foreign_apps=foreign_apps1, foreign_assets=foreign_assets1)
+        txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, foreign_apps=foreign_apps1, foreign_assets=foreign_assets1)
         
         return TransactionGroup([txn0, txn1])
 
@@ -183,12 +200,13 @@ class Market:
         # payment
         receiver = self.address if self.market_type != MarketType.VAULT else user.storage_address
         txn0 = get_payment_txn(user.address, params, receiver, underlying_amount, self.underlying_asset_id)
-        
+
+        params.fee = 2000
         # application call
-        app_args1 = [bytes(MARKET_STRINGS.add_underlying_collateral)]
+        app_args1 = [bytes(MARKET_STRINGS.add_underlying_collateral, "utf-8")]
         accounts1 = [user.storage_address]
         foreign_apps1 = [self.manger_app_id]
-        txn1 = ApplicationOptInTxn(user.address, params, self.app_id, app_args1, accounts=accounts1, foreign_apps=foreign_apps1)
+        txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, accounts=accounts1, foreign_apps=foreign_apps1)
         
         return TransactionGroup([txn0, txn1])
         
@@ -211,12 +229,13 @@ class Market:
 
         # payment
         txn0 = get_payment_txn(user.address, params, self.address, b_asset_amount, self.b_asset_id)
-        
+
+        params.fee = 2000
         # application call
-        app_args1 = [bytes(MARKET_STRINGS.add_b_asset_collateral)]
+        app_args1 = [bytes(MARKET_STRINGS.add_b_asset_collateral, "utf-8")]
         accounts1 = [user.storage_address]
         foreign_apps1 = [self.manger_app_id]
-        txn1 = ApplicationOptInTxn(user.address, params, self.app_id, app_args1, accounts=accounts1, foreign_apps=foreign_apps1)
+        txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, accounts=accounts1, foreign_apps=foreign_apps1)
         
         return TransactionGroup([txn0, txn1])
         
@@ -238,11 +257,11 @@ class Market:
 
         # application call
         params.fee = 2000 + 1000 * preamble_txns.length() if self.market_type != MarketType.VAULT else 3000 + 1000 * preamble_txns.length()
-        app_args0 = [bytes(MARKET_STRINGS.remove_underlying_collateral), int_to_bytes(underlying_amount)]
+        app_args0 = [bytes(MARKET_STRINGS.remove_underlying_collateral, "utf-8"), int_to_bytes(underlying_amount)]
         accounts0 = [user.storage_address]
         foreign_apps0 = [self.manger_app_id]
         foreign_assets0 = [self.underlying_asset_id]
-        txn0 = ApplicationOptInTxn(user.address, params, self.app_id, app_args0, accounts=accounts0, foreign_apps=foreign_apps0, foreign_assets=foreign_assets0)
+        txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args0, accounts=accounts0, foreign_apps=foreign_apps0, foreign_assets=foreign_assets0)
         
         return preamble_txns + TransactionGroup([txn0])
         
@@ -262,15 +281,15 @@ class Market:
         
         params = get_default_params(self.algod)
 
-        preamble_txns = user.get_preamble_txns(self.app_id)
+        preamble_txns = user.get_preamble_txns(params, self.app_id)
 
         # application call
         params.fee = 2000 + 1000 * preamble_txns.length()
-        app_args0 = [bytes(MARKET_STRINGS.remove_b_asset_collateral), int_to_bytes(b_asset_amount)]
+        app_args0 = [bytes(MARKET_STRINGS.remove_b_asset_collateral, "utf-8"), int_to_bytes(b_asset_amount)]
         accounts0 = [user.storage_address]
         foreign_apps0 = [self.manger_app_id]
         foreign_assets0 = [self.b_asset_id]
-        txn0 = ApplicationOptInTxn(user.address, params, self.app_id, app_args0, accounts=accounts0, foreign_apps=foreign_apps0, foreign_assets=foreign_assets0)
+        txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args0, accounts=accounts0, foreign_apps=foreign_apps0, foreign_assets=foreign_assets0)
         
         return preamble_txns + TransactionGroup([txn0])
     
@@ -288,15 +307,15 @@ class Market:
         assert self.market_type != MarketType.VAULT
         
         params = get_default_params(self.algod)
-
+        params.fee = 2000
         # payment
         txn0 = get_payment_txn(user.address, params, self.address, b_asset_amount, self.b_asset_id)
         
         # application call
-        app_args1 = [bytes(MARKET_STRINGS.burn_b_asset)]
+        app_args1 = [bytes(MARKET_STRINGS.burn_b_asset, "utf-8")]
         foreign_apps1 = [self.manger_app_id]
         foreign_assets1 = [self.underlying_asset_id]
-        txn1 = ApplicationOptInTxn(user.address, params, self.app_id, app_args1, foreign_apps=foreign_apps1, foreign_assets=foreign_assets1)
+        txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, foreign_apps=foreign_apps1, foreign_assets=foreign_assets1)
         
         return TransactionGroup([txn0, txn1])
 
@@ -317,14 +336,13 @@ class Market:
         params = get_default_params(self.algod)
 
         preamble_txns = user.get_preamble_txns(params, self.app_id)
-
         # application call
         params.fee = 2000 + 1000 * preamble_txns.length()
-        app_args0 = [bytes(MARKET_STRINGS.borrow), int_to_bytes(underlying_amount)]
+        app_args0 = [bytes(MARKET_STRINGS.borrow, "utf-8"), int_to_bytes(underlying_amount)]
         accounts0 = [user.storage_address]
         foreign_apps0 = [self.manger_app_id]
         foreign_assets0 = [self.underlying_asset_id]
-        txn0 = ApplicationOptInTxn(user.address, params, self.app_id, app_args0, accounts=accounts0, foreign_apps=foreign_apps0, foreign_assets=foreign_assets0)
+        txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args0, accounts=accounts0, foreign_apps=foreign_apps0, foreign_assets=foreign_assets0)
         
         return preamble_txns + TransactionGroup([txn0])
     
@@ -347,10 +365,11 @@ class Market:
         txn0 = get_payment_txn(user.address, params, self.address, underlying_amount, self.underlying_asset_id)
         
         # application call
-        app_args1 = [bytes(MARKET_STRINGS.repay_borrow)]
+        params.fee = 3000
+        app_args1 = [bytes(MARKET_STRINGS.repay_borrow, "utf-8")]
         accounts1 = [user.storage_address]
         foreign_apps1 = [self.manger_app_id]
-        txn1 = ApplicationOptInTxn(user.address, params, self.app_id, app_args1, accounts=accounts1, foreign_apps=foreign_apps1)
+        txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, accounts=accounts1, foreign_apps=foreign_apps1)
         
         return TransactionGroup([txn0, txn1])
     
@@ -381,7 +400,7 @@ class Market:
         app_args0 = [bytes(MARKET_STRINGS.liquidate)]
         accounts0 = [target_user.storage_address]
         foreign_apps0 = [self.manger_app_id]
-        txn0 = ApplicationOptInTxn(user.address, params, self.app_id, app_args0, accounts=accounts0, foreign_apps=foreign_apps0)
+        txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, on_complete=OnComplete.NoOp, app_args=app_args0, accounts=accounts0, foreign_apps=foreign_apps0)
         
         # payment
         params.fee = 1000
@@ -393,6 +412,6 @@ class Market:
         accounts2 = [target_user.storage_address]
         foreign_apps2 = [seize_collateral_market.oracle.oracle_app_id]
         foreign_assets2 = [seize_collateral_market.underlying_asset_id]
-        txn2 = ApplicationOptInTxn(user.address, params, seize_collateral_market.app_id, app_args2, accounts=accounts2, foreign_apps=foreign_apps2, foreign_assets=foreign_assets2)
+        txn2 = ApplicationNoOpTxn(user.address, params, seize_collateral_market.app_id, app_args=app_args2, accounts=accounts2, foreign_apps=foreign_apps2, foreign_assets=foreign_assets2)
 
         return preamble_txns + TransactionGroup([txn0, txn1, txn2])

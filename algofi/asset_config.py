@@ -1,7 +1,7 @@
 # IMPORTS
 
 # global
-from globals import Network
+from algofi.globals import Network
 
 # INTERFACE
 
@@ -37,6 +37,18 @@ ASSET_CONFIGS = {
         753120193 : AssetConfig("AF-BANK-STBL-STBL", 753120193, 6),
         753104718 : AssetConfig("BANK", 753104718, 6),
         753122293 : AssetConfig("AF-BANK-BANK-STANDARD", 753122293, 6),
+    },
+    Network.MAINNET_CLONE2 : {
+        1: AssetConfig("ALGO", 1, 6),
+        802887010: AssetConfig("AF-BANK-ALGO-STANDARD", 802887010, 6),
+        802871797: AssetConfig("USDC", 802871797, 6),
+        802887476: AssetConfig("AF-BANK-USDC-STANDARD", 802887476, 6),
+        802873705: AssetConfig("goBTC", 802873705, 8),
+        802888469: AssetConfig("AF-BANK-GOBTC-STANDARD", 802888469, 6),
+        802874445: AssetConfig("goETH", 802874445, 8),
+        802888853: AssetConfig("AF-BANK-GOETH-STANDARD", 802888853, 6),
+        802872834: AssetConfig("STBL2", 802872834, 6),
+        802887973: AssetConfig("AF-BANK-STBL-STBL2", 802887973, 6),
     },
     Network.TESTNET : {
         1 : AssetConfig("ALGO", 1, 6),

@@ -54,7 +54,7 @@ def get_local_states(indexer, address):
 
     result = {}
     for local_state in results['apps-local-state']:
-        result[local_state['app-id']] = format_state(local_state.get('key-value', []))
+        result[local_state['id']] = format_state(local_state.get('key-value', []))
     return result
 
 def get_global_state(indexer, app_id):

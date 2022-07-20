@@ -83,7 +83,7 @@ class MARKET_STRINGS:
   
   # rewards
   rewards_admin_prefix = "ra_"
-  rewards_per_second_prefix :"rps_"
+  rewards_per_second_prefix = "rps_"
   rewards_index_prefix = "ri_"
   
   # stbl market  
@@ -104,7 +104,7 @@ class MARKET_STRINGS:
   mint_b_asset = "mba"
   add_underlying_collateral = "auc"
   add_b_asset_collateral = "abc"
-  burn_b_asset :"br"
+  burn_b_asset = "br"
   remove_underlying_collateral = "ruc"
   remove_b_asset_collateral = "rbc"
   borrow = "b"
