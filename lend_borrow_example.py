@@ -32,7 +32,6 @@ algo_market = client.lending.markets[algo_market_app_id]
 
 if not user.is_opted_in_to_asset(algo_market.b_asset_id):
     txn = algo_market.get_b_asset_opt_in_txn(user)
-    txn.sign()
     signedTxn = txn.sign(key)
     txid = algod.send_transaction(signedTxn)
     wait_for_confirmation(algod, txid)
