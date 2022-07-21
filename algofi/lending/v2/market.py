@@ -155,6 +155,22 @@ class Market:
 
         return txn0
 
+    def get_underlying_asset_opt_in_txn(self, user):
+        """Returns a :class: `AssetTransferTxn` object representing a transfer of zero units of the market underlying asset.
+
+        :param user: account for the sender
+        :type user: :class:`LendingUser`
+        :return: :class:`AssetTransferTxn` object representing a mint group transaction
+        :rtype: :class:`AssetTransferTxn`
+        """
+        assert self.market_type != MarketType.VAULT
+        params = get_default_params(self.algod)
+
+        # payment
+        txn0 = get_payment_txn(user.address, params, user.address, 0, self.underlying_asset_id)
+
+        return txn0
+
     def get_mint_txns(self, user, underlying_amount):
         """Returns a :class:`TransactionGroup` object representing a mint bank asset group
         transaction against the algofi protocol. Sender mints bank asset by sending underlying asset
@@ -393,14 +409,14 @@ class Market:
         
         params = get_default_params(self.algod)
         
-        preamble_txns = target_user.get_preamble_txns(params, self.app_id)
+        preamble_txns = target_user.get_preamble_txns(params, self.app_id, user.address)
         
         # liquidate application call
         params.fee = 1000 + 1000 * preamble_txns.length()
-        app_args0 = [bytes(MARKET_STRINGS.liquidate)]
-        accounts0 = [target_user.storage_address]
-        foreign_apps0 = [self.manger_app_id]
-        txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, on_complete=OnComplete.NoOp, app_args=app_args0, accounts=accounts0, foreign_apps=foreign_apps0)
+        app_args0 = [bytes(MARKET_STRINGS.liquidate, 'utf-8')]
+        accounts0 = [target_user.storage_address, get_application_address(seize_collateral_market.app_id)]
+        foreign_apps0 = [self.manger_app_id, seize_collateral_market.app_id]
+        txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args=app_args0, accounts=accounts0, foreign_apps=foreign_apps0)
         
         # payment
         params.fee = 1000
@@ -408,10 +424,10 @@ class Market:
         
         # seize collateral application call
         params.fee = 2000 + 1000 * preamble_txns.length()
-        app_args2 = [bytes(MARKET_STRINGS.borrow)]
-        accounts2 = [target_user.storage_address]
-        foreign_apps2 = [seize_collateral_market.oracle.oracle_app_id]
-        foreign_assets2 = [seize_collateral_market.underlying_asset_id]
+        app_args2 = [bytes(MARKET_STRINGS.seize_collateral, 'utf-8')]
+        accounts2 = [target_user.storage_address, get_application_address(self.app_id)]
+        foreign_apps2 = [seize_collateral_market.oracle.app_id, self.manger_app_id, self.app_id]
+        foreign_assets2 = [seize_collateral_market.b_asset_id]
         txn2 = ApplicationNoOpTxn(user.address, params, seize_collateral_market.app_id, app_args=app_args2, accounts=accounts2, foreign_apps=foreign_apps2, foreign_assets=foreign_assets2)
 
         return preamble_txns + TransactionGroup([txn0, txn1, txn2])

@@ -90,7 +90,7 @@ class LendingUser:
                 return int(i / 3), i % 3
         return 0, 0
     
-    def get_preamble_txns(self, params, target_market_app_id):
+    def get_preamble_txns(self, params, target_market_app_id, sender_address=''):
         """Helper function that constructs a group representing the utility transactions
         that should precede some user calls to the algofi protocol markets
         :param params: suggested params for the algod client
@@ -103,11 +103,14 @@ class LendingUser:
         page_count = int((self.opted_in_market_count - 1) / 3) + 1
         
         txns = []
+
+        if not sender_address:
+            sender_address = self.address
         
         for page in range(page_count):
             app_args = [bytes(MANAGER_STRINGS.calculate_user_position, "utf-8"), int_to_bytes(page), int_to_bytes(target_market_app_id)]
             accounts = [self.storage_address]
             foreign_apps = self.opted_in_markets[page * 3 : (page + 1) * 3] + [self.lending_client.markets[market_app_id].oracle.app_id for market_app_id in self.opted_in_markets[page * 3 : (page + 1) * 3]]
-            txns.append(ApplicationNoOpTxn(self.address, params, self.lending_client.manager.app_id, app_args, accounts=accounts, foreign_apps=foreign_apps))
+            txns.append(ApplicationNoOpTxn(sender_address, params, self.lending_client.manager.app_id, app_args, accounts=accounts, foreign_apps=foreign_apps))
         
         return TransactionGroup(txns)

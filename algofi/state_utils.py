@@ -11,8 +11,9 @@ def get_balances(indexer, address):
     balances = {}
     account_info = indexer.account_info(address)['account']
     balances[ALGO_ASSET_ID] = account_info['amount']
-    for asset_info in account_info['assets']:
-        balances[asset_info['asset-id']] = asset_info['amount']
+    if 'assets' in account_info:
+        for asset_info in account_info['assets']:
+            balances[asset_info['asset-id']] = asset_info['amount']
     return balances
     
 def get_state_int(state, key):
@@ -53,8 +54,9 @@ def get_local_states(indexer, address):
         raise Exception("Account does not exist.")
 
     result = {}
-    for local_state in results['apps-local-state']:
-        result[local_state['id']] = format_state(local_state.get('key-value', []))
+    if 'apps-local-state' in results:
+        for local_state in results['apps-local-state']:
+            result[local_state['id']] = format_state(local_state.get('key-value', []))
     return result
 
 def get_global_state(indexer, app_id):
