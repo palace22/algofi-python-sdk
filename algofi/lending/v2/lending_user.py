@@ -97,6 +97,8 @@ class LendingUser:
         :type params: Dict
         :param target_market_app_id: the market contract for this group
         :type target_market_app_id: int
+        :param sender_address: the address of the sender for the preamble transactions. This is helpful for liquidators,
+            who are sending preamble transactions from their own accounts, targeting some user's storage account
         :return preamble transaction group
         :rtype :class:`TransactionGroup`
         """

@@ -33,13 +33,14 @@ class Manager:
 
     def get_opt_in_txns(self, user, storage_address):
         """Returns a :class:`TransactionGroup` object representing a lending manager opt in
-        transaction against the algofi protocol.
+        transaction against the algofi protocol. The second transaction should be signed by the key of the storage
+        address.
 
         :param user: account for the sender
         :type user: :class: `LendingUser`
         :param storage_address: address created owned by the user, to be rekeyed to the manager
         :type storage_address: str
-        :return: :class:`TransactionGroup` object representing a mint group transaction
+        :return: :class:`TransactionGroup` object representing an opt in group transaction of size 3
         :rtype: :class:`TransactionGroup`
         """
         params = get_default_params(self.algod)
@@ -60,11 +61,12 @@ class Manager:
     
     def get_opt_out_txns(self, user):
         """Returns a :class:`TransactionGroup` object representing a lending manager opt out
-        transaction against the algofi protocol. The manager will close the storage account and return funds to the user
+        transaction against the algofi protocol. The manager will close the storage account and return funds to the
+        user. This transaction will fail unless the user has nothing borrowed and no active collateral
 
         :param user: account for the sender
         :type user: :class: `LendingUser`
-        :return: :class:`TransactionGroup` object representing a mint group transaction
+        :return: :class:`TransactionGroup` object representing an opt out group transaction of size 1
         :rtype: :class:`TransactionGroup`
         """
         params = get_default_params(self.algod)
@@ -77,6 +79,16 @@ class Manager:
         return TransactionGroup([txn0])
     
     def get_market_opt_in_txns(self, user, market):
+        """Returns a :class:`TransactionGroup` object representing a lending market opt in
+        transaction against the algofi protocol.
+
+        :param user: account for the sender
+        :type user: :class:`LendingUser`
+        :param market: market to opt in to
+        :type market: :class:`LendingMarket`
+        :return: :class:`TransactionGroup` object representing an opt in group transaction of size 3
+        :rtype: :class:`TransactionGroup`
+        """
         params = get_default_params(self.algod)
         
         # fund storage account
@@ -98,6 +110,16 @@ class Manager:
         return TransactionGroup([txn0, txn1, txn2])
     
     def get_market_opt_out_txns(self, user, market):
+        """Returns a :class:`TransactionGroup` object representing a lending market opt out
+        transaction against the algofi protocol.
+
+        :param user: account for the sender
+        :type user: :class: `LendingUser`
+        :param market: market to opt in to
+        :type market: :class:`LendingMarket`
+        :return: :class:`TransactionGroup` object representing an opt out group transaction of size 1
+        :rtype: :class:`TransactionGroup`
+        """
         params = get_default_params(self.algod)
         
         page, offset = user.get_market_page_offset(market.app_id)

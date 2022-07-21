@@ -144,7 +144,7 @@ class Market:
 
         :param user: account for the sender
         :type user: :class:`LendingUser`
-        :return: :class:`AssetTransferTxn` object representing a mint group transaction
+        :return: :class:`AssetTransferTxn` of underlying asset with 0 amount from user to self
         :rtype: :class:`AssetTransferTxn`
         """
         assert self.market_type != MarketType.VAULT
@@ -160,7 +160,7 @@ class Market:
 
         :param user: account for the sender
         :type user: :class:`LendingUser`
-        :return: :class:`AssetTransferTxn` object representing a mint group transaction
+        :return: :class:`AssetTransferTxn` of underlying asset with 0 amount from user to self
         :rtype: :class:`AssetTransferTxn`
         """
         assert self.market_type != MarketType.VAULT
@@ -180,7 +180,7 @@ class Market:
         :type user: :class: `LendingUser`
         :param underlying_amount: amount of underlying asset to use in minting
         :type underlying_amount: int
-        :return: :class:`TransactionGroup` object representing a mint group transaction
+        :return: :class:`TransactionGroup` object representing a mint group transaction of size 2
         :rtype: :class:`TransactionGroup`
         """
         assert self.market_type != MarketType.VAULT
@@ -207,7 +207,7 @@ class Market:
         :type user: :class: `LendingUser`
         :param underlying_amount: amount of underlying asset to add to collateral
         :type underlying_amount: int
-        :return: :class:`TransactionGroup` object representing an add collateral group transaction
+        :return: :class:`TransactionGroup` object representing an add collateral group transaction of size 2
         :rtype: :class:`TransactionGroup`
         """
 
@@ -235,7 +235,7 @@ class Market:
         :type user: :class: `LendingUser`
         :param b_asset_amount: amount of bank asset to add to collateral
         :type b_asset_amount: int
-        :return: :class:`TransactionGroup` object representing an add collateral group transaction
+        :return: :class:`TransactionGroup` object representing an add collateral group transaction of size 2
         :rtype: :class:`TransactionGroup`
         """
 
@@ -265,6 +265,7 @@ class Market:
         :param underlying_amount: amount of underlying asset to remove
         :type underlying_amount: int
         :return: :class:`TransactionGroup` object representing a remove collateral group transaction
+            of size (preamble_length + 1)
         :rtype: :class:`TransactionGroup`
         """
         params = get_default_params(self.algod)
@@ -317,7 +318,7 @@ class Market:
         :type user: :class: `LendingUser`
         :param b_asset_amount: amount of underlying asset to remove
         :type b_asset_amount: int
-        :return: :class:`TransactionGroup` object representing a burn group transaction
+        :return: :class:`TransactionGroup` object representing a burn group transaction of size 2
         :rtype: :class:`TransactionGroup`
         """
         assert self.market_type != MarketType.VAULT
@@ -344,7 +345,7 @@ class Market:
         :type user: :class: `LendingUser`
         :param underlying_amount: amount to borrow
         :type underlying_amount: int
-        :return: :class:`TransactionGroup` object representing a borrow group transaction
+        :return: :class:`TransactionGroup` object representing a borrow group transaction of size (preamble_length + 1)
         :rtype: :class:`TransactionGroup`
         """
         assert self.market_type != MarketType.VAULT
@@ -370,7 +371,7 @@ class Market:
         :type user: :class: `LendingUser`
         :param underlying_amount: amount to repay
         :type underlying_amount: int
-        :return: :class:`TransactionGroup` object representing a repay group transaction
+        :return: :class:`TransactionGroup` object representing a repay group transaction of size 2
         :rtype: :class:`TransactionGroup`
         """
         assert self.market_type != MarketType.VAULT
@@ -403,6 +404,7 @@ class Market:
         :param: seize_collateral_market: market to seize collateral in
         :type seize_collateral_market: :class: `Market`
         :return: :class:`TransactionGroup` object representing a liquidate group transaction
+            of size (preamble_length + 3)
         :rtype: :class:`TransactionGroup`
         """
         assert self.market_type != MarketType.VAULT
