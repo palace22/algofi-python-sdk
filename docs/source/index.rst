@@ -1,8 +1,8 @@
-algofi
+Modules
 =======
 .. toctree::
    :maxdepth: 10
 
-   algofi
+   algofi/index
 
 .. mdinclude:: ../../README.md
