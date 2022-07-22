@@ -1,5 +1,5 @@
 v2
-=======
+===
 .. toctree::
    :maxdepth: 10
 

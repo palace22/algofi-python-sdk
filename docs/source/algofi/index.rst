@@ -1,5 +1,5 @@
 algofi-python-sdk
-=======
+=================
 .. toctree::
    :maxdepth: 10
 

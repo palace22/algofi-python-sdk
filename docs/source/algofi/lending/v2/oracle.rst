@@ -1,5 +1,5 @@
 oracle
-=========
+======
 
 .. automodule:: algofi.lending.v2.oracle
    :members:
