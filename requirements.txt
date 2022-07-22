@@ -7,3 +7,4 @@ PyNaCl==1.4.0
 python-dotenv==0.19.1
 six==1.16.0
 m2r2==0.3.2
+sphinx

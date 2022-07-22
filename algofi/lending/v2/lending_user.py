@@ -9,7 +9,7 @@ from algosdk.future.transaction import ApplicationNoOpTxn
 from .lending_config import MANAGER_STRINGS
 from .user_market_state import UserMarketState
 # INTERFACE
-from ...globals import PERMISSIONLESS_SENDER_LOGIC_SIG, FIXED_3_SCALE_FACTOR
+from ...globals import FIXED_3_SCALE_FACTOR #,PERMISSIONLESS_SENDER_LOGIC_SIG
 from ...state_utils import get_local_states
 from ...transaction_utils import TransactionGroup
 from ...utils import int_to_bytes, bytes_to_int
@@ -98,7 +98,7 @@ class LendingUser:
         :param target_market_app_id: the market contract for this group
         :type target_market_app_id: int
         :param sender_address: the address of the sender for the preamble transactions. This is helpful for liquidators,
-            who are sending preamble transactions from their own accounts, targeting some user's storage account
+        who are sending preamble transactions from their own accounts, targeting some user's storage account
         :return preamble transaction group
         :rtype :class:`TransactionGroup`
         """
