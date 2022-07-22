@@ -1,20 +1,42 @@
 # IMPORTS
-from algosdk.future.transaction import ApplicationOptInTxn, ApplicationCallTxn, ApplicationNoOpTxn
+from base64 import b64decode
+
+from algosdk.encoding import encode_address
+from algosdk.future.transaction import ApplicationNoOpTxn
 from algosdk.logic import get_application_address
-from nacl.encoding import Base64Encoder
-from pyteal import OnComplete
 
 from .lending_config import MARKET_STRINGS, MarketType
 from .oracle import Oracle
-
-
 # INTERFACE
 from ...asset_amount import AssetAmount
 from ...globals import FIXED_3_SCALE_FACTOR, FIXED_6_SCALE_FACTOR
 from ...state_utils import get_global_state
 from ...transaction_utils import TransactionGroup, get_default_params, get_payment_txn
-from ...utils import int_to_bytes
+from ...utils import int_to_bytes, bytes_to_int
 
+
+class RewardsProgramState:
+    rewards_program_number_offset = 0
+    rewards_per_second_offset = 8
+    rewards_asset_id_offset = 16
+    rewards_issued_offset = 24
+    rewards_claimed_offset = 32
+    rewards_state_length = 40
+
+    def __init__(self, state, program_index):
+        program_index_bytestr = int_to_bytes(program_index).decode()
+        rewards_admin_key = MARKET_STRINGS.rewards_admin_prefix + program_index_bytestr
+        rewards_program_state_key = MARKET_STRINGS.rewards_program_state_prefix + program_index_bytestr
+        rewards_index_key = MARKET_STRINGS.rewards_index_prefix + program_index_bytestr
+
+        self.rewards_admin = encode_address(b64decode(state.get(rewards_admin_key, '')))
+        self.rewards_program_state = b64decode(state.get(rewards_program_state_key, ''))
+        self.rewards_index = bytes_to_int(b64decode(state.get(rewards_index_key, 0)))
+        self.rewards_program_number = bytes_to_int(self.rewards_program_state[self.rewards_program_number_offset : self.rewards_program_number_offset + 8])
+        self.rewards_per_second = bytes_to_int(self.rewards_program_state[self.rewards_per_second_offset : self.rewards_per_second_offset + 8])
+        self.rewards_asset_id = bytes_to_int(self.rewards_program_state[self.rewards_asset_id_offset : self.rewards_asset_id_offset + 8])
+        self.rewards_issued = bytes_to_int(self.rewards_program_state[self.rewards_issued_offset : self.rewards_issued_offset + 8])
+        self.rewards_claimed = bytes_to_int(self.rewards_program_state[self.rewards_claimed_offset : self.rewards_claimed_offset + 8])
 
 class Market:
     local_min_balance = 414000
@@ -60,7 +82,7 @@ class Market:
         # interest rate model
         self.base_interest_rate = state.get(MARKET_STRINGS.base_interest_rate, 0)
         self.base_interest_slope = state.get(MARKET_STRINGS.base_interest_slope, 0)
-        self.exponential_interest_amplification_factor = state.get(MARKET_STRINGS.exponential_interest_amplification_factor, 0)
+        self.quadratic_interest_amplification_factor = state.get(MARKET_STRINGS.quadratic_interest_amplification_factor, 0)
         self.target_utilization_ratio = state.get(MARKET_STRINGS.target_utilization_ratio, 0)
     
         # oracle
@@ -96,6 +118,14 @@ class Market:
         )
         
         self.supply_apr, self.borrow_apr = self.get_aprs(self.total_supplied.underlying, self.total_borrowed.underlying)
+
+        # rewards
+        self.rewards_escrow_account = encode_address(b64decode(state.get(MARKET_STRINGS.rewards_escrow_account, '')))
+        self.rewards_latest_time = state.get(MARKET_STRINGS.rewards_latest_time, 0)
+        self.max_rewards_program_index = 1
+        self.rewards_programs = []
+        for i in range(self.max_rewards_program_index + 1):
+            self.rewards_programs.append(RewardsProgramState(state, i))
     
     # GETTERS
     
@@ -110,7 +140,7 @@ class Market:
         borrow_apr = self.base_interest_rate / FIXED_6_SCALE_FACTOR
         borrow_apr += borrow_utilization * self.base_interest_slope / FIXED_6_SCALE_FACTOR
         if borrow_utilization > (self.target_utilization_ratio / FIXED_6_SCALE_FACTOR):
-            borrow_apr += self.exponential_interest_amplification_factor * ((borrow_utilization - self.target_utilization_ratio / FIXED_6_SCALE_FACTOR)**2)
+            borrow_apr += self.quadratic_interest_amplification_factor * ((borrow_utilization - self.target_utilization_ratio / FIXED_6_SCALE_FACTOR)**2)
         supply_apr = borrow_apr * borrow_utilization * (1 - self.reserve_factor / FIXED_6_SCALE_FACTOR)
         return supply_apr, borrow_apr
     
@@ -433,3 +463,26 @@ class Market:
         txn2 = ApplicationNoOpTxn(user.address, params, seize_collateral_market.app_id, app_args=app_args2, accounts=accounts2, foreign_apps=foreign_apps2, foreign_assets=foreign_assets2)
 
         return preamble_txns + TransactionGroup([txn0, txn1, txn2])
+
+    def get_claim_rewards_txns(self, user, program_index):
+        """Returns a :class:`TransactionGroup` object representing a claim rewards group
+        transaction against the algofi protocol. Sender claims accrued rewards from a specified rewards program.
+
+        :param user: account for the sender
+        :type user: :class: `LendingUser`
+        :param program_index: specific program for which the rewards are being claimed
+        :type program_index: int
+        :return: :class:`TransactionGroup` object representing a claim rewards group transaction of size 1
+        :rtype: :class:`TransactionGroup`
+        """
+        params = get_default_params(self.algod)
+
+        # application call
+        params.fee = 3000
+        foreign_apps = [self.manger_app_id]
+        accounts = [user.storage_address, self.rewards_escrow_account]
+        app_args = [bytes(MARKET_STRINGS.claim_rewards, "utf-8"), int_to_bytes(program_index)]
+        foreign_assets = [self.rewards_programs[program_index].rewards_asset_id]
+        txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args, accounts=accounts, foreign_apps=foreign_apps, foreign_assets=foreign_assets)
+
+        return TransactionGroup([txn0])
