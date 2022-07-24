@@ -3,7 +3,7 @@ algofi-python-sdk
 .. toctree::
    :maxdepth: 10
 
-   lending/v2
+   lending/index
    algofi_client
    algofi_user
    asset_amount
