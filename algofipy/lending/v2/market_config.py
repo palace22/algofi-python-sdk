@@ -1,7 +1,7 @@
 # IMPORTS
 
 # global
-from algofi.globals import Network
+from algofipy.globals import Network
 
 # local
 from .lending_config import MarketType
