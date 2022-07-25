@@ -5,9 +5,10 @@ from algosdk.v2client.algod import AlgodClient
 from algosdk.v2client.indexer import IndexerClient
 from dotenv import dotenv_values
 
-from algofi.algofi_client import AlgofiClient
-from algofi.globals import Network
-from algofi.transaction_utils import wait_for_confirmation
+from algofipy.algofi_client import AlgofiClient
+from algofipy.globals import Network
+from algofipy.lending.v2.lending_config import MarketType
+from algofipy.transaction_utils import wait_for_confirmation
 
 my_path = os.path.abspath(os.path.dirname(__file__))
 ENV_PATH = os.path.join(my_path, "../.env")
