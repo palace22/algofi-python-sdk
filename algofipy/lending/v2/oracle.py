@@ -3,7 +3,7 @@
 # global
 from algosdk.v2client.indexer import IndexerClient
 
-from algofi.state_utils import get_global_state
+from algofipy.state_utils import get_global_state
 
 # local
 

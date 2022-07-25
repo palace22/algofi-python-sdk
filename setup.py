@@ -6,7 +6,7 @@ with open("README.md", "r") as f:
 
 setuptools.setup(
     name="algofi-python-sdk",
-    description="Algofi Defi Protocol Python SDK",
+    description="Official Algofi Protocol Python SDK",
     author="Algofi",
     author_email="founders@algofi.org",
     version="2.0.0",
@@ -14,7 +14,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     license="MIT",
     project_urls={
-        "Source": "https://github.com/Algofiorg/algofi-py-sdk",
+        "Source": "https://github.com/Algofiorg/algofi-python-sdk",
     },
     install_requires=["py-algorand-sdk >= 1.6.0"],
     packages=setuptools.find_packages(),

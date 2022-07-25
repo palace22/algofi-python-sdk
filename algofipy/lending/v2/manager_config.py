@@ -1,7 +1,7 @@
 # IMPORTS
 
 # INTERFACE
-from algofi.globals import Network
+from algofipy.globals import Network
 
 
 class ManagerConfig:
