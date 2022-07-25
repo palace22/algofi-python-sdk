@@ -19,8 +19,9 @@ class LendingUser:
     def __init__(self, lending_client, address):
         """An object that encapsulates user state on the lending protocol
         and creates transactions representing user actions
+
         :param lending_client: a client for interacting with the algofi lending protocol
-        :type lending_client: :class: `LendingClient`
+        :type lending_client: :class:`LendingClient`
         :param address: an address of the user wallet
         :type address: str
         """
@@ -81,9 +82,11 @@ class LendingUser:
     
     def get_market_page_offset(self, market_app_id):
         """Helper function that returns the location of the by-market state for the user
+        
         :param market_app_id: the market app id for which the location is being calculated
         :type market_app_id: int
-        :rtype: Tuple[int, int]
+        :return: a tuple of page, offset ints
+        :rtype: tuple
         """
         for i in range(len(self.opted_in_markets)):
             if self.opted_in_markets[i] == market_app_id:
@@ -93,14 +96,15 @@ class LendingUser:
     def get_preamble_txns(self, params, target_market_app_id, sender_address=''):
         """Helper function that constructs a group representing the utility transactions
         that should precede some user calls to the algofi protocol markets
+
         :param params: suggested params for the algod client
-        :type params: Dict
+        :type params: dict
         :param target_market_app_id: the market contract for this group
         :type target_market_app_id: int
         :param sender_address: the address of the sender for the preamble transactions. This is helpful for liquidators,
         who are sending preamble transactions from their own accounts, targeting some user's storage account
         :return preamble transaction group
-        :rtype :class:`TransactionGroup`
+        :rtype: :class:`TransactionGroup`
         """
         page_count = int((self.opted_in_market_count - 1) / 3) + 1
         

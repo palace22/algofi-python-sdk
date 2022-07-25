@@ -24,6 +24,13 @@ class RewardsProgramState:
     rewards_state_length = 40
 
     def __init__(self, state, program_index):
+        """The global state for a single rewards program on a given market
+
+        :param state: raw global market state
+        :type state: int
+        :param program_index: the index of the rewards program on the market
+        :type program_index: int
+        """
         program_index_bytestr = int_to_bytes(program_index).decode()
         rewards_admin_key = MARKET_STRINGS.rewards_admin_prefix + program_index_bytestr
         rewards_program_state_key = MARKET_STRINGS.rewards_program_state_prefix + program_index_bytestr
@@ -42,9 +49,10 @@ class Market:
     local_min_balance = 414000
 
     def __init__(self, lending_client, market_config):
-        """
+        """The python representation of an algofi lending market smart contract
+
         :param lending_client:
-        :type lending_client: :class: `LendingClient`
+        :type lending_client: :class:`LendingClient`
         :param market_config:
         """
         self.lending_client = lending_client
@@ -63,6 +71,7 @@ class Market:
     def load_state(self):
         """
         Loads market state from the blockchain
+
         :rtype: None
         """
         state = get_global_state(self.indexer, self.app_id)
@@ -130,6 +139,12 @@ class Market:
     # GETTERS
     
     def get_underlying_supplied(self):
+        """Returns the total amount of underlying asset that has been supplied to the market,
+        including the amount that has been borrowed
+
+        :return: Supplied amount in base unit terms
+        :rtype: int
+        """
         if self.market_type == MarketType.STBL:
             return self.underlying_cash
         else:
@@ -147,6 +162,13 @@ class Market:
     # CONVERSIONS
     
     def underlying_to_usd(self, amount):
+        """Converts underlying to usd
+
+        :param amount: underlying asset amount
+        :type amount: int
+        :return: dollarized amount
+        :rtype: int
+        """
         return (amount * self.oracle.raw_price) / (self.oracle.scale_factor * FIXED_3_SCALE_FACTOR)
     
     def b_asset_to_asset_amount(self, amount):
@@ -170,7 +192,7 @@ class Market:
     
     # TRANSACTION BUILDERS
     def get_b_asset_opt_in_txn(self, user):
-        """Returns a :class: `AssetTransferTxn` object representing a transfer of zero units of the b asset.
+        """Returns a :class:`AssetTransferTxn` object representing a transfer of zero units of the b asset.
 
         :param user: account for the sender
         :type user: :class:`LendingUser`
@@ -186,7 +208,7 @@ class Market:
         return txn0
 
     def get_underlying_asset_opt_in_txn(self, user):
-        """Returns a :class: `AssetTransferTxn` object representing a transfer of zero units of the market underlying asset.
+        """Returns a :class:`AssetTransferTxn` object representing a transfer of zero units of the market underlying asset.
 
         :param user: account for the sender
         :type user: :class:`LendingUser`
@@ -207,7 +229,7 @@ class Market:
         to the account address of the market application which sends back the bank asset.
 
         :param user: account for the sender
-        :type user: :class: `LendingUser`
+        :type user: :class:`LendingUser`
         :param underlying_amount: amount of underlying asset to use in minting
         :type underlying_amount: int
         :return: :class:`TransactionGroup` object representing a mint group transaction of size 2
@@ -234,7 +256,7 @@ class Market:
         it to the account address of the market application that updates user active collateral.
 
         :param user: account for the sender
-        :type user: :class: `LendingUser`
+        :type user: :class:`LendingUser`
         :param underlying_amount: amount of underlying asset to add to collateral
         :type underlying_amount: int
         :return: :class:`TransactionGroup` object representing an add collateral group transaction of size 2
@@ -262,7 +284,7 @@ class Market:
         them to the account address of the market application that generates the bank assets.
 
         :param user: account for the sender
-        :type user: :class: `LendingUser`
+        :type user: :class:`LendingUser`
         :param b_asset_amount: amount of bank asset to add to collateral
         :type b_asset_amount: int
         :return: :class:`TransactionGroup` object representing an add collateral group transaction of size 2
@@ -291,7 +313,7 @@ class Market:
         collateral.
 
         :param user: account for the sender
-        :type user: :class: `LendingUser`
+        :type user: :class:`LendingUser`
         :param underlying_amount: amount of underlying asset to remove
         :type underlying_amount: int
         :return: :class:`TransactionGroup` object representing a remove collateral group transaction
@@ -318,7 +340,7 @@ class Market:
         collateral.
 
         :param user: account for the sender
-        :type user: :class: `LendingUser`
+        :type user: :class:`LendingUser`
         :param b_asset_amount: amount of underlying asset to remove
         :type b_asset_amount: int
         :return: :class:`TransactionGroup` object representing a remove collateral group transaction
@@ -345,7 +367,7 @@ class Market:
         transaction against the algofi protocol. Sender reclaims underlying collateral asset by burning bank asset.
 
         :param user: account for the sender
-        :type user: :class: `LendingUser`
+        :type user: :class:`LendingUser`
         :param b_asset_amount: amount of underlying asset to remove
         :type b_asset_amount: int
         :return: :class:`TransactionGroup` object representing a burn group transaction of size 2
@@ -372,7 +394,7 @@ class Market:
         collateral in the protocol.
 
         :param user: account for the sender
-        :type user: :class: `LendingUser`
+        :type user: :class:`LendingUser`
         :param underlying_amount: amount to borrow
         :type underlying_amount: int
         :return: :class:`TransactionGroup` object representing a borrow group transaction of size (preamble_length + 1)
@@ -398,7 +420,7 @@ class Market:
         transaction against the algofi protocol. Sender repays borrowed underlying asset + interest to the protocol.
 
         :param user: account for the sender
-        :type user: :class: `LendingUser`
+        :type user: :class:`LendingUser`
         :param underlying_amount: amount to repay
         :type underlying_amount: int
         :return: :class:`TransactionGroup` object representing a repay group transaction of size 2
@@ -426,13 +448,13 @@ class Market:
          the liquidatee and seizes their collateral in a specified market.
 
         :param user: account for the sender
-        :type user: :class: `LendingUser`
+        :type user: :class:`LendingUser`
         :param target_user: account for the liquidatee
-        :type target_user: :class: `LendingUser`
+        :type target_user: :class:`LendingUser`
         :param repay_amount: amount to repay
         :type repay_amount: int
         :param: seize_collateral_market: market to seize collateral in
-        :type seize_collateral_market: :class: `Market`
+        :type seize_collateral_market: :class:`Market`
         :return: :class:`TransactionGroup` object representing a liquidate group transaction
             of size (preamble_length + 3)
         :rtype: :class:`TransactionGroup`
@@ -469,7 +491,7 @@ class Market:
         transaction against the algofi protocol. Sender claims accrued rewards from a specified rewards program.
 
         :param user: account for the sender
-        :type user: :class: `LendingUser`
+        :type user: :class:`LendingUser`
         :param program_index: specific program for which the rewards are being claimed
         :type program_index: int
         :return: :class:`TransactionGroup` object representing a claim rewards group transaction of size 1

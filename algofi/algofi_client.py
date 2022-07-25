@@ -12,6 +12,15 @@ from .lending.v2.lending_client import LendingClient
 
 class AlgofiClient:
     def __init__(self, network, algod, indexer):
+        """A client for the algofi protocol
+
+        :param network: a network configuration key
+        :type network: :class:`Network`
+        :param algod: Algod client
+        :type algod: :class:`AlgodClient`
+        :param indexer: Algorand indexer client
+        :type indexer: :class:`IndexerClient`
+        """
         self.network = network
         self.algod = algod
         self.indexer = indexer
@@ -23,4 +32,11 @@ class AlgofiClient:
         self.lending = LendingClient(self)
 
     def get_user(self, address):
+        """Creates an :class:`AlgofiUser` object for specific address
+
+        :param address: string address of the user primary wallet
+        :type address: str
+        :return: Python representation of the algofi user
+        :rtype: :class:`AlgofiUser`
+        """
         return AlgofiUser(self, address)

@@ -18,10 +18,11 @@ from ...utils import int_to_bytes
 class Manager:
     def __init__(self, lending_client, manager_config):
         """An object that encapsulates algofi lending manager contract
+
         :param lending_client: a client for interacting with the algofi lending protocol
-        :type :class: `LendingClient`
+        :type lending_client: :class:`LendingClient`
         :param manager_config: an object that stores the smart contract metadata
-        :type :class: `ManagerConfig`
+        :type manager_config: :class:`ManagerConfig`
         """
         self.lending_client = lending_client
         self.algod = self.lending_client.algod
@@ -37,7 +38,7 @@ class Manager:
         address.
 
         :param user: account for the sender
-        :type user: :class: `LendingUser`
+        :type user: :class:`LendingUser`
         :param storage_address: address created owned by the user, to be rekeyed to the manager
         :type storage_address: str
         :return: :class:`TransactionGroup` object representing an opt in group transaction of size 3
@@ -65,7 +66,7 @@ class Manager:
         user. This transaction will fail unless the user has nothing borrowed and no active collateral
 
         :param user: account for the sender
-        :type user: :class: `LendingUser`
+        :type user: :class:`LendingUser`
         :return: :class:`TransactionGroup` object representing an opt out group transaction of size 1
         :rtype: :class:`TransactionGroup`
         """
@@ -114,7 +115,7 @@ class Manager:
         transaction against the algofi protocol.
 
         :param user: account for the sender
-        :type user: :class: `LendingUser`
+        :type user: :class:`LendingUser`
         :param market: market to opt in to
         :type market: :class:`LendingMarket`
         :return: :class:`TransactionGroup` object representing an opt out group transaction of size 1

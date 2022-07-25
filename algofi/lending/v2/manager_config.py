@@ -6,6 +6,7 @@ from algofi.globals import Network
 
 class ManagerConfig:
     def __init__(self, app_id):
+        """An object storing lending manager metadata"""
         self.app_id = app_id
 
 MANAGER_CONFIGS = {

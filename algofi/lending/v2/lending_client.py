@@ -13,7 +13,9 @@ from .market_config import MARKET_CONFIGS
 class LendingClient:
     def __init__(self, algofi_client):
         """Constructor for the client used to interact with algofi lending protocol
-        :type algofi_client: :class: `AlgofiClient`
+
+        :param algofi_client: Client for the algofi protocols
+        :type algofi_client: :class:`AlgofiClient`
         """
         self.algofi_client = algofi_client
         self.algod = algofi_client.algod
@@ -29,8 +31,9 @@ class LendingClient:
 
     def get_storage_accounts(self): # TODO fix this to only return storage accounts
         """Fetches the list of user storage accounts on the lending protocol from the blockchain
-        :return: storage accounts
-        :rtype: List[str]
+
+        :return: list of storage account address strings
+        :rtype: list
         """
         next_page = ""
         accounts = []
