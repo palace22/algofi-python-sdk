@@ -49,6 +49,13 @@ class TransactionGroup:
         return len(self.transactions)
 
     def sign_with_private_keys(self, private_keys):
+        """Signs transactions in the group with provided private keys. If a singleton list is provided, signs all
+        transactions with the same key, otherwise signs ith transaction with the ith key in the list
+
+        :param private_keys: a list of signer keys
+        :type private_keys: list of strings
+        :return: None
+        """
         if len(private_keys) == 1:
             for i, txn in enumerate(self.transactions):
                 self.signed_transactions[i] = txn.sign(private_keys[0])
