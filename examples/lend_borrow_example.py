@@ -7,7 +7,6 @@ from dotenv import dotenv_values
 
 from algofipy.algofi_client import AlgofiClient
 from algofipy.globals import Network
-from algofipy.lending.v2.lending_config import MarketType
 from algofipy.transaction_utils import wait_for_confirmation
 
 my_path = os.path.abspath(os.path.dirname(__file__))
