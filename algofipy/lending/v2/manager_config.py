@@ -10,7 +10,7 @@ class ManagerConfig:
         self.app_id = app_id
 
 MANAGER_CONFIGS = {
-    Network.MAINNET : ManagerConfig(0),
+    Network.MAINNET : ManagerConfig(818176933),
     Network.MAINNET_CLONE : ManagerConfig(753081696),
     Network.MAINNET_CLONE2 : ManagerConfig(802875339),
     Network.TESTNET : ManagerConfig(91633688)

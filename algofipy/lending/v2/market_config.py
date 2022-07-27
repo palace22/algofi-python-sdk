@@ -17,7 +17,11 @@ class MarketConfig:
 
 MARKET_CONFIGS = {
   Network.MAINNET : [
-    MarketConfig(0, 1, 0, MarketType.STANDARD) # ALGO
+    MarketConfig(818179346, 1, 818179690, MarketType.STANDARD), # ALGO
+    MarketConfig(818182048, 31566704, 818182311, MarketType.STANDARD), # USDC
+    MarketConfig(818183964, 386192725, 818184214, MarketType.STANDARD), # goBTC
+    MarketConfig(818188286, 386195940, 818188553, MarketType.STANDARD), # goETH
+    MarketConfig(818190205, 312769, 818190568, MarketType.STANDARD), # USDT
   ],
   Network.MAINNET_CLONE : [
     MarketConfig(753107352, 1, 753117075, MarketType.STANDARD), # ALGO
