@@ -384,7 +384,7 @@ class Market:
         app_args1 = [bytes(MARKET_STRINGS.burn_b_asset, "utf-8")]
         foreign_apps1 = [self.manager_app_id]
         foreign_assets1 = [self.underlying_asset_id]
-        params.fee = 2000
+        params.fee = 3000
         txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, foreign_apps=foreign_apps1, foreign_assets=foreign_assets1)
         
         return TransactionGroup([txn0, txn1])

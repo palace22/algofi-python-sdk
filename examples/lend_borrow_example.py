@@ -109,7 +109,8 @@ wait_for_confirmation(algod, txid)
 
 # REPAY BORROW
 print("repay")
-group = usdc_market.get_repay_borrow_txns(user.lending, int(10))
+# ADD A USDC BUFFER TO YOUR WALLET
+group = usdc_market.get_repay_borrow_txns(user.lending, int(1e3 + 10))
 group.sign_with_private_keys([key])
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
@@ -123,7 +124,9 @@ wait_for_confirmation(algod, txid)
 
 # REMOVE BANK ASSET COLLATERAL
 print("remove b asset collateral")
-group = algo_market.get_remove_b_asset_collateral_txns(user.lending, int(5e5))
+user.load_state()
+b_asset_amount = user.lending.user_market_states[algo_market_app_id].b_asset_collateral
+group = algo_market.get_remove_b_asset_collateral_txns(user.lending, b_asset_amount)
 group.sign_with_private_keys([key])
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
@@ -143,12 +146,19 @@ wait_for_confirmation(algod, txid)
 
 # CLOSE OUT
 print("close out markets")
-for market in [algo_market, usdc_market]:
-    group = manager.get_market_close_out_txns(user.lending, market)
-    group.sign_with_private_keys([key])
-    txid = algod.send_transactions(group.signed_transactions)
-    wait_for_confirmation(algod, txid)
-    user.load_state()
+group = manager.get_market_close_out_txns(user.lending, algo_market)
+group.sign_with_private_keys([key])
+txid = algod.send_transactions(group.signed_transactions)
+wait_for_confirmation(algod, txid)
+
+user.load_state()
+
+group = manager.get_market_close_out_txns(user.lending, usdc_market)
+group.sign_with_private_keys([key])
+txid = algod.send_transactions(group.signed_transactions)
+wait_for_confirmation(algod, txid)
+
+user.load_state()
 
 print("close out manager")
 group = manager.get_close_out_txns(user.lending)
