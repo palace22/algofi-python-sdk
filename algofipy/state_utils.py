@@ -26,7 +26,7 @@ def get_state_bytes(state, key):
         key = b64encode(key.encode())
     return state.get(key.decode(), {'bytes': ''})['bytes']
 
-def format_state(state):
+def format_state(state, decode_byte_values=True):
     formatted_state = {}
     for item in state:
         key = item['key']
@@ -37,9 +37,12 @@ def format_state(state):
             formatted_key = b64decode(key)
         if value['type'] == 1:
             # byte string
-            try:
-                formatted_state[formatted_key] = b64decode(value['bytes']).decode('utf-8')
-            except:
+            if decode_byte_values:
+                try:
+                    formatted_state[formatted_key] = b64decode(value['bytes']).decode('utf-8')
+                except:
+                    formatted_state[formatted_key] = value['bytes']
+            else:
                 formatted_state[formatted_key] = value['bytes']
         else:
             # integer
@@ -59,9 +62,9 @@ def get_local_states(indexer, address):
             result[local_state['id']] = format_state(local_state.get('key-value', []))
     return result
 
-def get_global_state(indexer, app_id):
+def get_global_state(indexer, app_id, decode_byte_values=True):
     try:
         application_info = indexer.applications(app_id).get("application", {})
     except:
         raise Exception("Application does not exist.")
-    return format_state(application_info["params"]["global-state"])
+    return format_state(application_info["params"]["global-state"], decode_byte_values=decode_byte_values)

@@ -46,7 +46,7 @@ class RewardsProgramState:
         self.rewards_claimed = bytes_to_int(self.rewards_program_state[self.rewards_claimed_offset : self.rewards_claimed_offset + 8])
 
 class Market:
-    local_min_balance = 414000
+    local_min_balance = 471000
 
     def __init__(self, lending_client, market_config):
         """The python representation of an algofi lending market smart contract
@@ -58,7 +58,7 @@ class Market:
         self.lending_client = lending_client
         self.algod = self.lending_client.algod
         self.indexer = self.lending_client.indexer
-        self.manger_app_id = lending_client.manager.app_id
+        self.manager_app_id = lending_client.manager.app_id
         
         self.app_id = market_config.app_id
         self.address = get_application_address(self.app_id)
@@ -74,7 +74,7 @@ class Market:
 
         :rtype: None
         """
-        state = get_global_state(self.indexer, self.app_id)
+        state = get_global_state(self.indexer, self.app_id, decode_byte_values=False)
         
         # parameters
         self.borrow_factor = state.get(MARKET_STRINGS.borrow_factor, 0)
@@ -97,7 +97,7 @@ class Market:
         # oracle
         self.oracle = Oracle(self.indexer,
                              state.get(MARKET_STRINGS.oracle_app_id, 0),
-                             state.get(MARKET_STRINGS.oracle_price_field_name, 'price'),
+                             b64decode(state.get(MARKET_STRINGS.oracle_price_field_name, 'price')).decode("utf-8"),
                              state.get(MARKET_STRINGS.oracle_price_scale_factor, 0))
         self.oracle.loadPrice()
     
@@ -244,7 +244,7 @@ class Market:
         # application call
         params.fee = 3000
         app_args1 = [bytes(MARKET_STRINGS.mint_b_asset, "utf-8")]
-        foreign_apps1 = [self.manger_app_id]
+        foreign_apps1 = [self.manager_app_id]
         foreign_assets1 = [self.b_asset_id]
         txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, foreign_apps=foreign_apps1, foreign_assets=foreign_assets1)
         
@@ -273,7 +273,7 @@ class Market:
         # application call
         app_args1 = [bytes(MARKET_STRINGS.add_underlying_collateral, "utf-8")]
         accounts1 = [user.storage_address]
-        foreign_apps1 = [self.manger_app_id]
+        foreign_apps1 = [self.manager_app_id]
         txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, accounts=accounts1, foreign_apps=foreign_apps1)
         
         return TransactionGroup([txn0, txn1])
@@ -302,7 +302,7 @@ class Market:
         # application call
         app_args1 = [bytes(MARKET_STRINGS.add_b_asset_collateral, "utf-8")]
         accounts1 = [user.storage_address]
-        foreign_apps1 = [self.manger_app_id]
+        foreign_apps1 = [self.manager_app_id]
         txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, accounts=accounts1, foreign_apps=foreign_apps1)
         
         return TransactionGroup([txn0, txn1])
@@ -328,7 +328,7 @@ class Market:
         params.fee = 2000 + 1000 * preamble_txns.length() if self.market_type != MarketType.VAULT else 3000 + 1000 * preamble_txns.length()
         app_args0 = [bytes(MARKET_STRINGS.remove_underlying_collateral, "utf-8"), int_to_bytes(underlying_amount)]
         accounts0 = [user.storage_address]
-        foreign_apps0 = [self.manger_app_id]
+        foreign_apps0 = [self.manager_app_id]
         foreign_assets0 = [self.underlying_asset_id]
         txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args0, accounts=accounts0, foreign_apps=foreign_apps0, foreign_assets=foreign_assets0)
         
@@ -356,7 +356,7 @@ class Market:
         params.fee = 2000 + 1000 * preamble_txns.length()
         app_args0 = [bytes(MARKET_STRINGS.remove_b_asset_collateral, "utf-8"), int_to_bytes(b_asset_amount)]
         accounts0 = [user.storage_address]
-        foreign_apps0 = [self.manger_app_id]
+        foreign_apps0 = [self.manager_app_id]
         foreign_assets0 = [self.b_asset_id]
         txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args0, accounts=accounts0, foreign_apps=foreign_apps0, foreign_assets=foreign_assets0)
         
@@ -376,14 +376,15 @@ class Market:
         assert self.market_type != MarketType.VAULT
         
         params = get_default_params(self.algod)
-        params.fee = 2000
+
         # payment
         txn0 = get_payment_txn(user.address, params, self.address, b_asset_amount, self.b_asset_id)
         
         # application call
         app_args1 = [bytes(MARKET_STRINGS.burn_b_asset, "utf-8")]
-        foreign_apps1 = [self.manger_app_id]
+        foreign_apps1 = [self.manager_app_id]
         foreign_assets1 = [self.underlying_asset_id]
+        params.fee = 2000
         txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, foreign_apps=foreign_apps1, foreign_assets=foreign_assets1)
         
         return TransactionGroup([txn0, txn1])
@@ -409,7 +410,7 @@ class Market:
         params.fee = 2000 + 1000 * preamble_txns.length()
         app_args0 = [bytes(MARKET_STRINGS.borrow, "utf-8"), int_to_bytes(underlying_amount)]
         accounts0 = [user.storage_address]
-        foreign_apps0 = [self.manger_app_id]
+        foreign_apps0 = [self.manager_app_id]
         foreign_assets0 = [self.underlying_asset_id]
         txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args0, accounts=accounts0, foreign_apps=foreign_apps0, foreign_assets=foreign_assets0)
         
@@ -437,8 +438,9 @@ class Market:
         params.fee = 3000
         app_args1 = [bytes(MARKET_STRINGS.repay_borrow, "utf-8")]
         accounts1 = [user.storage_address]
-        foreign_apps1 = [self.manger_app_id]
-        txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, accounts=accounts1, foreign_apps=foreign_apps1)
+        foreign_apps1 = [self.manager_app_id]
+        foreign_assets = [self.underlying_asset_id]
+        txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, accounts=accounts1, foreign_apps=foreign_apps1, foreign_assets=foreign_assets)
         
         return TransactionGroup([txn0, txn1])
     
@@ -469,7 +471,7 @@ class Market:
         params.fee = 1000 + 1000 * preamble_txns.length()
         app_args0 = [bytes(MARKET_STRINGS.liquidate, 'utf-8')]
         accounts0 = [target_user.storage_address, get_application_address(seize_collateral_market.app_id)]
-        foreign_apps0 = [self.manger_app_id, seize_collateral_market.app_id]
+        foreign_apps0 = [self.manager_app_id, seize_collateral_market.app_id]
         txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args=app_args0, accounts=accounts0, foreign_apps=foreign_apps0)
         
         # payment
@@ -480,7 +482,7 @@ class Market:
         params.fee = 2000 + 1000 * preamble_txns.length()
         app_args2 = [bytes(MARKET_STRINGS.seize_collateral, 'utf-8')]
         accounts2 = [target_user.storage_address, get_application_address(self.app_id)]
-        foreign_apps2 = [seize_collateral_market.oracle.app_id, self.manger_app_id, self.app_id]
+        foreign_apps2 = [seize_collateral_market.oracle.app_id, self.manager_app_id, self.app_id]
         foreign_assets2 = [seize_collateral_market.b_asset_id]
         txn2 = ApplicationNoOpTxn(user.address, params, seize_collateral_market.app_id, app_args=app_args2, accounts=accounts2, foreign_apps=foreign_apps2, foreign_assets=foreign_assets2)
 
@@ -501,7 +503,7 @@ class Market:
 
         # application call
         params.fee = 3000
-        foreign_apps = [self.manger_app_id]
+        foreign_apps = [self.manager_app_id]
         accounts = [user.storage_address, self.rewards_escrow_account]
         app_args = [bytes(MARKET_STRINGS.claim_rewards, "utf-8"), int_to_bytes(program_index)]
         foreign_assets = [self.rewards_programs[program_index].rewards_asset_id]
