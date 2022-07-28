@@ -9,8 +9,8 @@ from algofipy.algofi_client import AlgofiClient
 from algofipy.globals import Network
 from algofipy.transaction_utils import wait_for_confirmation
 
-my_path = os.path.abspath(os.path.dirname(__file__))
-ENV_PATH = os.path.join(my_path, "../.env")
+#my_path = os.path.abspath(os.path.dirname(__file__))
+ENV_PATH ="/home/jaclarke/algofi-python-sdk/examples/.env"
 
 # load user passphrase
 env_vars = dotenv_values(ENV_PATH)
@@ -19,13 +19,13 @@ sender = account.address_from_private_key(key)
 
 algod = AlgodClient("", "https://node.algoexplorerapi.io", headers={"User-Agent": "algosdk"})
 indexer = IndexerClient("", "https://indexer.algoexplorerapi.io/", headers={'User-Agent': 'algosdk'})
-client = AlgofiClient(Network.MAINNET_CLONE2, algod, indexer)
+client = AlgofiClient(Network.MAINNET, algod, indexer)
 
 user = client.get_user(sender)
 manager = client.lending.manager
 
-algo_market_app_id = 802880734
-usdc_market_app_id = 802881530
+algo_market_app_id = 818179346
+usdc_market_app_id = 818182048
 
 algo_market = client.lending.markets[algo_market_app_id]
 usdc_market = client.lending.markets[usdc_market_app_id]
@@ -109,7 +109,8 @@ wait_for_confirmation(algod, txid)
 
 # REPAY BORROW
 print("repay")
-group = algo_market.get_repay_borrow_txns(user.lending, int(1e3+1))
+# ADD A USDC BUFFER TO YOUR WALLET
+group = usdc_market.get_repay_borrow_txns(user.lending, int(1e3 + 10))
 group.sign_with_private_keys([key])
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
@@ -123,7 +124,9 @@ wait_for_confirmation(algod, txid)
 
 # REMOVE BANK ASSET COLLATERAL
 print("remove b asset collateral")
-group = algo_market.get_remove_b_asset_collateral_txns(user.lending, int(5e5))
+user.load_state()
+b_asset_amount = user.lending.user_market_states[algo_market_app_id].b_asset_collateral
+group = algo_market.get_remove_b_asset_collateral_txns(user.lending, b_asset_amount)
 group.sign_with_private_keys([key])
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
@@ -141,17 +144,24 @@ group.sign_with_private_keys([key] * group.length())
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
-# OPT OUT
-print("opt out markets")
-for market in user.lending.opted_in_markets:
-    group = manager.get_market_opt_out_txns(user.lending, market)
-    group.sign_with_private_keys([key])
-    txid = algod.send_transactions(group.signed_transactions)
-    wait_for_confirmation(algod, txid)
-
-print("opt out manager")
-group = manager.get_manager_opt_out_txns(user.lending, algo_market)
+# CLOSE OUT
+print("close out markets")
+group = manager.get_market_close_out_txns(user.lending, algo_market)
 group.sign_with_private_keys([key])
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
+user.load_state()
+
+group = manager.get_market_close_out_txns(user.lending, usdc_market)
+group.sign_with_private_keys([key])
+txid = algod.send_transactions(group.signed_transactions)
+wait_for_confirmation(algod, txid)
+
+user.load_state()
+
+print("close out manager")
+group = manager.get_close_out_txns(user.lending)
+group.sign_with_private_keys([key] * group.length())
+txid = algod.send_transactions(group.signed_transactions)
+wait_for_confirmation(algod, txid)

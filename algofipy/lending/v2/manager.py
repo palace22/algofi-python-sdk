@@ -60,24 +60,32 @@ class Manager:
         
         return TransactionGroup([txn0, txn1, txn2])
     
-    def get_opt_out_txns(self, user):
-        """Returns a :class:`TransactionGroup` object representing a lending manager opt out
+    def get_close_out_txns(self, user):
+        """Returns a :class:`TransactionGroup` object representing a lending manager close out
         transaction against the algofi protocol. The manager will close the storage account and return funds to the
         user. This transaction will fail unless the user has nothing borrowed and no active collateral
 
         :param user: account for the sender
         :type user: :class:`LendingUser`
-        :return: :class:`TransactionGroup` object representing an opt out group transaction of size 1
+        :return: :class:`TransactionGroup` object representing an close out group transaction of size 1
         :rtype: :class:`TransactionGroup`
         """
         params = get_default_params(self.algod)
         
         # close out of manager
         params.fee = 2000
-        accounts0 = user.lending.storage_address
-        txn0 = ApplicationCloseOutTxn(user.address, params, self.app_id, [], accounts=accounts0)
+        accounts0 = [user.storage_address]
+        txn0 = ApplicationCloseOutTxn(user.address, params, self.app_id, accounts=accounts0)
+
+        # add clear state txn
+        params.fee = 1000
+        txn1 = ApplicationClearStateTxn(user.storage_address, params, self.app_id)
+
+        # pay algos on stoarge account to user
+        params.fee = 1000
+        txn2 = PaymentTxn(user.storage_address, params, user.address, int(0), close_remainder_to=user.address)
         
-        return TransactionGroup([txn0])
+        return TransactionGroup([txn0, txn1, txn2])
     
     def get_market_opt_in_txns(self, user, market):
         """Returns a :class:`TransactionGroup` object representing a lending market opt in
@@ -110,25 +118,25 @@ class Manager:
         
         return TransactionGroup([txn0, txn1, txn2])
     
-    def get_market_opt_out_txns(self, user, market):
-        """Returns a :class:`TransactionGroup` object representing a lending market opt out
+    def get_market_close_out_txns(self, user, market):
+        """Returns a :class:`TransactionGroup` object representing a lending market close out
         transaction against the algofi protocol.
 
         :param user: account for the sender
         :type user: :class:`LendingUser`
         :param market: market to opt in to
         :type market: :class:`LendingMarket`
-        :return: :class:`TransactionGroup` object representing an opt out group transaction of size 1
+        :return: :class:`TransactionGroup` object representing an close out group transaction of size 1
         :rtype: :class:`TransactionGroup`
         """
         params = get_default_params(self.algod)
         
         page, offset = user.get_market_page_offset(market.app_id)
         
-        # opt out of market
+        # close out of market
         params.fee = 3000
         app_args0 = [bytes(MANAGER_STRINGS.user_market_close_out, "utf-8"), int_to_bytes(page) + int_to_bytes(offset)]
-        accounts0 = [user.lending.storage_address]
+        accounts0 = [user.storage_address]
         foreign_apps0 = [market.app_id]
         txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args0, accounts=accounts0, foreign_apps=foreign_apps0)
         

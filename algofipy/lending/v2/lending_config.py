@@ -4,7 +4,7 @@
 
 # constants
 
-MANAGER_MIN_BALANCE = 1000000 # TODO get actual number
+MANAGER_MIN_BALANCE = 614000 + 101000
 
 # enums
 
