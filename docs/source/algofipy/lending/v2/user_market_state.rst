@@ -1,7 +1,7 @@
-transaction_utils
+user_market_state
 =================
 
-.. automodule:: algofi.transaction_utils
+.. automodule:: algofipy.lending.v2.user_market_state
    :members:
    :undoc-members:
    :show-inheritance:

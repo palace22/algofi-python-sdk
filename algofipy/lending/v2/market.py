@@ -447,7 +447,7 @@ class Market:
     def get_liquidate_txns(self, user, target_user, repay_amount, seize_collateral_market):
         """Returns a :class:`TransactionGroup` object representing a liquidate group
         transaction against the algofi protocol. Sender repays borrowed underlying asset + interest on behalf of
-         the liquidatee and seizes their collateral in a specified market.
+        the liquidatee and seizes their collateral in a specified market.
 
         :param user: account for the sender
         :type user: :class:`LendingUser`
@@ -457,8 +457,7 @@ class Market:
         :type repay_amount: int
         :param: seize_collateral_market: market to seize collateral in
         :type seize_collateral_market: :class:`Market`
-        :return: :class:`TransactionGroup` object representing a liquidate group transaction
-            of size (preamble_length + 3)
+        :return: :class:`TransactionGroup` object representing a liquidate group transaction of size (preamble_length + 3)
         :rtype: :class:`TransactionGroup`
         """
         assert self.market_type != MarketType.VAULT

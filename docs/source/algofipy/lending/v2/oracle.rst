@@ -1,7 +1,7 @@
-market
+oracle
 ======
 
-.. automodule:: algofi.lending.v2.market
+.. automodule:: algofipy.lending.v2.oracle
    :members:
    :undoc-members:
    :show-inheritance:

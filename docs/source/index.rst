@@ -3,6 +3,6 @@ Modules
 .. toctree::
    :maxdepth: 10
 
-   algofi/index
+   algofipy/index
 
 .. mdinclude:: ../../README.md

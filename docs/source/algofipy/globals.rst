@@ -1,7 +1,7 @@
-utils
-=====
+globals
+=======
 
-.. automodule:: algofi.utils
+.. automodule:: algofipy.globals
    :members:
    :undoc-members:
    :show-inheritance:

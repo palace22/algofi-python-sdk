@@ -1,7 +1,7 @@
-lending_config
+lending_client
 ==============
 
-.. automodule:: algofi.lending.v2.lending_config
+.. automodule:: algofipy.lending.v2.lending_client
    :members:
    :undoc-members:
    :show-inheritance:

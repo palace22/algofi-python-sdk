@@ -1,7 +1,7 @@
-asset_amount
+asset_config
 ============
 
-.. automodule:: algofi.asset_amount
+.. automodule:: algofipy.asset_config
    :members:
    :undoc-members:
    :show-inheritance:
