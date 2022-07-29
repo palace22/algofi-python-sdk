@@ -15,7 +15,7 @@ ASSET_CONFIGS = {
     Network.MAINNET : {
         1: AssetConfig("ALGO", 1, 6),
         818179690: AssetConfig("AF-BANK-ALGO-STANDARD", 818179690, 6),
-        31566704: AssetConfig("USDC", 818179690, 6),
+        31566704: AssetConfig("USDC", 31566704, 6),
         818182311: AssetConfig("AF-BANK-USDC-STANDARD", 818182311, 6),
         386192725 : AssetConfig("GOBTC", 386192725, 8),
         818184214: AssetConfig("AF-BANK-GOBTC-STANDARD", 818184214, 6),
