@@ -1,5 +1,5 @@
 # algofi-python-sdk
-Official Python SDK for the Algofi Protocol (lending, trading, vault, governance)
+Official Python SDK for the Algofi Protocol.
 
 ## Documentation
 https://algofi-python-sdk.readthedocs.io
