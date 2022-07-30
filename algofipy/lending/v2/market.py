@@ -60,6 +60,7 @@ class Market:
         self.indexer = self.lending_client.indexer
         self.manager_app_id = lending_client.manager.app_id
         
+        self.name = market_config.name
         self.app_id = market_config.app_id
         self.address = get_application_address(self.app_id)
         self.underlying_asset_id = market_config.underlying_asset_id
