@@ -51,7 +51,7 @@ class LendingUser:
             self.opted_in_to_manager = True
             self.storage_address = encode_address(b64decode(states[self.lending_client.manager.app_id][MANAGER_STRINGS.storage_account]))
             
-            storage_states = get_local_states(self.lending_client.algofi_client.indexer, self.storage_address)
+            storage_states = get_local_states(self.lending_client.algofi_client.indexer, self.storage_address, decode_byte_values=False)
         
             self.opted_in_market_count = storage_states[self.lending_client.manager.app_id].get(MANAGER_STRINGS.opted_in_market_count, 0)
             for page_idx in range((self.opted_in_market_count // 3) + 1):
