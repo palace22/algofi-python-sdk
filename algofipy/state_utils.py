@@ -50,7 +50,7 @@ def format_state(state, decode_byte_values=True):
     return formatted_state
 
 
-def get_local_states(indexer, address):
+def get_local_states(indexer, address, decode_byte_values=True):
     try:
         results = indexer.account_info(address).get("account", {})
     except:
@@ -59,7 +59,7 @@ def get_local_states(indexer, address):
     result = {}
     if 'apps-local-state' in results:
         for local_state in results['apps-local-state']:
-            result[local_state['id']] = format_state(local_state.get('key-value', []))
+            result[local_state['id']] = format_state(local_state.get('key-value', []), decode_byte_values=decode_byte_values)
     return result
 
 def get_global_state(indexer, app_id, decode_byte_values=True):
