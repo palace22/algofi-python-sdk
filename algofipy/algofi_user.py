@@ -2,6 +2,7 @@
 
 # global
 from .lending.v2.lending_user import LendingUser
+from .staking.v2.staking_user import StakingUser
 from .state_utils import *
 
 
@@ -30,6 +31,9 @@ class AlgofiUser:
         
         # lending
         self.lending = LendingUser(self.algofi_client.lending, self.address)
+
+        # staking
+        self.staking = StakingUser(self.algofi_client.staking, self.address)
     
     def is_opted_in_to_asset(self, asset_id):
         """Checks if user is opted is into a given asset

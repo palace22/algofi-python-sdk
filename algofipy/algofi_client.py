@@ -8,7 +8,7 @@ from .asset_config import ASSET_CONFIGS
 
 # lending
 from .lending.v2.lending_client import LendingClient
-
+from .staking.v2.staking_client import StakingClient
 
 class AlgofiClient:
     def __init__(self, network, algod, indexer):
@@ -30,6 +30,9 @@ class AlgofiClient:
         
         # lending
         self.lending = LendingClient(self)
+
+        # staking
+        self.staking = StakingClient(self)
 
     def get_user(self, address):
         """Creates an :class:`AlgofiUser` object for specific address

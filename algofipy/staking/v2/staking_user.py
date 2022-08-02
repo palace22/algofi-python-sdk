@@ -1,0 +1,32 @@
+from .staking_config import STAKING_CONFIGS, rewards_manager_app_id
+from ...state_utils import get_local_states 
+from .staking import Staking
+from .user_staking_state import UserStakingState
+import pprint
+
+class StakingUser:
+  def __init__(self, staking_client, address):
+    self.staking_client = staking_client
+    self.algod = self.staking_client.algod
+    self.address = address
+
+  def load_state(self):
+    # staking configs
+    staking_configs = STAKING_CONFIGS[self.staking_client.network]
+    # app ids for staking contracts
+    all_staking_contracts = list(map(lambda config: config.app_id, staking_configs))
+
+    # get opted in staking contracts
+    self.opted_in_staking_contracts = []
+    self.user_staking_states = {}
+
+    # get local states
+    local_states = get_local_states(self.staking_client.algofi_client.indexer, self.address)
+
+    for app_id, local_state in local_states.items():
+      if int(app_id) in all_staking_contracts:
+        staking_config = list(filter(lambda config: config.app_id == int(app_id), STAKING_CONFIGS[self.staking_client.network]))[0]
+        staking = Staking(self.algod, self.staking_client, rewards_manager_app_id[self.staking_client.network], staking_config)
+        staking.load_state()
+        self.user_staking_states[app_id] = UserStakingState(local_state, staking)
+        self.opted_in_staking_contracts.append(app_id)
