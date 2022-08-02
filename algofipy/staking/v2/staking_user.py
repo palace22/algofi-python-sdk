@@ -1,4 +1,4 @@
-from .staking_config import STAKING_CONFIGS
+from .staking_config import STAKING_CONFIGS, rewards_manager_app_id
 from ...state_utils import get_local_states 
 from .staking import Staking
 from .user_staking_state import UserStakingState
@@ -24,7 +24,8 @@ class StakingUser:
 
     for app_id, local_state in local_states.items():
       if int(app_id) in all_staking_contracts:
-        staking = Staking(app_id)
+        staking_config = list(filter(lambda config: config.app_id == int(app_id), STAKING_CONFIGS[self.staking_client.network]))[0]
+        staking = Staking(self.algod, self.staking_client, rewards_manager_app_id[self.staking_client.network], staking_config)
         staking.load_state()
         self.user_staking_states[app_id] = UserStakingState(local_state, staking)
         self.opted_in_staking_contracts.append(app_id)

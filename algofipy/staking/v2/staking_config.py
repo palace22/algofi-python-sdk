@@ -19,7 +19,7 @@ STAKING_CONFIGS = {
   ]
 }
 
-rewardsManagerAppId = {
+rewards_manager_app_id = {
   Network.MAINNET: 0
 }
 
@@ -29,7 +29,7 @@ class STAKING_STRINGS:
   rps_pusher = "rpsp"
   contract_update_delay = "cud"
   contract_update_time = "cut"
-  boost_multiplier_app_id = "bmai"
+  voting_escrow_app_id = "veai"
   rewards_manager_app_id = "rmai"
   external_boost_multiplier = "ebm"
   asset_id = "ai"
