@@ -68,3 +68,20 @@ def get_global_state(indexer, app_id, decode_byte_values=True):
     except:
         raise Exception("Application does not exist.")
     return format_state(application_info["params"]["global-state"], decode_byte_values=decode_byte_values)
+
+def format_prefix_state(state):
+    formatted_state = {}
+    for key, value in state.items():
+        try:
+            index_of_underscore = key.index("_")
+        except:
+            index_of_underscore = -1
+        # if the prefix actually exist
+        if index_of_underscore > 0:
+            prefix = key[0: index_of_underscore + 1]
+            raw_bytes = bytes(key[index_of_underscore + 1:], "utf-8")
+            formatted = int.from_bytes(raw_bytes, "big")
+            formatted_state[prefix + str(formatted)] = value
+        else:
+            formatted_state[key] = value
+    return formatted_state

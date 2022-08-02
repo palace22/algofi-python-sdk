@@ -11,8 +11,9 @@ class StakingUser:
     self.address = address
 
   def load_state(self):
-
+    # staking configs
     staking_configs = STAKING_CONFIGS[self.staking_client.network]
+    # app ids for staking contracts
     all_staking_contracts = list(map(lambda config: config.app_id, staking_configs))
 
     # get opted in staking contracts

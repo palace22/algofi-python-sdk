@@ -1,26 +1,9 @@
 from algosdk import logic
-from ...state_utils import get_global_state
+from ...state_utils import get_global_state, format_prefix_state
 from .staking_config import STAKING_STRINGS
 from .rewards_program_state import RewardsProgramState
 from base64 import b64decode
 import pprint
-
-
-def format_prefix_state(state):
-    formatted_state = {}
-    for key, value in state.items():
-        try:
-            index_of_underscore = key.index("_")
-        except:
-            index_of_underscore = -1
-        # if the prefix actually exist
-        if index_of_underscore > 0:
-            prefix = key[0: index_of_underscore + 1]
-            raw_bytes = bytes(key[index_of_underscore + 1:], "utf-8")
-            formatted = int.from_bytes(raw_bytes, "big")
-            formatted_state[prefix + str(formatted)] = value
-    print(formatted_state)
-    return formatted_state
 
 class Staking:
     def __init__(self, algod, staking_client, rewards_manager_app_id, staking_config):
@@ -45,10 +28,6 @@ class Staking:
         self.rewards_program_states = {}
 
         formatted_state = format_prefix_state(global_state)
-        pprint.pprint(formatted_state)
-        breakpoint()
-
 
         for i in range(self.rewards_program_count):
-            this.rewards_program_states[i] = RewardsProgramState(self, formatted_state, i)
-
+            self.rewards_program_states[i] = RewardsProgramState(self, formatted_state, i)
