@@ -1,6 +1,6 @@
 # algofi-python-sdk
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/Algofiorg/algofi-python-sdk/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/Algofiorg/algofi-python-sdk/tree/main)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/Algofiorg/algofi-python-sdk/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/Algofiorg/algofi-python-sdk/tree/main)
 [![Documentation Status](https://readthedocs.org/projects/algofi-python-sdk/badge/?version=latest)](https://algofi-python-sdk.readthedocs.io/en/latest/?badge=latest)
 
 Official Python SDK for the Algofi Protocol.
