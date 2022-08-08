@@ -24,5 +24,5 @@ class UserRewardsProgramState:
         self.user_rewards_program_counter = formatted_user_local_state[STAKING_STRINGS.user_rewards_coefficient_prefix + str(self.rewards_program_index)]
         self.user_unclaimed_rewards = formatted_user_local_state[STAKING_STRINGS.user_rewards_coefficient_prefix + str(self.rewards_program_index)]
 
-        non_formatted_rewards_coefficient = staking_state[STAKING_STRINGS.user_rewards_coefficient_prefix + str(self.rewards_program_index)]
+        non_formatted_rewards_coefficient = formatted_user_local_state[STAKING_STRINGS.user_rewards_coefficient_prefix + str(self.rewards_program_index)]
         self.rewards_coefficient = int.from_bytes(b64decode(non_formatted_rewards_coefficient), "big")

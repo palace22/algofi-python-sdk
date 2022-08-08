@@ -58,8 +58,9 @@ class Market:
         self.lending_client = lending_client
         self.algod = self.lending_client.algod
         self.indexer = self.lending_client.indexer
+        self.historical_indexer = self.lending_client.historical_indexer
         self.manager_app_id = lending_client.manager.app_id
-        
+
         self.name = market_config.name
         self.app_id = market_config.app_id
         self.address = get_application_address(self.app_id)
@@ -69,13 +70,17 @@ class Market:
         
         self.load_state()
         
-    def load_state(self):
+    def load_state(self, block=None):
         """
         Loads market state from the blockchain
-
+        
+        :param block: block at which to query market state
+        :type block: int, optional
         :rtype: None
         """
-        state = get_global_state(self.indexer, self.app_id, decode_byte_values=False)
+
+        indexer = self.historical_indexer if block else self.indexer
+        state = get_global_state(indexer, self.app_id, decode_byte_values=False, block=block)
         
         # parameters
         self.borrow_factor = state.get(MARKET_STRINGS.borrow_factor, 0)
@@ -96,11 +101,14 @@ class Market:
         self.target_utilization_ratio = state.get(MARKET_STRINGS.target_utilization_ratio, 0)
     
         # oracle
-        self.oracle = Oracle(self.indexer,
-                             state.get(MARKET_STRINGS.oracle_app_id, 0),
-                             b64decode(state.get(MARKET_STRINGS.oracle_price_field_name, 'price')).decode("utf-8"),
-                             state.get(MARKET_STRINGS.oracle_price_scale_factor, 0))
-        self.oracle.loadPrice()
+        self.oracle = Oracle(
+            self.indexer,
+            self.historical_indexer,
+            state.get(MARKET_STRINGS.oracle_app_id, 0),
+            b64decode(state.get(MARKET_STRINGS.oracle_price_field_name, 'price')).decode("utf-8"),
+            state.get(MARKET_STRINGS.oracle_price_scale_factor, 0)
+        )
+        self.oracle.load_price(block=block)
     
         # balance
         self.underlying_cash = state.get(MARKET_STRINGS.underlying_cash, 0)

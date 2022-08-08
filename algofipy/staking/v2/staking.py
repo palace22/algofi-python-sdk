@@ -6,8 +6,11 @@ from base64 import b64decode
 import pprint
 
 class Staking:
-    def __init__(self, algod, staking_client, rewards_manager_app_id, staking_config):
-        self.algod = algod
+    def __init__(self, staking_client, rewards_manager_app_id, staking_config):
+        self.staking_client = staking_client
+        self.algod = self.staking_client.algod
+        self.indexer = self.staking_client.indexer
+        self.historical_indexer = self.staking_client.historical_indexer
         self.staking_client = staking_client
         self.name = staking_config.name
         self.app_id = staking_config.app_id
@@ -15,8 +18,9 @@ class Staking:
         self.asset_id = staking_config.asset_id
         self.rewards_manager_app_id = rewards_manager_app_id
     
-    def load_state(self):
-        global_state = get_global_state(self.staking_client.algofi_client.indexer, self.app_id)
+    def load_state(self, block=None):
+        indexer = self.historical_indexer if block else self.indexer
+        global_state = get_global_state(indexer, self.app_id, block=block)
 
         self.latest_time = global_state[STAKING_STRINGS.latest_time]
         self.rewards_escrow_account = global_state[STAKING_STRINGS.rewards_escrow_account]

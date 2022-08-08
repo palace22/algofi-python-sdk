@@ -16,9 +16,9 @@ class UserMarketState:
         :type state: dict
         """
         self.b_asset_collateral = state.get(MARKET_STRINGS.user_active_b_asset_collateral, 0)
+        self.b_asset_collateral_underlying = market.b_asset_to_asset_amount(self.b_asset_collateral)
         self.borrow_shares = state.get(MARKET_STRINGS.user_borrow_shares, 0)
-        self.supplied_amount = market.b_asset_to_asset_amount(self.b_asset_collateral)
-        self.borrowed_amount = market.borrow_shares_to_asset_amount(self.borrow_shares)
+        self.borrowed_underlying = market.borrow_shares_to_asset_amount(self.borrow_shares)
         self.rewards_states = []
         for i in range(market.max_rewards_program_index + 1):
             self.rewards_states.append(UserRewardsState(state, i))
