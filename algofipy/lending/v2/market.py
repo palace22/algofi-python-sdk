@@ -31,6 +31,7 @@ class RewardsProgramState:
         :param program_index: the index of the rewards program on the market
         :type program_index: int
         """
+
         program_index_bytestr = int_to_bytes(program_index).decode()
         rewards_admin_key = MARKET_STRINGS.rewards_admin_prefix + program_index_bytestr
         rewards_program_state_key = MARKET_STRINGS.rewards_program_state_prefix + program_index_bytestr
@@ -53,8 +54,10 @@ class Market:
 
         :param lending_client:
         :type lending_client: :class:`LendingClient`
-        :param market_config:
+        :param market_config: market config with market metadata
+        :type market_config: :class:`MarketConfig`
         """
+
         self.lending_client = lending_client
         self.algod = self.lending_client.algod
         self.indexer = self.lending_client.indexer
@@ -154,12 +157,22 @@ class Market:
         :return: Supplied amount in base unit terms
         :rtype: int
         """
+
         if self.market_type == MarketType.STBL:
             return self.underlying_cash
         else:
             return self.underlying_borrowed + self.underlying_cash - self.underlying_reserves
   
     def get_aprs(self, total_supplied, total_borrowed):
+        """Return the supply and borrow APR for the market. 
+
+        :param total_supplied: total amount underlying assets supplied
+        :type total_supplied: int
+        :param total_borrowed: total amount underlying assets borrowed
+        :type total_borrowed: int
+        :return: (supply_apr, borrow_apr)
+        :rtype: (float, float)
+        """
         borrow_utilization = 0 if total_supplied == 0 else total_borrowed / total_supplied
         borrow_apr = self.base_interest_rate / FIXED_6_SCALE_FACTOR
         borrow_apr += borrow_utilization * self.base_interest_slope / FIXED_6_SCALE_FACTOR
@@ -178,9 +191,18 @@ class Market:
         :return: dollarized amount
         :rtype: int
         """
+
         return (amount * self.oracle.raw_price) / (self.oracle.scale_factor * FIXED_3_SCALE_FACTOR)
     
     def b_asset_to_asset_amount(self, amount):
+        """Converts b asset amount to underlying amount
+
+        :param amount: b asset amount
+        :type amount: int
+        :return: underlying asset amount
+        :rtype: int
+        """
+
         if amount == 0:
             return AssetAmount(0, 0)
         raw_underlying_amount = amount * self.get_underlying_supplied() / self.b_asset_circulation
@@ -189,6 +211,14 @@ class Market:
         return AssetAmount(underlying_amount, usd_amount)
     
     def borrow_shares_to_asset_amount(self, amount):
+        """Converts borrow shares to underlying borrowed amount.
+
+        :param amount: borrow shares amount
+        :type amount: int
+        :return: underlying borrowed amount
+        :rtype: int
+        """
+
         if amount == 0:
             return AssetAmount(0, 0)
         raw_underlying_amount = amount * self.underlying_borrowed / self.borrow_share_circulation
@@ -197,6 +227,14 @@ class Market:
         return AssetAmount(underlying_amount, usd_amount)
     
     def underlying_to_b_asset(self, amount):
+        """Convert underlying asset amount to b asset amount.
+
+        :param amount: underlying asset amount
+        :type amount: int
+        :return: b asset amount
+        :rtype: int
+        """
+
         return amount * self.b_asset_circulation / self.get_underlying_supplied()
     
     # TRANSACTION BUILDERS
@@ -208,6 +246,7 @@ class Market:
         :return: :class:`AssetTransferTxn` of underlying asset with 0 amount from user to self
         :rtype: :class:`AssetTransferTxn`
         """
+
         assert self.market_type != MarketType.VAULT
         params = get_default_params(self.algod)
 
@@ -224,6 +263,7 @@ class Market:
         :return: :class:`AssetTransferTxn` of underlying asset with 0 amount from user to self
         :rtype: :class:`AssetTransferTxn`
         """
+
         assert self.market_type != MarketType.VAULT
         params = get_default_params(self.algod)
 
@@ -244,6 +284,7 @@ class Market:
         :return: :class:`TransactionGroup` object representing a mint group transaction of size 2
         :rtype: :class:`TransactionGroup`
         """
+
         assert self.market_type != MarketType.VAULT
         params = get_default_params(self.algod)
 
@@ -329,6 +370,7 @@ class Market:
             of size (preamble_length + 1)
         :rtype: :class:`TransactionGroup`
         """
+
         params = get_default_params(self.algod)
 
         preamble_txns = user.get_preamble_txns(params, self.app_id)
@@ -355,6 +397,7 @@ class Market:
         :return: :class:`TransactionGroup` object representing a remove collateral group transaction
         :rtype: :class:`TransactionGroup`
         """
+
         assert self.market_type != MarketType.VAULT
         
         params = get_default_params(self.algod)
@@ -382,6 +425,7 @@ class Market:
         :return: :class:`TransactionGroup` object representing a burn group transaction of size 2
         :rtype: :class:`TransactionGroup`
         """
+
         assert self.market_type != MarketType.VAULT
         
         params = get_default_params(self.algod)
@@ -410,6 +454,7 @@ class Market:
         :return: :class:`TransactionGroup` object representing a borrow group transaction of size (preamble_length + 1)
         :rtype: :class:`TransactionGroup`
         """
+
         assert self.market_type != MarketType.VAULT
         
         params = get_default_params(self.algod)
@@ -436,6 +481,7 @@ class Market:
         :return: :class:`TransactionGroup` object representing a repay group transaction of size 2
         :rtype: :class:`TransactionGroup`
         """
+
         assert self.market_type != MarketType.VAULT
         
         params = get_default_params(self.algod)
@@ -469,6 +515,7 @@ class Market:
         :return: :class:`TransactionGroup` object representing a liquidate group transaction of size (preamble_length + 3)
         :rtype: :class:`TransactionGroup`
         """
+
         assert self.market_type != MarketType.VAULT
         
         params = get_default_params(self.algod)
@@ -507,6 +554,7 @@ class Market:
         :return: :class:`TransactionGroup` object representing a claim rewards group transaction of size 1
         :rtype: :class:`TransactionGroup`
         """
+
         params = get_default_params(self.algod)
 
         # application call

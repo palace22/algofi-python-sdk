@@ -8,9 +8,16 @@ from .globals import ALGO_ASSET_ID
 # FUNCTIONS
 
 def get_balances(indexer, address, block=None):
-    """Get balances for the given address.
+    """Get balances for a given user.
 
-    
+    :param indexer: algorand indexer client
+    :type indexer: :class:`IndexerClient`
+    :param address: user address
+    :type address: str
+    :param block: block at which to query balances
+    :type block: int, optional
+    :return: dict of asset id -> amount
+    :rtype: dict
     """
     MAINNET = 0
     MAINNET_CLONE = 1
@@ -25,16 +32,43 @@ def get_balances(indexer, address, block=None):
     return balances
     
 def get_state_int(state, key):
+    """Get int value from state dict for given key.
+
+    :param state: state dict of base64 key -> dict
+    :type state: dict
+    :param key: key of state dict
+    :type key: str
+    :return: int value for given key
+    :rtype: int
+    """
     if type(key) == str:
         key = b64encode(key.encode())
     return state.get(key.decode(), {'uint': 0})['uint']
 
 def get_state_bytes(state, key):
+    """Get bytes value from state dict for given key.
+
+    :param state: state dict of base64 key -> dict
+    :type state: dict
+    :param key: key of state dict
+    :type key: str
+    :return: bytes value for given key
+    :rtype: bytes
+    """
     if type(key) == str:
         key = b64encode(key.encode())
     return state.get(key.decode(), {'bytes': ''})['bytes']
 
 def format_state(state, decode_byte_values=True):
+    """Format state dict by base64 decoding keys and, optionally, bytes values.
+
+    :param state: state dict of base64 key -> dict
+    :type state: dict
+    :param decode_byte_values: whether to decode base64 bytes values to utf-8
+    :type decode_byte_values: bool
+    :return: formatted state dict
+    :rtype: dict
+    """
     formatted_state = {}
     for item in state:
         key = item['key']
@@ -58,6 +92,19 @@ def format_state(state, decode_byte_values=True):
     return formatted_state
 
 def get_local_states(indexer, address, decode_byte_values=True, block=None):
+    """Get local state of user for all opted in apps.
+
+    :param indexer: algorand indexer
+    :type indexer: :class:`IndexerClient`
+    :param address: user address
+    :type address: str
+    :param decode_byte_values: whether to base64 decode bytes values
+    :type decode_byte_values: bool
+    :param block: block at which to query local state
+    :type block: int, optional
+    :return: formatted local state dict
+    :rtype: dict
+    """
     try:
         results = indexer.account_info(address, round_num=block).get("account", {})
     except:
@@ -70,6 +117,19 @@ def get_local_states(indexer, address, decode_byte_values=True, block=None):
     return result
 
 def get_local_state_at_app(indexer, address, app_id, decode_byte_values=True):
+    """Get local state of user for given app.
+
+    :param indexer: algorand indexer
+    :type indexer: :class:`IndexerClient`
+    :param address: user address
+    :type address: str
+    :param app_id: app id
+    :type app_id: int
+    :param decode_byte_values: whether to base64 decode bytes values
+    :type decode_byte_values: bool
+    :return: formatted local state dict
+    :rtype: dict
+    """
     local_states = get_local_states(indexer, address, decode_byte_values=decode_byte_values)
     if app_id in local_states:
         return local_states[app_id]
@@ -77,6 +137,20 @@ def get_local_state_at_app(indexer, address, app_id, decode_byte_values=True):
         raise None
 
 def get_global_state(indexer, app_id, decode_byte_values=True, block=None):
+    """Get global state of a given application.
+
+    :param indexer: algorand indexer
+    :type indexer: :class:`IndexerClient`
+    :param app_id: app id
+    :type app_id: int
+    :param decode_byte_values: whether to base64 decode bytes values
+    :type decode_byte_values: bool
+    :param block: block at which to query global state
+    :type block: int, optional
+    :return: formatted global state dict
+    :rtype: dict
+    """
+
     try:
         application_info = indexer.applications(app_id, round_num=block).get("application", {})
     except:
@@ -84,6 +158,14 @@ def get_global_state(indexer, app_id, decode_byte_values=True, block=None):
     return format_state(application_info["params"]["global-state"], decode_byte_values=decode_byte_values)
 
 def format_prefix_state(state):
+    """Format state dict including prefixes.
+
+    :param state: state dict of base64 key -> dict
+    :type state: dict
+    :return: formatted state dict
+    :rtype: dict
+    """
+
     formatted_state = {}
     for key, value in state.items():
         try:

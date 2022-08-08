@@ -18,6 +18,7 @@ class AlgofiUser:
         :param address: user wallet address
         :type address: str
         """
+
         self.algofi_client = algofi_client
         self.address = address
 
@@ -53,4 +54,5 @@ class AlgofiUser:
         :return: True if opted in, False otherwise
         :rtype: bool
         """
+
         return asset_id in self.balances

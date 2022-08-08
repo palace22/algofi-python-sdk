@@ -22,6 +22,7 @@ ALGO_ASSET_ID = 1
 class Network:
     """Enum specifying the network
     """
+
     MAINNET = 0
     MAINNET_CLONE = 1
     MAINNET_CLONE2 = 2

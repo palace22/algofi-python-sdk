@@ -15,6 +15,7 @@ class UserMarketState:
         :param state: raw user local state for given market
         :type state: dict
         """
+
         self.b_asset_collateral = state.get(MARKET_STRINGS.user_active_b_asset_collateral, 0)
         self.b_asset_collateral_underlying = market.b_asset_to_asset_amount(self.b_asset_collateral)
         self.borrow_shares = state.get(MARKET_STRINGS.user_borrow_shares, 0)
@@ -32,6 +33,7 @@ class UserRewardsState:
         :param program_index: index of the rewards program on the market
         :type program_index: int
         """
+
         program_index_bytestr = int_to_bytes(program_index).decode()
         program_index_key = MARKET_STRINGS.user_rewards_program_number_prefix + program_index_bytestr
         latest_rewards_index_key = MARKET_STRINGS.user_latest_rewards_index_prefix + program_index_bytestr

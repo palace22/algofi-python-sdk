@@ -9,9 +9,11 @@ MANAGER_MIN_BALANCE = 614000 + 101000
 # enums
 
 class MarketType:
-    STANDARD = 0
-    STBL = 1
-    VAULT = 2
+  """Enum representing the market type.
+  """
+  STANDARD = 0
+  STBL = 1
+  VAULT = 2
 
 # strings
 
