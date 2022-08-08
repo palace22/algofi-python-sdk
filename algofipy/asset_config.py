@@ -7,6 +7,16 @@ from algofipy.globals import Network
 
 class AssetConfig:
     def __init__(self, name, asset_id, decimals):
+        """Asset config storing asset information for a given asset id
+
+        :param name: underlying amount of asset
+        :type name: int
+        :param asset_id: asset id
+        :type asset_id: int
+        :param decimals: number of decimals in the asset
+        :type decimals: int
+        """
+
         self.name = name
         self.asset_id = asset_id
         self.decimals = decimals

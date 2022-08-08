@@ -8,6 +8,14 @@ from .globals import ALGO_ASSET_ID
 # FUNCTIONS
 
 def get_balances(indexer, address, block=None):
+    """Get balances for the given address.
+
+    
+    """
+    MAINNET = 0
+    MAINNET_CLONE = 1
+    MAINNET_CLONE2 = 2
+    TESTNET = 3
     balances = {}
     account_info = indexer.account_info(address, round_num=block)['account']
     balances[ALGO_ASSET_ID] = account_info['amount']
