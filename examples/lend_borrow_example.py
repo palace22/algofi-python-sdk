@@ -18,7 +18,7 @@ key = mnemonic.to_private_key(env_vars['mnemonic'])
 sender = account.address_from_private_key(key)
 
 algod = AlgodClient("", "https://node.algoexplorerapi.io", headers={"User-Agent": "algosdk"})
-indexer = IndexerClient("", "https://indexer.algoexplorerapi.io/", headers={'User-Agent': 'algosdk'})
+indexer = IndexerClient("", "https://algoindexer.algoexplorerapi.io/", headers={'User-Agent': 'algosdk'})
 client = AlgofiClient(Network.MAINNET, algod, indexer)
 
 user = client.get_user(sender)
