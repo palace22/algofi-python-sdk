@@ -38,6 +38,9 @@ class AlgofiClient:
         # staking
         self.staking = StakingClient(self)
 
+        # amm
+        self.amm = AMMClient(self)
+
     def get_user(self, address):
         """Creates an :class:`AlgofiUser` object for specific address
 

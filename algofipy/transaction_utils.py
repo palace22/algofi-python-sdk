@@ -11,7 +11,7 @@ from .globals import ALGO_ASSET_ID
 
 # FUNCTIONS
 
-def get_default_params():
+def get_default_params(algod):
     """Get default params for an Algorand transaction with fee = 1000, flat_fee = True.
 
     :param algod: Algorand algod client
@@ -56,6 +56,7 @@ def wait_for_confirmation(algod, txid):
     :return: transaction information dict
     :rtype: dict
     """
+
     last_round = algod.status().get('last-round')
     txinfo = algod.pending_transaction_info(txid)
     while not (txinfo.get('confirmed-round') and txinfo.get('confirmed-round') > 0):
