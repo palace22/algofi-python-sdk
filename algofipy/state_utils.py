@@ -7,9 +7,9 @@ from .globals import ALGO_ASSET_ID
 
 # FUNCTIONS
 
-def get_balances(indexer, address):
+def get_balances(indexer, address, block=None):
     balances = {}
-    account_info = indexer.account_info(address)['account']
+    account_info = indexer.account_info(address, round_num=block)['account']
     balances[ALGO_ASSET_ID] = account_info['amount']
     if 'assets' in account_info:
         for asset_info in account_info['assets']:

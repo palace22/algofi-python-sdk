@@ -20,20 +20,30 @@ class AlgofiUser:
         """
         self.algofi_client = algofi_client
         self.address = address
-        
-        self.load_state()
-    
-    def load_state(self):
-        """Populates state on the :class:`AlgofiUser` object
 
-        """
-        self.balances = get_balances(self.algofi_client.indexer, self.address)
-        
         # lending
         self.lending = LendingUser(self.algofi_client.lending, self.address)
 
         # staking
         self.staking = StakingUser(self.algofi_client.staking, self.address)
+        
+        self.load_state()
+    
+    def load_state(self, block=None):
+        """Populates state on the :class:`AlgofiUser` object
+
+        :param block: block at which to query algofi user's state
+        :type block: int, optional
+        """
+
+        indexer = self.algofi_client.historical_indexer if block else self.algofi_client.indexer
+        self.balances = get_balances(indexer, self.address, block=block)
+        
+        # lending
+        self.lending.load_state(block=block)
+
+        # staking
+        self.staking.load_state(block=block)
     
     def is_opted_in_to_asset(self, asset_id):
         """Checks if user is opted is into a given asset

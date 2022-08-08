@@ -15,5 +15,5 @@ class UserStakingState:
                 format_prefix_state(user_local_state),
                 i,
                 staking,
-                this.scaled_total_staked
+                self.scaled_total_staked
             )
