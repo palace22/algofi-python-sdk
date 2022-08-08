@@ -49,7 +49,6 @@ def format_state(state, decode_byte_values=True):
             formatted_state[formatted_key] = value['uint']
     return formatted_state
 
-
 def get_local_states(indexer, address, decode_byte_values=True):
     try:
         results = indexer.account_info(address).get("account", {})
