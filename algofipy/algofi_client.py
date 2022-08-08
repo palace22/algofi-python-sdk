@@ -10,6 +10,7 @@ from .asset_config import ASSET_CONFIGS
 # lending
 from .lending.v2.lending_client import LendingClient
 from .staking.v2.staking_client import StakingClient
+from .amm.v1.amm_client import AMMClient
 
 class AlgofiClient:
     def __init__(self, network, algod, indexer):

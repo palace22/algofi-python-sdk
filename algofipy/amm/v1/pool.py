@@ -15,24 +15,18 @@ from .amm_config import PoolStatus, Network, get_validator_index, get_approval_p
 from .balance_delta import BalanceDelta
 from .logic_sig_generator import generate_logic_sig
 from .stable_swap_math import get_D, get_y
-from ...transaction_utils import TransactionGroup, get_payment_txn
-from ...state_utils import get_local_state_at_app, get_global_state, get_default_params, 
+from ...transaction_utils import TransactionGroup, get_payment_txn, get_default_params
+from ...state_utils import get_local_state_at_app, get_global_state
 from ...utils import int_to_bytes
 
 # INTERFACE
 
 class Pool:
-    def __init__(self, algod_client, indexer_client, historical_indexer_client, network, pool_type, asset1, asset2):
+    def __init__(self, amm_client, pool_type, asset1, asset2):
         """Constructor method for :class:`Pool`
 
-        :param algod_client: a :class:`AlgodClient` object for interacting with the network
-        :type algod_client: :class:`AlgodClient`
-        :param indexer_client: a :class:`IndexerClient` object for interacting with the network
-        :type indexer_client: :class:`IndexerClient`
-        :param historical_indexer_client: a :class:`IndexerClient` object for interacting with the network (historical state)
-        :type historical_indexer_client: :class:`IndexerClient`
-        :param network: network :class:`Network` ("testnet" or "mainnet")
-        :type network: str
+        :param amm_client: a :class:`AMMClient` object for interacting with the AMM
+        :type amm_client: :class:`AMMClient`
         :param pool_type: a :class:`PoolType` object for the type of pool (e.g. 30bp, 100bp fee)
         :type pool_type: :class:`PoolType`
         :param asset1: a :class:`Asset` representing the first asset of the pool
@@ -45,18 +39,19 @@ class Pool:
             raise Exception("Invalid asset ordering. Asset 1 id must be less than asset 2 id.")
 
         # load nodes + network data
-        self.algod = algod_client
-        self.indexer = indexer_client
-        self.historical_indexer = historical_indexer_client
-        self.network = network
+        self.amm_client = amm_client
+        self.algod = self.amm_client.algod
+        self.indexer = self.amm_client.indexer
+        self.historical_indexer = self.amm_client.historical_indexer
+        self.network = Network.MAINNET
 
         # load generic pool metadata
         self.pool_type = pool_type
         self.asset1 = asset1
         self.asset2 = asset2
-        self.manager_application_id = get_manager_application_id(network, pool_type == PoolType.NANOSWAP)
+        self.manager_application_id = get_manager_application_id(self.network, pool_type == PoolType.NANOSWAP)
         self.manager_address = get_application_address(self.manager_application_id)
-        self.validator_index = get_validator_index(network, pool_type)
+        self.validator_index = get_validator_index(self.network, pool_type)
         self.swap_fee = get_swap_fee(pool_type)
 
         # load pool status + application id if available
@@ -75,10 +70,11 @@ class Pool:
         else:
             # get local state
             self.logic_sig = LogicSigAccount(generate_logic_sig(asset1.asset_id, asset2.asset_id, self.manager_application_id, self.validator_index))
-            logic_sig_local_state = get_local_state_at_app(self.indexer, self.logic_sig.address(), self.manager_application_id)
-            if logic_sig_local_state:
+            try:
+                logic_sig_local_state = get_local_state_at_app(self.indexer, self.logic_sig.address(), self.manager_application_id)
                 self.pool_status = PoolStatus.ACTIVE
-            else:
+            except:
+                logic_sig_local_state = None
                 self.pool_status = PoolStatus.UNINITIALIZED
 
             if logic_sig_local_state:
@@ -121,10 +117,11 @@ class Pool:
         """
 
         if self.pool_type != PoolType.NANOSWAP:
-            logic_sig_local_state = get_local_state_at_app(self.indexer, self.logic_sig.address(), self.manager_application_id)
-            if logic_sig_local_state:
+            try:
+                logic_sig_local_state = get_local_state_at_app(self.indexer, self.logic_sig.address(), self.manager_application_id)
                 self.pool_status = PoolStatus.ACTIVE
-            else:
+            except:
+                logic_sig_local_state = None
                 self.pool_status = PoolStatus.UNINITIALIZED
 
             if logic_sig_local_state:
@@ -269,15 +266,15 @@ class Pool:
 
         # fund manager
         if self.network == Network.MAINNET:
-            txn0 = get_payment_txn(params, sender, self.manager_address, amount=400000)
+            txn0 = get_payment_txn(sender, params, self.manager_address, amount=400000)
         else:
-            txn0 = get_payment_txn(params, sender, self.manager_address, amount=500000)
+            txn0 = get_payment_txn(sender, params, self.manager_address, amount=500000)
 
         # fund logic sig
         if self.network == Network.MAINNET:
-            txn1 = get_payment_txn(params, sender, self.logic_sig.address(), amount=450000)
+            txn1 = get_payment_txn(sender, params, self.logic_sig.address(), amount=450000)
         else:
-            txn1 = get_payment_txn(params, sender, self.logic_sig.address(), amount=835000)
+            txn1 = get_payment_txn(sender, params, self.logic_sig.address(), amount=835000)
 
         # opt logic sig into manager
         params.fee = 2000
@@ -306,7 +303,7 @@ class Pool:
 
         return TransactionGroup([txn0, txn1, txn2, txn3])
 
-    def get_lp_token_opt_in_txn(self, sender,params=None):
+    def get_lp_token_opt_in_txn(self, sender, params=None):
         """Get lp token opt in transaction for the given sender
 
         :param sender: sender
@@ -316,7 +313,7 @@ class Pool:
         """
         if params is None:
             params = get_default_params(self.algod)
-        return get_payment_txn(params, sender, sender, amount=int(0), asset_id=self.lp_asset_id)
+        return get_payment_txn(sender, params, sender, amount=int(0), asset_id=self.lp_asset_id)
 
     def get_pool_txns(self, sender, asset1_amount, asset2_amount, maximum_slippage, params=None, fee=3000):
         """Get group transaction for pooling with given asset amounts and maximum slippage.
@@ -342,10 +339,10 @@ class Pool:
             params = get_default_params(self.algod)
 
         # send asset 1
-        txn0 = get_payment_txn(params, sender, self.address, asset1_amount, self.asset1.asset_id)
+        txn0 = get_payment_txn(sender, params, self.address, asset1_amount, self.asset1.asset_id)
 
         # send asset 2
-        txn1 = get_payment_txn(params, sender, self.address, asset2_amount, self.asset2.asset_id)
+        txn1 = get_payment_txn(sender, params, self.address, asset2_amount, self.asset2.asset_id)
 
         # pool
         params.fee = fee
@@ -399,7 +396,7 @@ class Pool:
             params = get_default_params(self.algod)
 
         # send lp token
-        txn0 = get_payment_txn(params, sender, self.address, burn_amount, self.lp_asset_id)
+        txn0 = get_payment_txn(sender, params, self.address, burn_amount, self.lp_asset_id)
 
         # burn asset 1 out
         params.fee = 2000
@@ -446,7 +443,7 @@ class Pool:
 
 
         # send swap in asset
-        txn0 = get_payment_txn(params, sender, self.address, swap_in_amount, swap_in_asset.asset_id)
+        txn0 = get_payment_txn(sender, params, self.address, swap_in_amount, swap_in_asset.asset_id)
 
         # swap exact for
         params.fee = fee
@@ -485,7 +482,7 @@ class Pool:
             params = get_default_params(self.algod)
 
         # send swap in asset
-        txn0 = get_payment_txn(params, sender, self.address, swap_in_amount, swap_in_asset.asset_id)
+        txn0 = get_payment_txn(sender, params, self.address, swap_in_amount, swap_in_asset.asset_id)
 
         # swap for exact
         params.fee = fee
@@ -552,7 +549,7 @@ class Pool:
         params.fee = 1000
         flash_loan_fee = (flash_loan_amount * self.flash_loan_fee) // PARAMETER_SCALE_FACTOR + int(1)
         repay_amount = flash_loan_amount + flash_loan_fee
-        txn1 = get_payment_txn(params, sender, self.address, repay_amount, flash_loan_asset.asset_id)
+        txn1 = get_payment_txn(sender, params, self.address, repay_amount, flash_loan_asset.asset_id)
 
         # set group to None
         transactions = [txn0] + group_transaction.transactions + [txn1]

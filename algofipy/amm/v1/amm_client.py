@@ -28,8 +28,8 @@ class AMMClient():
         self.algod = algofi_client.algod
         self.indexer = algofi_client.indexer
         self.historical_indexer = algofi_client.historical_indexer
-        self.network = NETWORK.MAINNET
-        self.manager_application_id = get_manager_application_id(network, False)
+        self.network = Network.MAINNET
+        self.manager_application_id = get_manager_application_id(self.network, False)
 
     def get_pool(self, pool_type, asset1_id, asset2_id):
         """Returns a :class:`Pool` object for given assets and pool_type
@@ -51,9 +51,9 @@ class AMMClient():
         asset2 = Asset(self, asset2_id)
 
         if (asset1_id < asset2_id):
-            pool = Pool(self.algod, self.indexer, self.historical_indexer, self.network, pool_type, asset1, asset2)
+            pool = Pool(self.algofi_client.amm, pool_type, asset1, asset2)
         else:
-            pool = Pool(self.algod, self.indexer, self.historical_indexer, self.network, pool_type, asset2, asset1)
+            pool = Pool(self.algofi_client.amm, pool_type, asset2, asset1)
 
         return pool
 

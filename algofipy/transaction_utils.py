@@ -25,7 +25,7 @@ def get_default_params(algod):
     params.fee = 1000
     return params
 
-def get_payment_txn(sender, params, receiver, amount, asset_id):
+def get_payment_txn(sender, params, receiver, amount, asset_id=ALGO_ASSET_ID):
     """Get a payment transaction object.
 
     :param sender: sender address
@@ -99,23 +99,34 @@ class TransactionGroup:
 
         return len(self.transactions)
 
-    def sign_with_private_keys(self, private_keys):
-        """Signs transactions in the group with provided private keys. If a singleton list is provided, signs all
-        transactions with the same key, otherwise signs ith transaction with the ith key in the list
-
-        :param private_keys: a list of signer keys
-        :type private_keys: list of strings
-        :return: None
+    def sign_with_private_key(self, address, private_key):
+        """Signs the transactions with specified private key and saves to class state
+        :param private_key: private key of user
+        :type private_key: string
         """
 
-        if len(private_keys) == 1:
-            for i, txn in enumerate(self.transactions):
-                self.signed_transactions[i] = txn.sign(private_keys[0])
-        else:
-            for i, txn in enumerate(self.transactions):
+        for i, txn in enumerate(self.transactions):
+            self.signed_transactions[i] = txn.sign(private_key)
+    
+    def sign_with_private_keys(self, private_keys, is_logic_sig=None):
+        """Signs the transactions with specified private key and saves to class state
+        :param private_keys: private key of user
+        :type private_keys: string
+        :param is_logic_sig: if given "pkey" is a logicsig
+        :type is_logic_sig: list
+        """
+
+        if not is_logic_sig:
+            is_logic_sig = [False] * len(private_keys)
+
+        assert(len(private_keys) == len(self.transactions))
+        assert(len(private_keys) == len(is_logic_sig))
+        for i, txn in enumerate(self.transactions):
+            if is_logic_sig[i]:
+                self.signed_transactions[i] = LogicSigTransaction(txn, private_keys[i])
+            else:
                 self.signed_transactions[i] = txn.sign(private_keys[i])
 
-        
     def submit(self, algod, wait=False):
         """Submit algorand transaction group and optionally wait for confirmation.
 
