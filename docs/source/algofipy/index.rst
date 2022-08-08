@@ -4,6 +4,8 @@ algofi-python-sdk
    :maxdepth: 10
 
    lending/index
+   amm/index
+   staking/index
    algofi_client
    algofi_user
    asset_amount
