@@ -22,6 +22,7 @@ class AlgofiClient:
         :param indexer: Algorand indexer client
         :type indexer: :class:`IndexerClient`
         """
+
         self.network = network
         self.algod = algod
         self.indexer = indexer
@@ -45,4 +46,5 @@ class AlgofiClient:
         :return: Python representation of the algofi user
         :rtype: :class:`AlgofiUser`
         """
+
         return AlgofiUser(self, address)

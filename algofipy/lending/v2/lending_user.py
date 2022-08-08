@@ -25,6 +25,7 @@ class LendingUser:
         :param address: an address of the user wallet
         :type address: str
         """
+
         self.lending_client = lending_client
         self.address = address
         
@@ -95,6 +96,7 @@ class LendingUser:
         :return: a tuple of page, offset ints
         :rtype: tuple
         """
+
         for i in range(len(self.opted_in_markets)):
             if self.opted_in_markets[i] == market_app_id:
                 return int(i / 3), i % 3
@@ -112,6 +114,7 @@ class LendingUser:
         :return: preamble transaction group
         :rtype: :class:`TransactionGroup`
         """
+
         page_count = int((self.opted_in_market_count - 1) / 3) + 1
         
         txns = []

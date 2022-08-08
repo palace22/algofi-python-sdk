@@ -20,6 +20,7 @@ class LendingClient:
         :param algofi_client: Client for the algofi protocols
         :type algofi_client: :class:`AlgofiClient`
         """
+
         self.algofi_client = algofi_client
         self.algod = algofi_client.algod
         self.indexer = algofi_client.indexer
@@ -41,6 +42,7 @@ class LendingClient:
         :return: list of storage account address strings
         :rtype: list
         """
+
         next_page = ""
         accounts = []
         while next_page is not None:

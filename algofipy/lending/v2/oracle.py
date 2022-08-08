@@ -25,6 +25,7 @@ class Oracle:
         :param scale_factor: the number of decimals on the price value
         :type scale_factor: int
         """
+
         self.indexer = indexer
         self.historical_indexer = historical_indexer
         self.app_id = app_id

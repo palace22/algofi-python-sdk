@@ -10,6 +10,20 @@ from .lending_config import MarketType
 
 class MarketConfig:
     def __init__(self, name, app_id, underlying_asset_id, b_asset_id, market_type):
+        """A market config
+
+        :param name: name of market
+        :type name: str
+        :param app_id: application id
+        :type app_id: int
+        :param underlying_asset_id: underlying asset id of market
+        :type underlying_asset_id: int
+        :param b_asset_id: b asset id of market
+        :type b_asset_id: int
+        :param market_type: market type
+        :type market_type: :class:`MarketType:
+        """
+
         self.name = name
         self.app_id = app_id
         self.underlying_asset_id = underlying_asset_id

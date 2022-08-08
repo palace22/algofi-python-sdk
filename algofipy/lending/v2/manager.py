@@ -24,6 +24,7 @@ class Manager:
         :param manager_config: an object that stores the smart contract metadata
         :type manager_config: :class:`ManagerConfig`
         """
+
         self.lending_client = lending_client
         self.algod = self.lending_client.algod
         self.indexer = self.lending_client.indexer
@@ -44,6 +45,7 @@ class Manager:
         :return: :class:`TransactionGroup` object representing an opt in group transaction of size 3
         :rtype: :class:`TransactionGroup`
         """
+
         params = get_default_params(self.algod)
         
         # fund storage account
@@ -70,6 +72,7 @@ class Manager:
         :return: :class:`TransactionGroup` object representing an close out group transaction of size 1
         :rtype: :class:`TransactionGroup`
         """
+
         params = get_default_params(self.algod)
         
         # close out of manager
@@ -98,6 +101,7 @@ class Manager:
         :return: :class:`TransactionGroup` object representing an opt in group transaction of size 3
         :rtype: :class:`TransactionGroup`
         """
+
         params = get_default_params(self.algod)
         
         # fund storage account
@@ -129,6 +133,7 @@ class Manager:
         :return: :class:`TransactionGroup` object representing an close out group transaction of size 1
         :rtype: :class:`TransactionGroup`
         """
+
         params = get_default_params(self.algod)
         
         page, offset = user.get_market_page_offset(market.app_id)
