@@ -6,8 +6,10 @@ from base64 import b64decode
 import pprint
 
 class Staking:
-    def __init__(self, algod, staking_client, rewards_manager_app_id, staking_config):
-        self.algod = algod
+    def __init__(self, staking_client, rewards_manager_app_id, staking_config):
+        self.algod = self.staking_client.algod
+        self.indexer = self.staking_client.indexer
+        self.historical_indexer = self.staking_client.historical_indexer
         self.staking_client = staking_client
         self.name = staking_config.name
         self.app_id = staking_config.app_id

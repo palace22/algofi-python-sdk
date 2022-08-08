@@ -1,6 +1,7 @@
 # IMPORTS
 
 # external
+from algosdk.v2client.indexer import IndexerClient
 
 # local
 from .algofi_user import AlgofiUser
@@ -24,7 +25,9 @@ class AlgofiClient:
         self.network = network
         self.algod = algod
         self.indexer = indexer
-        
+        # load AlgoExplorer historical indexer
+        self.historical_indexer = IndexerClient("", "https://indexer.algoexplorerapi.io/", headers={"User-Agent": "algosdk"})
+
         # assets
         self.assets = ASSET_CONFIGS[self.network]
         

@@ -8,6 +8,7 @@ class StakingClient:
         self.algofi_client = algofi_client
         self.algod = self.algofi_client.algod
         self.network = self.algofi_client.network
+        self.historical_indexer = self.algofi_client.historical_indexer
         self.staking_configs = STAKING_CONFIGS[self.network]
         self.staking_contracts = {}
 

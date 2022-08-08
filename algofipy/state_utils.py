@@ -49,9 +49,9 @@ def format_state(state, decode_byte_values=True):
             formatted_state[formatted_key] = value['uint']
     return formatted_state
 
-def get_local_states(indexer, address, decode_byte_values=True):
+def get_local_states(indexer, address, decode_byte_values=True, block=None):
     try:
-        results = indexer.account_info(address).get("account", {})
+        results = indexer.account_info(address, round_num=block).get("account", {})
     except:
         raise Exception("Account does not exist.")
 
@@ -61,9 +61,16 @@ def get_local_states(indexer, address, decode_byte_values=True):
             result[local_state['id']] = format_state(local_state.get('key-value', []), decode_byte_values=decode_byte_values)
     return result
 
-def get_global_state(indexer, app_id, decode_byte_values=True):
+def get_local_state_at_app(indexer, address, app_id, decode_byte_values=True):
+    local_states = get_local_states(indexer, address, decode_byte_values=decode_byte_values)
+    if app_id in local_states:
+        return local_states[app_id]
+    else:
+        raise None
+
+def get_global_state(indexer, app_id, decode_byte_values=True, block=None):
     try:
-        application_info = indexer.applications(app_id).get("application", {})
+        application_info = indexer.applications(app_id, round_num=block).get("application", {})
     except:
         raise Exception("Application does not exist.")
     return format_state(application_info["params"]["global-state"], decode_byte_values=decode_byte_values)

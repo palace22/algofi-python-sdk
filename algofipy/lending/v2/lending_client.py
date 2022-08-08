@@ -23,6 +23,7 @@ class LendingClient:
         self.algofi_client = algofi_client
         self.algod = algofi_client.algod
         self.indexer = algofi_client.indexer
+        self.historical_indexer = algofi_client.historical_indexer
         
         self.manager_config = MANAGER_CONFIGS[self.algofi_client.network]
         self.market_configs = MARKET_CONFIGS[self.algofi_client.network]

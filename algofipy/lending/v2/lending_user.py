@@ -10,7 +10,7 @@ from .lending_config import MANAGER_STRINGS
 from .user_market_state import UserMarketState
 # INTERFACE
 from ...globals import FIXED_3_SCALE_FACTOR #,PERMISSIONLESS_SENDER_LOGIC_SIG
-from ...state_utils import get_local_states
+from ...state_utils import get_local_state_at_app, get_local_states
 from ...transaction_utils import TransactionGroup
 from ...utils import int_to_bytes, bytes_to_int
 
@@ -30,9 +30,14 @@ class LendingUser:
         
         self.load_state()
     
-    def load_state(self):
-        """Populates user state from the blockchain on the object"""
-        states = get_local_states(self.lending_client.indexer, self.address)
+    def load_state(self, block=None):
+        """Populates user state from the blockchain on the object
+
+        :param block: block at which to query the user local state
+        :type block: int, optional
+        """
+
+        manager_state = get_local_state_at_app(self.lending_client.indexer, self.address, self.lending_client.manager.app_id)
 
         # reset state
         self.opted_in_market_count = 0
@@ -47,12 +52,13 @@ class LendingUser:
         self.net_supply_apr = 0
         self.net_borrow_apr = 0
 
-        if (self.lending_client.manager.app_id in states):
+        if manager_state:
             self.opted_in_to_manager = True
-            self.storage_address = encode_address(b64decode(states[self.lending_client.manager.app_id][MANAGER_STRINGS.storage_account]))
-            
-            storage_states = get_local_states(self.lending_client.algofi_client.indexer, self.storage_address, decode_byte_values=False)
-        
+            self.storage_address = encode_address(b64decode(manager_state[MANAGER_STRINGS.storage_account]))
+
+            indexer = self.lending_client.historical_indexer if block else self.lending_client.indexer
+            storage_states = get_local_states(indexer, self.storage_address, decode_byte_values=False, block=block)
+
             self.opted_in_market_count = storage_states[self.lending_client.manager.app_id].get(MANAGER_STRINGS.opted_in_market_count, 0)
             for page_idx in range((self.opted_in_market_count // 3) + 1):
                 market_page = b64decode(storage_states[self.lending_client.manager.app_id].get(MANAGER_STRINGS.opted_in_markets_page_prefix + int_to_bytes(page_idx).decode().strip(), ''))
@@ -62,6 +68,8 @@ class LendingUser:
             for market_app_id in self.opted_in_markets:
                 # cache local state
                 market = self.lending_client.markets[market_app_id]
+                market.load_state(block=block)
+
                 self.user_market_states[market_app_id] = UserMarketState(market, storage_states[market_app_id])
                 
                 # total net values
@@ -76,7 +84,6 @@ class LendingUser:
                 self.net_supply_apr = dollar_totaled_supply_apr / self.net_collateral
             if self.net_borrow > 0:
                 self.net_borrow_apr = dollar_totaled_borrow_apr / self.net_borrow
-
         else:
             self.opted_in_to_manager = False
     
