@@ -9,7 +9,7 @@ setuptools.setup(
     description="Official Algofi Protocol Python SDK",
     author="Algofi",
     author_email="founders@algofi.org",
-    version="2.0.2",
+    version="2.0.3",
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="MIT",
