@@ -19,10 +19,7 @@ def get_balances(indexer, address, block=None):
     :return: dict of asset id -> amount
     :rtype: dict
     """
-    MAINNET = 0
-    MAINNET_CLONE = 1
-    MAINNET_CLONE2 = 2
-    TESTNET = 3
+
     balances = {}
     account_info = indexer.account_info(address, round_num=block)['account']
     balances[ALGO_ASSET_ID] = account_info['amount']
@@ -41,6 +38,7 @@ def get_state_int(state, key):
     :return: int value for given key
     :rtype: int
     """
+
     if type(key) == str:
         key = b64encode(key.encode())
     return state.get(key.decode(), {'uint': 0})['uint']
@@ -55,6 +53,7 @@ def get_state_bytes(state, key):
     :return: bytes value for given key
     :rtype: bytes
     """
+
     if type(key) == str:
         key = b64encode(key.encode())
     return state.get(key.decode(), {'bytes': ''})['bytes']
@@ -69,6 +68,7 @@ def format_state(state, decode_byte_values=True):
     :return: formatted state dict
     :rtype: dict
     """
+
     formatted_state = {}
     for item in state:
         key = item['key']
@@ -105,6 +105,7 @@ def get_local_states(indexer, address, decode_byte_values=True, block=None):
     :return: formatted local state dict
     :rtype: dict
     """
+
     try:
         results = indexer.account_info(address, round_num=block).get("account", {})
     except:
@@ -130,6 +131,7 @@ def get_local_state_at_app(indexer, address, app_id, decode_byte_values=True):
     :return: formatted local state dict
     :rtype: dict
     """
+
     local_states = get_local_states(indexer, address, decode_byte_values=decode_byte_values)
     if app_id in local_states:
         return local_states[app_id]
