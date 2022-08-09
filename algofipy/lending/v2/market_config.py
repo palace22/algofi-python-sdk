@@ -21,7 +21,7 @@ class MarketConfig:
         :param b_asset_id: b asset id of market
         :type b_asset_id: int
         :param market_type: market type
-        :type market_type: :class:`MarketType:
+        :type market_type: :class:`MarketType`
         """
 
         self.name = name

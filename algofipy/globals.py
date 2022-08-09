@@ -14,9 +14,6 @@ FIXED_18_SCALE_FACTOR = 1000000000000000000
 
 ALGO_ASSET_ID = 1
 
-# requires NoOp, ApplicationCall, No Rekey, No CloseRemainderTo (assits ledger users)
-#PERMISSIONLESS_SENDER_LOGIC_SIG = LogicSig(bytearray([6, 49, 16, 129, 6, 18, 68, 49, 25, 129, 0, 18, 68, 49, 9, 50, 3, 18, 68, 49, 32, 50, 3, 18, 68, 129, 1, 67]))
-
 # ENUMS
 
 class Network:
