@@ -10,6 +10,15 @@ from typing import List, Tuple
 A_PRECISION = 1000000
 
 def get_D(token_amounts: List[int], amplification_factor: int) -> Tuple[int, int]:
+    """Calculate the D quantity in the stableswap invariant given a list of token amounts and an amplication factor.
+
+    :param token_amounts: list of token amounts in pool
+    :type token_amounts: list of ints
+    :param amplication_factor: quantity of sensitivity to price change
+    :type amplication_factor: int
+    :return: D quantity
+    :rtype: (int, int)
+    """
     N_COINS = len(token_amounts)
     S = 0
     Dprev = 0
@@ -45,6 +54,8 @@ def get_D(token_amounts: List[int], amplification_factor: int) -> Tuple[int, int
 def get_y(
     i: int, j: int, x: int, token_amounts: List[int], D: int, amplification_factor: int
 ) -> Tuple[int, int]:
+    """Calculate the y quantity in the stableswap invariant.
+    """
     assert i != j
     assert j >= 0
     N_COINS = len(token_amounts)
