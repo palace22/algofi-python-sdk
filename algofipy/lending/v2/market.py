@@ -173,6 +173,8 @@ class Market:
         :return: (supply_apr, borrow_apr)
         :rtype: (float, float)
         """
+
+        if 
         borrow_utilization = 0 if total_supplied == 0 else total_borrowed / total_supplied
         borrow_apr = self.base_interest_rate / FIXED_6_SCALE_FACTOR
         borrow_apr += borrow_utilization * self.base_interest_slope / FIXED_6_SCALE_FACTOR
@@ -455,7 +457,7 @@ class Market:
         :rtype: :class:`TransactionGroup`
         """
 
-        assert self.market_type != MarketType.VAULT
+        assert (self.market_type != MarketType.VAULT) and (self.market_type != MarketType.LP)
         
         params = get_default_params(self.algod)
 
@@ -482,7 +484,7 @@ class Market:
         :rtype: :class:`TransactionGroup`
         """
 
-        assert self.market_type != MarketType.VAULT
+        assert (self.market_type != MarketType.VAULT) and (self.market_type != MarketType.LP)
         
         params = get_default_params(self.algod)
 
