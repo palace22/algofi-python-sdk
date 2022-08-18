@@ -9,8 +9,8 @@ from algofipy.algofi_client import AlgofiClient
 from algofipy.globals import Network
 from algofipy.transaction_utils import wait_for_confirmation
 
-my_path = os.path.abspath(os.path.dirname(__file__))
-ENV_PATH = os.path.join(my_path, "../.env")
+#my_path = os.path.abspath(os.path.dirname(__file__))
+ENV_PATH = "/home/jaclarke/algofi-python-sdk/examples/.env"
 
 # load user passphrase
 env_vars = dotenv_values(ENV_PATH)
@@ -25,7 +25,7 @@ user = client.get_user(sender)
 manager = client.lending.manager
 
 algo_market_app_id = 818179346
-usdc_market_app_id = 818182048
+usdc_market_app_id = 841145020
 
 algo_market = client.lending.markets[algo_market_app_id]
 usdc_market = client.lending.markets[usdc_market_app_id]
@@ -53,7 +53,7 @@ if not user.is_opted_in_to_asset(usdc_market.underlying_asset_id):
 print("mint")
 # MINT BANK ASSET (NO NEED TO OPT IN)
 group = algo_market.get_mint_txns(user.lending, int(1e3))
-group.sign_with_private_keys([key])
+group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
@@ -72,13 +72,13 @@ user.load_state()
 print("opt in market")
 if algo_market_app_id not in user.lending.opted_in_markets:
     group = manager.get_market_opt_in_txns(user.lending, algo_market)
-    group.sign_with_private_keys([key])
+    group.sign_with_private_key(key)
     txid = algod.send_transactions(group.signed_transactions)
     wait_for_confirmation(algod, txid)
 
 if usdc_market_app_id not in user.lending.opted_in_markets:
     group = manager.get_market_opt_in_txns(user.lending, usdc_market)
-    group.sign_with_private_keys([key])
+    group.sign_with_private_key(key)
     txid = algod.send_transactions(group.signed_transactions)
     wait_for_confirmation(algod, txid)
 
@@ -89,36 +89,36 @@ print("add b asset collateral")
 user.load_state()
 b_algo_balance = user.balances[algo_market.b_asset_id]
 group = algo_market.get_add_b_asset_collateral_txns(user.lending, b_algo_balance)
-group.sign_with_private_keys([key])
+group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
 # ADD UNDERLYING COLLATERAL
 print("add underlying collateral")
 group = algo_market.get_add_underlying_collateral_txns(user.lending, int(1e6))
-group.sign_with_private_keys([key])
+group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
 # BORROW
 print("borrow")
 group = usdc_market.get_borrow_txns(user.lending,  int(1e3))
-group.sign_with_private_keys([key] * group.length())
+group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
 # REPAY BORROW
 print("repay")
 # ADD A USDC BUFFER TO YOUR WALLET
-group = usdc_market.get_repay_borrow_txns(user.lending, int(1e3 + 10))
-group.sign_with_private_keys([key])
+group = usdc_market.get_repay_borrow_txns(user.lending, int(1e2))
+group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
 # REMOVE UNDERLYING COLLATERAL
 print("remove underlying collateral")
-group = algo_market.get_remove_underlying_collateral_txns(user.lending, int(5e5))
-group.sign_with_private_keys([key])
+group = algo_market.get_remove_underlying_collateral_txns(user.lending, int(1e2))
+group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
@@ -127,34 +127,34 @@ print("remove b asset collateral")
 user.load_state()
 b_asset_amount = user.lending.user_market_states[algo_market_app_id].b_asset_collateral
 group = algo_market.get_remove_b_asset_collateral_txns(user.lending, b_asset_amount)
-group.sign_with_private_keys([key])
+group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
 # BURN
 print("burn")
 group = algo_market.get_burn_txns(user.lending, int(1e3))
-group.sign_with_private_keys([key])
+group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
 print("claim rewards")
 group = algo_market.get_claim_rewards_txns(user.lending,  0)
-group.sign_with_private_keys([key] * group.length())
+group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
 # CLOSE OUT
 print("close out markets")
 group = manager.get_market_close_out_txns(user.lending, algo_market)
-group.sign_with_private_keys([key])
+group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
 user.load_state()
 
 group = manager.get_market_close_out_txns(user.lending, usdc_market)
-group.sign_with_private_keys([key])
+group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
@@ -162,6 +162,6 @@ user.load_state()
 
 print("close out manager")
 group = manager.get_close_out_txns(user.lending)
-group.sign_with_private_keys([key] * group.length())
+group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
