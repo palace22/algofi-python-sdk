@@ -16,10 +16,21 @@ ALGO_ASSET_ID = 1
 PARAMETER_SCALE_FACTOR = 1000000
 
 # nanoswap pools
-TESTNET_NANOSWAP_POOLS = {(77279127, 77279142): 77282939}  # (asset1_id, asset2_id) -> app_id
-MAINNET_NANOSWAP_POOLS = {(31566704, 465865291): 658337046,
-                          (312769, 465865291): 659677335,
-                          (312769, 31566704): 659678644}
+TESTNET_NANOSWAP_POOLS = {
+    (77279127, 77279142): 77282939
+}  # (asset1_id, asset2_id) -> app_id
+MAINNET_NANOSWAP_POOLS = {
+    (31566704, 465865291): 658337046,
+    (312769, 465865291): 659677335,
+    (312769, 31566704): 659678644,
+    (818182311, 841157954): 841170409
+}
+NANOSWAP_MANAGER = {
+    (31566704, 465865291): 658336870,
+    (312769, 465865291): 658336870,
+    (312769, 31566704): 658336870,
+    (818182311, 841157954): 841165954
+}
 
 # enums
 class Network(Enum):
@@ -105,22 +116,24 @@ def get_clear_state_program():
     return bytes(CLEAR_STATE_PROGRAM)
 
 
-def get_manager_application_id(network, is_nanoswap):
+def get_manager_application_id(network, nanoswap_key=None):
     """Gets the manager application id for the given network
 
     :param network: network :class:`Network` ("testnet" or "mainnet")
     :type network: str
+    :param nanoswap_key: tuple of (asset1_id, asset2_id)
+    :type nanoswap_key: tuple (int, int)
     :return: manager application id for the given network
     :rtype: int
     """
 
     if (network == Network.MAINNET):
-        if is_nanoswap:
-            return 658336870
+        if nanoswap_key:
+            return NANOSWAP_MANAGER[nanoswap_key]
         return 605753404
     elif (network == Network.TESTNET):
-        if is_nanoswap:
-            return 77282916
+        if nanoswap_key:
+            return NANOSWAP_MANAGER[nanoswap_key]
         return 66008735
 
 
