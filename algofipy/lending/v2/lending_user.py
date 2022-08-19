@@ -68,19 +68,20 @@ class LendingUser:
         
             for market_app_id in self.opted_in_markets:
                 # cache local state
-                market = self.lending_client.markets[market_app_id]
-                market.load_state(block=block)
+                if market_app_id in self.lending_client.markets:
+                    market = self.lending_client.markets[market_app_id]
+                    market.load_state(block=block)
 
-                self.user_market_states[market_app_id] = UserMarketState(market, storage_states[market_app_id])
-                
-                # total net values
-                user_market_state = self.user_market_states[market_app_id]
-                self.net_collateral += user_market_state.b_asset_collateral_underlying.usd
-                self.net_scaled_collateral += user_market_state.b_asset_collateral_underlying.usd * market.collateral_factor / FIXED_3_SCALE_FACTOR
-                self.net_borrow += user_market_state.borrowed_underlying.usd
-                self.net_scaled_borrow += user_market_state.borrowed_underlying.usd * market.borrow_factor / FIXED_3_SCALE_FACTOR
-                dollar_totaled_supply_apr += user_market_state.b_asset_collateral_underlying.usd * market.supply_apr
-                dollar_totaled_borrow_apr += user_market_state.borrowed_underlying.usd * market.borrow_apr
+                    self.user_market_states[market_app_id] = UserMarketState(market, storage_states[market_app_id])
+                    
+                    # total net values
+                    user_market_state = self.user_market_states[market_app_id]
+                    self.net_collateral += user_market_state.b_asset_collateral_underlying.usd
+                    self.net_scaled_collateral += user_market_state.b_asset_collateral_underlying.usd * market.collateral_factor / FIXED_3_SCALE_FACTOR
+                    self.net_borrow += user_market_state.borrowed_underlying.usd
+                    self.net_scaled_borrow += user_market_state.borrowed_underlying.usd * market.borrow_factor / FIXED_3_SCALE_FACTOR
+                    dollar_totaled_supply_apr += user_market_state.b_asset_collateral_underlying.usd * market.supply_apr
+                    dollar_totaled_borrow_apr += user_market_state.borrowed_underlying.usd * market.borrow_apr
             if self.net_collateral > 0:
                 self.net_supply_apr = dollar_totaled_supply_apr / self.net_collateral
             if self.net_borrow > 0:

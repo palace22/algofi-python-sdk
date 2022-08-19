@@ -99,7 +99,7 @@ class TransactionGroup:
 
         return len(self.transactions)
 
-    def sign_with_private_key(self, address, private_key):
+    def sign_with_private_key(self, private_key):
         """Signs the transactions with specified private key and saves to class state
         :param private_key: private key of user
         :type private_key: string

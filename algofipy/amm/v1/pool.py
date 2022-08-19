@@ -49,7 +49,10 @@ class Pool:
         self.pool_type = pool_type
         self.asset1 = asset1
         self.asset2 = asset2
-        self.manager_application_id = get_manager_application_id(self.network, pool_type == PoolType.NANOSWAP)
+        if pool_type == PoolType.NANOSWAP:
+            self.manager_application_id = get_manager_application_id(self.network, nanoswap_key=(asset1.asset_id, asset2.asset_id))
+        else:
+            self.manager_application_id = get_manager_application_id(self.network)
         self.manager_address = get_application_address(self.manager_application_id)
         self.validator_index = get_validator_index(self.network, pool_type)
         self.swap_fee = get_swap_fee(pool_type)
