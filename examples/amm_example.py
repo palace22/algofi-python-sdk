@@ -9,7 +9,7 @@ from algofipy.algofi_client import AlgofiClient
 from algofipy.globals import Network
 from algofipy.amm.v1.amm_config import PoolType, PoolStatus
 from algofipy.amm.v1.asset import Asset
-from algofipy.transaction_utils import wait_for_confirmation
+from algofipy.transaction_utils import wait_for_confirmation, get_payment_txn, get_default_params
 from algofipy.utils import create_asset_transaction
 
 #my_path = os.path.abspath(os.path.dirname(__file__))
@@ -28,7 +28,6 @@ user = client.get_user(sender)
 
 # create a pool
 # first create two test assets or fill in asset1 and asset2
-
 asset1_id = 843595609
 asset2_id = 843595712
 asset1 = Asset(client.amm, asset1_id)
@@ -164,8 +163,96 @@ group = pool.get_flash_loan_txns(
     group_transaction=group
 )
 group.sign_with_private_key(key)
+txid = algod.send_transactions(group.signed_transactions)
+wait_for_confirmation(algod, txid)
+
+# -----------------------------------------------------------
+# nanoswap operations for specified assets
+asset1_id = 31566704
+asset2_id = 465865291
+asset1 = Asset(client.amm, asset1_id)
+asset2 = Asset(client.amm, asset2_id)
+
+pool_type = PoolType.NANOSWAP
+pool = client.amm.get_pool(pool_type, asset1_id, asset2_id)
+
+# opt into underlying assets if required
+if not user.is_opted_in_to_asset(asset1_id):
+    stxn = get_payment_txn(
+        user.address,
+        get_default_params(algod),
+        user.address,
+        int(0),
+        asset_id=asset1_id
+    ).sign(txn)
+    txid = algod.send_transaction(stxn)
+    wait_for_confirmation(algod, txid)
+
+if not user.is_opted_in_to_asset(asset2_id):
+    stxn = get_payment_txn(
+        user.address,
+        get_default_params(algod),
+        user.address,
+        int(0),
+        asset_id=asset2_id
+    ).sign(txn)
+    txid = algod.send_transaction(stxn)
+    wait_for_confirmation(algod, txid)
+
+# opt into lp token if you're not opted in yet
+if not user.is_opted_in_to_asset(pool.lp_asset_id):
+    stxn = pool.get_lp_token_opt_in_txn(user.address).sign(key)
+    txid = algod.send_transaction(stxn)
+    wait_for_confirmation(algod, txid)
+
+# pool assets to nanoswap pool
+asset1_amount = int(0.1e6)
+asset2_amount = int(0.1e6)
+group = pool.get_pool_txns(
+    user.address,
+    asset1_amount,
+    asset2_amount,
+    maximum_slippage=int(100000)
+)
 group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
-flash_loan_txn.submit(amm_client.algod, wait=True)
+# burn lp tokens in the amount you specify
+burn_amount = int(0.1e6)
+group = pool.get_burn_txns(
+    user.address,
+    burn_amount
+)
+group.sign_with_private_key(key)
+txid = algod.send_transactions(group.signed_transactions)
+wait_for_confirmation(algod, txid)
+
+# swap exact for in the amount of swap asset you specify
+swap_in_asset = asset1
+swap_in_amount = int(10)
+group = pool.get_swap_exact_for_txns(
+    user.address,
+    swap_in_asset,
+    swap_in_amount,
+    min_amount_to_receive=0,
+    fee=5000
+)
+group.sign_with_private_key(key)
+txid = algod.send_transactions(group.signed_transactions)
+wait_for_confirmation(algod, txid)
+
+# swap for exact in the amount of the exact asset you specify
+swap_in_asset = asset1
+swap_in_amount = int(100)
+amount_to_receive = int(10)
+group = pool.get_swap_for_exact_txns(
+    user.address,
+    swap_in_asset,
+    swap_in_amount,
+    amount_to_receive,
+    fee=5000
+)
+group.sign_with_private_key(key)
+txid = algod.send_transactions(group.signed_transactions)
+wait_for_confirmation(algod, txid)
