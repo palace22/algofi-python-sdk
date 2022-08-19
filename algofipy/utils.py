@@ -2,7 +2,10 @@
 
 # external
 from algosdk import account, mnemonic
+from algosdk.future.transaction import AssetCreateTxn
 
+# local
+from .transaction_utils import get_default_params
 # FUNCTIONS
 
 def int_to_bytes(num):
@@ -72,3 +75,23 @@ def encode_varint(number):
             buf += bytes([towrite])
             break
     return buf
+
+def create_asset_transaction(algod, sender, total, decimals, default_frozen, manager, reserve, freeze, clawback,
+                             unit_name, asset_name, url):
+
+    params = get_default_params(algod)
+
+    return AssetCreateTxn(
+        sender=sender,
+        sp=params,
+        total=total,
+        decimals=decimals,
+        default_frozen=default_frozen,
+        manager=manager,
+        reserve=reserve,
+        freeze=freeze,
+        clawback=clawback,
+        unit_name=unit_name,
+        asset_name=asset_name,
+        url=url
+    )
