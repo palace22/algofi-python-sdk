@@ -155,7 +155,7 @@ def get_swap_fee(pool_type):
     elif (pool_type == PoolType.CONSTANT_PRODUCT_100BP_FEE):
         return 0.01
     elif (pool_type == PoolType.NANOSWAP):
-        return 0.001 # TODO
+        return 0.001
 
 
 def get_usdc_asset_id(network):

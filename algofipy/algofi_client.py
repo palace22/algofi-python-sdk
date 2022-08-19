@@ -11,6 +11,7 @@ from .asset_config import ASSET_CONFIGS
 from .lending.v2.lending_client import LendingClient
 from .staking.v2.staking_client import StakingClient
 from .amm.v1.amm_client import AMMClient
+from .interfaces.interface_client import InterfaceClient
 
 class AlgofiClient:
     def __init__(self, network, algod, indexer):
@@ -41,6 +42,9 @@ class AlgofiClient:
 
         # amm
         self.amm = AMMClient(self)
+
+        # interfaces
+        self.interfaces = InterfaceClient(self)
 
     def get_user(self, address):
         """Creates an :class:`AlgofiUser` object for specific address

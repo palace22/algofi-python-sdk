@@ -6,6 +6,7 @@
 
 # global
 from algofipy.globals import Network
+from algofipy.amm.v1.amm_config import PoolType
 
 # INTERFACE
 
@@ -13,8 +14,8 @@ from algofipy.globals import Network
 
 class LendingPoolInterfaceConfig:
 
-    def __init__(self,app_id, asset1_id, asset2_id, lp_asset_id, market1_app_id, market2_app_id
-                lp_market_app_id, pool_app_id, op_farm_app_id):
+    def __init__(self, app_id, asset1_id, asset2_id, lp_asset_id, market1_app_id, market2_app_id,
+                lp_market_app_id, pool_app_id, pool_type, op_farm_app_id):
         self.app_id = app_id
         self.asset1_id = asset1_id
         self.asset2_id = asset2_id
@@ -23,20 +24,21 @@ class LendingPoolInterfaceConfig:
         self.market2_app_id = market2_app_id
         self.lp_market_app_id = lp_market_app_id
         self.pool_app_id = pool_app_id
+        self.pool_type = pool_type
         self.op_farm_app_id = op_farm_app_id
 
 LENDING_POOL_INTERFACE_CONFIGS = {
-    [Network.MAINNET]: [
-        LendingPoolInterfaceConfig(41198034, 31566704, 841126810, 841171328, 818182048, 841145020, 841194726, 841170409, 841189050), // bUSDC / bSTBL2
+    Network.MAINNET: [
+        LendingPoolInterfaceConfig(41198034, 31566704, 841126810, 841171328, 818182048, 841145020, 841194726, 841170409, PoolType.NANOSWAP, 841189050), # bUSDC / bSTBL2
     ],
-    [Network.TESTNET]: [
-        LendingPoolInterfaceConfig(104532133, 104194013, 104210500, 104228491, 104207076, 104213311, 104238373, 104228342, 104240608), // bUSDC / bSTBL2
+    Network.TESTNET: [
+        LendingPoolInterfaceConfig(104532133, 104194013, 104210500, 104228491, 104207076, 104213311, 104238373, 104228342, PoolType.NANOSWAP, 104240608), # bUSDC / bSTBL2
     ]
 }
 
-// STRING CONTSTANTS
+# STRING CONTSTANTS
 
-class LendingPoolInterfaceStrings:
+class LENDING_POOL_INTERFACE_STRINGS:
 
   market1_app_id = "market1_app_id"
   market2_app_id = "market2_app_id"

@@ -18,6 +18,7 @@ class BalanceDelta():
         self.asset1_delta = asset1_delta
         self.asset2_delta = asset2_delta
         self.lp_delta = lp_delta
+        self.num_iter = num_iter
         self.extra_compute_fee = int(num_iter / (700 / 400)) * 1000
 
         if (lp_delta != 0):
