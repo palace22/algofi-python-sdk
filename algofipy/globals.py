@@ -27,4 +27,4 @@ class Network:
     TESTNET = 3
 
 # LOGIC SIG
-PERMISSIONLESS_SENDER_LOGIC_SIG = LogicSigAccount([6, 49, 16, 129, 6, 18, 68, 49, 25, 129, 0, 18, 68, 49, 9, 50, 3, 18, 68, 49, 32, 50, 3, 18, 68, 129, 1, 67]
+PERMISSIONLESS_SENDER_LOGIC_SIG = LogicSigAccount([6, 49, 16, 129, 6, 18, 68, 49, 25, 129, 0, 18, 68, 49, 9, 50, 3, 18, 68, 49, 32, 50, 3, 18, 68, 129, 1, 67])
