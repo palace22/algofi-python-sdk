@@ -33,7 +33,7 @@ class Manager:
 
     # TRANSACTION BUILDERS
 
-    def get_opt_in_txns(self, user, storage_address):
+    def get_opt_in_txns(self, user, storage_address, params=None):
         """Returns a :class:`TransactionGroup` object representing a lending manager opt in
         transaction against the algofi protocol. The second transaction should be signed by the key of the storage
         address.
@@ -42,11 +42,14 @@ class Manager:
         :type user: :class:`LendingUser`
         :param storage_address: address created owned by the user, to be rekeyed to the manager
         :type storage_address: str
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing an opt in group transaction of size 3
         :rtype: :class:`TransactionGroup`
         """
 
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
         
         # fund storage account
         txn0 = get_payment_txn(user.address, params, storage_address, MANAGER_MIN_BALANCE, ALGO_ASSET_ID)
@@ -62,18 +65,21 @@ class Manager:
         
         return TransactionGroup([txn0, txn1, txn2])
     
-    def get_close_out_txns(self, user):
+    def get_close_out_txns(self, user, params=None):
         """Returns a :class:`TransactionGroup` object representing a lending manager close out
         transaction against the algofi protocol. The manager will close the storage account and return funds to the
         user. This transaction will fail unless the user has nothing borrowed and no active collateral
 
         :param user: account for the sender
         :type user: :class:`LendingUser`
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing an close out group transaction of size 1
         :rtype: :class:`TransactionGroup`
         """
 
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
         
         # close out of manager
         params.fee = 2000
@@ -90,7 +96,7 @@ class Manager:
         
         return TransactionGroup([txn0, txn1, txn2])
     
-    def get_market_opt_in_txns(self, user, market):
+    def get_market_opt_in_txns(self, user, market, params=None):
         """Returns a :class:`TransactionGroup` object representing a lending market opt in
         transaction against the algofi protocol.
 
@@ -98,11 +104,14 @@ class Manager:
         :type user: :class:`LendingUser`
         :param market: market to opt in to
         :type market: :class:`LendingMarket`
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing an opt in group transaction of size 3
         :rtype: :class:`TransactionGroup`
         """
 
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
         
         # fund storage account
         txn0 = get_payment_txn(user.address, params, user.storage_address, market.local_min_balance, ALGO_ASSET_ID)
@@ -122,7 +131,7 @@ class Manager:
         
         return TransactionGroup([txn0, txn1, txn2])
     
-    def get_market_close_out_txns(self, user, market):
+    def get_market_close_out_txns(self, user, market, params=None):
         """Returns a :class:`TransactionGroup` object representing a lending market close out
         transaction against the algofi protocol.
 
@@ -130,11 +139,14 @@ class Manager:
         :type user: :class:`LendingUser`
         :param market: market to opt in to
         :type market: :class:`LendingMarket`
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing an close out group transaction of size 1
         :rtype: :class:`TransactionGroup`
         """
 
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
         
         page, offset = user.get_market_page_offset(market.app_id)
         
