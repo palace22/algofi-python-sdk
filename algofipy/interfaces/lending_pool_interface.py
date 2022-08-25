@@ -81,10 +81,11 @@ class LendingPoolInterface:
 
         return BalanceDelta(self.pool, -1 * asset1_pooled_amount, -1 * asset2_pooled_amount, lps_issued, num_iter)        
 
-    def get_pool_txns(self, sender, quote, asset2_amount, maximum_slippage, add_to_user_collateral=False):
+    def get_pool_txns(self, sender, quote, asset2_amount, maximum_slippage, add_to_user_collateral=False, params=None):
 
         '''
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
 
         additional_permisionless_fee = 27000 + quote.num_iter * 1000 + (3000 if add_to_user_collateral else 1000)
 

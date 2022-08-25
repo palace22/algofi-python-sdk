@@ -239,41 +239,47 @@ class Market:
         return amount * self.b_asset_circulation / self.get_underlying_supplied()
     
     # TRANSACTION BUILDERS
-    def get_b_asset_opt_in_txn(self, user):
+    def get_b_asset_opt_in_txn(self, user, params=None):
         """Returns a :class:`AssetTransferTxn` object representing a transfer of zero units of the b asset.
 
         :param user: account for the sender
         :type user: :class:`LendingUser`
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`AssetTransferTxn` of underlying asset with 0 amount from user to self
         :rtype: :class:`AssetTransferTxn`
         """
 
         assert self.market_type != MarketType.VAULT
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
 
         # payment
         txn0 = get_payment_txn(user.address, params, user.address, 0, self.b_asset_id)
 
         return txn0
 
-    def get_underlying_asset_opt_in_txn(self, user):
+    def get_underlying_asset_opt_in_txn(self, user, params=None):
         """Returns a :class:`AssetTransferTxn` object representing a transfer of zero units of the market underlying asset.
 
         :param user: account for the sender
         :type user: :class:`LendingUser`
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`AssetTransferTxn` of underlying asset with 0 amount from user to self
         :rtype: :class:`AssetTransferTxn`
         """
 
         assert self.market_type != MarketType.VAULT
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
 
         # payment
         txn0 = get_payment_txn(user.address, params, user.address, 0, self.underlying_asset_id)
 
         return txn0
 
-    def get_mint_txns(self, user, underlying_amount):
+    def get_mint_txns(self, user, underlying_amount, params=None):
         """Returns a :class:`TransactionGroup` object representing a mint bank asset group
         transaction against the algofi protocol. Sender mints bank asset by sending underlying asset
         to the account address of the market application which sends back the bank asset.
@@ -282,12 +288,15 @@ class Market:
         :type user: :class:`LendingUser`
         :param underlying_amount: amount of underlying asset to use in minting
         :type underlying_amount: int
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing a mint group transaction of size 2
         :rtype: :class:`TransactionGroup`
         """
 
         assert self.market_type != MarketType.VAULT
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
 
         # payment
         txn0 = get_payment_txn(user.address, params, self.address, underlying_amount, self.underlying_asset_id)
@@ -301,7 +310,7 @@ class Market:
         
         return TransactionGroup([txn0, txn1])
 
-    def get_add_underlying_collateral_txns(self, user, underlying_amount):
+    def get_add_underlying_collateral_txns(self, user, underlying_amount, params=None):
         """Returns a :class:`TransactionGroup` object representing an add collateral group
         transaction against the algofi protocol. Sender adds underlying asset amount to collateral by sending
         it to the account address of the market application that updates user active collateral.
@@ -310,11 +319,14 @@ class Market:
         :type user: :class:`LendingUser`
         :param underlying_amount: amount of underlying asset to add to collateral
         :type underlying_amount: int
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing an add collateral group transaction of size 2
         :rtype: :class:`TransactionGroup`
         """
 
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
 
         # payment
         receiver = self.address if self.market_type != MarketType.VAULT else user.storage_address
@@ -329,7 +341,7 @@ class Market:
         
         return TransactionGroup([txn0, txn1])
         
-    def get_add_b_asset_collateral_txns(self, user, b_asset_amount):
+    def get_add_b_asset_collateral_txns(self, user, b_asset_amount, params=None):
         """Returns a :class:`TransactionGroup` object representing an add collateral group
         transaction against the algofi protocol. Sender adds bank asset amount to collateral by sending
         them to the account address of the market application that generates the bank assets.
@@ -338,13 +350,16 @@ class Market:
         :type user: :class:`LendingUser`
         :param b_asset_amount: amount of bank asset to add to collateral
         :type b_asset_amount: int
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing an add collateral group transaction of size 2
         :rtype: :class:`TransactionGroup`
         """
 
         assert self.market_type != MarketType.VAULT
         
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
 
         # payment
         txn0 = get_payment_txn(user.address, params, self.address, b_asset_amount, self.b_asset_id)
@@ -358,7 +373,7 @@ class Market:
         
         return TransactionGroup([txn0, txn1])
         
-    def get_remove_underlying_collateral_txns(self, user, underlying_amount):
+    def get_remove_underlying_collateral_txns(self, user, underlying_amount, params=None):
         """Returns a :class:`TransactionGroup` object representing a remove collateral group
         transaction against the algofi protocol. Sender reclaims underlying collateral asset by reducing their active
         collateral.
@@ -367,12 +382,15 @@ class Market:
         :type user: :class:`LendingUser`
         :param underlying_amount: amount of underlying asset to remove
         :type underlying_amount: int
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing a remove collateral group transaction
             of size (preamble_length + 1)
         :rtype: :class:`TransactionGroup`
         """
 
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
 
         preamble_txns = user.get_preamble_txns(params, self.app_id)
 
@@ -386,7 +404,7 @@ class Market:
         
         return preamble_txns + TransactionGroup([txn0])
         
-    def get_remove_b_asset_collateral_txns(self, user, b_asset_amount):
+    def get_remove_b_asset_collateral_txns(self, user, b_asset_amount, params=None):
         """Returns a :class:`TransactionGroup` object representing a remove collateral group
         transaction against the algofi protocol. Sender reclaims collateral bank asset by reducing their active
         collateral.
@@ -395,13 +413,16 @@ class Market:
         :type user: :class:`LendingUser`
         :param b_asset_amount: amount of underlying asset to remove
         :type b_asset_amount: int
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing a remove collateral group transaction
         :rtype: :class:`TransactionGroup`
         """
 
         assert self.market_type != MarketType.VAULT
         
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
 
         preamble_txns = user.get_preamble_txns(params, self.app_id)
 
@@ -415,7 +436,7 @@ class Market:
         
         return preamble_txns + TransactionGroup([txn0])
     
-    def get_burn_txns(self, user, b_asset_amount):
+    def get_burn_txns(self, user, b_asset_amount, params=None):
         """Returns a :class:`TransactionGroup` object representing a burn group
         transaction against the algofi protocol. Sender reclaims underlying collateral asset by burning bank asset.
 
@@ -423,13 +444,16 @@ class Market:
         :type user: :class:`LendingUser`
         :param b_asset_amount: amount of underlying asset to remove
         :type b_asset_amount: int
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing a burn group transaction of size 2
         :rtype: :class:`TransactionGroup`
         """
 
         assert self.market_type != MarketType.VAULT
         
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
 
         # payment
         txn0 = get_payment_txn(user.address, params, self.address, b_asset_amount, self.b_asset_id)
@@ -443,7 +467,7 @@ class Market:
         
         return TransactionGroup([txn0, txn1])
 
-    def get_borrow_txns(self, user, underlying_amount):
+    def get_borrow_txns(self, user, underlying_amount, params=None):
         """Returns a :class:`TransactionGroup` object representing a borrow group
         transaction against the algofi protocol. Sender borrows underlying asset against their
         collateral in the protocol.
@@ -452,13 +476,16 @@ class Market:
         :type user: :class:`LendingUser`
         :param underlying_amount: amount to borrow
         :type underlying_amount: int
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing a borrow group transaction of size (preamble_length + 1)
         :rtype: :class:`TransactionGroup`
         """
 
         assert (self.market_type != MarketType.VAULT) and (self.market_type != MarketType.LP)
         
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
 
         preamble_txns = user.get_preamble_txns(params, self.app_id)
         # application call
@@ -471,7 +498,7 @@ class Market:
         
         return preamble_txns + TransactionGroup([txn0])
     
-    def get_repay_borrow_txns(self, user, underlying_amount):
+    def get_repay_borrow_txns(self, user, underlying_amount, params=None):
         """Returns a :class:`TransactionGroup` object representing a repay borrow group
         transaction against the algofi protocol. Sender repays borrowed underlying asset + interest to the protocol.
 
@@ -479,13 +506,16 @@ class Market:
         :type user: :class:`LendingUser`
         :param underlying_amount: amount to repay
         :type underlying_amount: int
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing a repay group transaction of size 2
         :rtype: :class:`TransactionGroup`
         """
 
         assert (self.market_type != MarketType.VAULT) and (self.market_type != MarketType.LP)
         
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
 
         # payment
         txn0 = get_payment_txn(user.address, params, self.address, underlying_amount, self.underlying_asset_id)
@@ -500,7 +530,7 @@ class Market:
         
         return TransactionGroup([txn0, txn1])
     
-    def get_liquidate_txns(self, user, target_user, repay_amount, seize_collateral_market):
+    def get_liquidate_txns(self, user, target_user, repay_amount, seize_collateral_market, params=None):
         """Returns a :class:`TransactionGroup` object representing a liquidate group
         transaction against the algofi protocol. Sender repays borrowed underlying asset + interest on behalf of
         the liquidatee and seizes their collateral in a specified market.
@@ -513,13 +543,16 @@ class Market:
         :type repay_amount: int
         :param: seize_collateral_market: market to seize collateral in
         :type seize_collateral_market: :class:`Market`
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing a liquidate group transaction of size (preamble_length + 3)
         :rtype: :class:`TransactionGroup`
         """
 
         assert self.market_type != MarketType.VAULT
         
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
         
         preamble_txns = target_user.get_preamble_txns(params, self.app_id, user.address)
         
@@ -544,7 +577,7 @@ class Market:
 
         return preamble_txns + TransactionGroup([txn0, txn1, txn2])
 
-    def get_claim_rewards_txns(self, user, program_index):
+    def get_claim_rewards_txns(self, user, program_index, params=None):
         """Returns a :class:`TransactionGroup` object representing a claim rewards group
         transaction against the algofi protocol. Sender claims accrued rewards from a specified rewards program.
 
@@ -552,11 +585,14 @@ class Market:
         :type user: :class:`LendingUser`
         :param program_index: specific program for which the rewards are being claimed
         :type program_index: int
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing a claim rewards group transaction of size 1
         :rtype: :class:`TransactionGroup`
         """
 
-        params = get_default_params(self.algod)
+        if params is None:
+            params = get_default_params(self.algod)
 
         # application call
         params.fee = 3000
