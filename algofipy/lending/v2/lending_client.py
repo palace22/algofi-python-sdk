@@ -2,7 +2,11 @@
 
 # external
 from typing import List
-from base64 import b64encode
+from base64 import b64encode, b64decode
+from algosdk.encoding import encode_address
+
+# global
+from ...state_utils import get_local_state_at_app, get_local_states
 
 # local
 from .manager import Manager
@@ -63,3 +67,9 @@ class LendingClient:
             else:
                 next_page = None
         return accounts
+
+    def get_user_account(self, storage_account):
+        manager_state = get_local_state_at_app(self.indexer, storage_account, self.manager.app_id)
+        if manager_state:
+            return encode_address(b64decode(manager_state[MANAGER_STRINGS.user_account]))
+        return ""
