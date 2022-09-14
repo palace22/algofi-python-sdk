@@ -103,7 +103,7 @@ class Pool:
             # additionally save down nanoswap metadata if applicable
             if self.pool_type == PoolType.NANOSWAP:
                 self.initial_amplification_factor = pool_state.get(POOL_STRINGS.initial_amplification_factor, 0)
-                self.future_amplification_factor = pool_state[POOL_STRINGS.future_amplification_factor]
+                self.future_amplification_factor = pool_state.get(POOL_STRINGS.future_amplification_factor, 0)
                 self.initial_amplification_factor_time = pool_state.get(POOL_STRINGS.initial_amplification_factor_time, 0)
                 self.future_amplification_factor_time = pool_state.get(POOL_STRINGS.future_amplification_factor_time, 0)
                 status = self.algod.status()
@@ -147,7 +147,7 @@ class Pool:
         else:
             pool_state = get_global_state(self.indexer, self.application_id)
             self.initial_amplification_factor = pool_state.get(POOL_STRINGS.initial_amplification_factor, 0)
-            self.future_amplification_factor = pool_state[POOL_STRINGS.future_amplification_factor]
+            self.future_amplification_factor = pool_state.get(POOL_STRINGS.future_amplification_factor, 0)
             self.initial_amplification_factor_time = pool_state.get(POOL_STRINGS.initial_amplification_factor_time, 0)
             self.future_amplification_factor_time = pool_state.get(POOL_STRINGS.future_amplification_factor_time, 0)
             status = self.algod.status()

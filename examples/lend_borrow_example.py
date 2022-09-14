@@ -26,9 +26,11 @@ manager = client.lending.manager
 
 algo_market_app_id = 818179346
 usdc_market_app_id = 841145020
+stbl2_market_app_id = 841145020
 
 algo_market = client.lending.markets[algo_market_app_id]
 usdc_market = client.lending.markets[usdc_market_app_id]
+stbl2_market = client.lending.markets[stbl2_market_app_id]
 
 # ASSET OPT IN
 print("opt into assets")
@@ -46,6 +48,18 @@ if not user.is_opted_in_to_asset(usdc_market.b_asset_id):
 
 if not user.is_opted_in_to_asset(usdc_market.underlying_asset_id):
     txn = usdc_market.get_underlying_asset_opt_in_txn(user)
+    signedTxn = txn.sign(key)
+    txid = algod.send_transaction(signedTxn)
+    wait_for_confirmation(algod, txid)
+
+if not user.is_opted_in_to_asset(stbl2_market.b_asset_id):
+    txn = stbl2_market.get_b_asset_opt_in_txn(user)
+    signedTxn = txn.sign(key)
+    txid = algod.send_transaction(signedTxn)
+    wait_for_confirmation(algod, txid)
+
+if not user.is_opted_in_to_asset(stbl2_market.underlying_asset_id):
+    txn = stbl2_market.get_underlying_asset_opt_in_txn(user)
     signedTxn = txn.sign(key)
     txid = algod.send_transaction(signedTxn)
     wait_for_confirmation(algod, txid)
@@ -82,11 +96,16 @@ if usdc_market_app_id not in user.lending.opted_in_markets:
     txid = algod.send_transactions(group.signed_transactions)
     wait_for_confirmation(algod, txid)
 
+if stbl2_market_app_id not in user.lending.opted_in_markets:
+    group = manager.get_market_opt_in_txns(user.lending, stbl2_market)
+    group.sign_with_private_key(key)
+    txid = algod.send_transactions(group.signed_transactions)
+    wait_for_confirmation(algod, txid)
+
 user.load_state()
 
 # ADD BANK ASSET COLLATERAL
 print("add b asset collateral")
-user.load_state()
 b_algo_balance = user.balances[algo_market.b_asset_id]
 group = algo_market.get_add_b_asset_collateral_txns(user.lending, b_algo_balance)
 group.sign_with_private_key(key)
@@ -102,7 +121,7 @@ wait_for_confirmation(algod, txid)
 
 # BORROW
 print("borrow")
-group = usdc_market.get_borrow_txns(user.lending,  int(1e3))
+group = stbl2_market.get_borrow_txns(user.lending,  int(1e3))
 group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
@@ -110,7 +129,7 @@ wait_for_confirmation(algod, txid)
 # REPAY BORROW
 print("repay")
 # ADD A USDC BUFFER TO YOUR WALLET
-group = usdc_market.get_repay_borrow_txns(user.lending, int(1e2))
+group = stbl2_market.get_repay_borrow_txns(user.lending, int(1e2))
 group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
@@ -147,6 +166,13 @@ wait_for_confirmation(algod, txid)
 # CLOSE OUT
 print("close out markets")
 group = manager.get_market_close_out_txns(user.lending, algo_market)
+group.sign_with_private_key(key)
+txid = algod.send_transactions(group.signed_transactions)
+wait_for_confirmation(algod, txid)
+
+user.load_state()
+
+group = manager.get_market_close_out_txns(user.lending, stbl2_market)
 group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)

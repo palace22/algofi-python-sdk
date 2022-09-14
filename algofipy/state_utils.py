@@ -136,7 +136,7 @@ def get_local_state_at_app(indexer, address, app_id, decode_byte_values=True):
     if app_id in local_states:
         return local_states[app_id]
     else:
-        raise None
+        return None
 
 def get_global_state(indexer, app_id, decode_byte_values=True, block=None):
     """Get global state of a given application.
