@@ -103,7 +103,7 @@ class Pool:
             # additionally save down nanoswap metadata if applicable
             if self.pool_type == PoolType.NANOSWAP:
                 self.initial_amplification_factor = pool_state.get(POOL_STRINGS.initial_amplification_factor, 0)
-                self.future_amplification_factor = pool_state[POOL_STRINGS.future_amplification_factor]
+                self.future_amplification_factor = pool_state.get(POOL_STRINGS.future_amplification_factor, 0)
                 self.initial_amplification_factor_time = pool_state.get(POOL_STRINGS.initial_amplification_factor_time, 0)
                 self.future_amplification_factor_time = pool_state.get(POOL_STRINGS.future_amplification_factor_time, 0)
                 status = self.algod.status()
@@ -147,7 +147,7 @@ class Pool:
         else:
             pool_state = get_global_state(self.indexer, self.application_id)
             self.initial_amplification_factor = pool_state.get(POOL_STRINGS.initial_amplification_factor, 0)
-            self.future_amplification_factor = pool_state[POOL_STRINGS.future_amplification_factor]
+            self.future_amplification_factor = pool_state.get(POOL_STRINGS.future_amplification_factor, 0)
             self.initial_amplification_factor_time = pool_state.get(POOL_STRINGS.initial_amplification_factor_time, 0)
             self.future_amplification_factor_time = pool_state.get(POOL_STRINGS.future_amplification_factor_time, 0)
             status = self.algod.status()
@@ -608,18 +608,18 @@ class Pool:
 
         if (asset_id == self.asset1.asset_id):
             asset1_pooled_amount = asset_amount
-            asset2_pooled_amount = int(asset1_pooled_amount * self.asset2_balance / self.asset1_balance)
+            asset2_pooled_amount = int(asset1_pooled_amount * self.asset2_balance // self.asset1_balance)
         else:
             asset2_pooled_amount = asset_amount
-            asset1_pooled_amount = int(asset2_pooled_amount * self.asset1_balance / self.asset2_balance)
+            asset1_pooled_amount = int(asset2_pooled_amount * self.asset1_balance // self.asset2_balance)
 
         if self.pool_type == PoolType.NANOSWAP:
             D0, num_iter_D0 = get_D([self.asset1_balance, self.asset2_balance], self.amplification_factor)
             D1, num_iter_D1 = get_D([self.asset1_balance + asset1_pooled_amount, self.asset2_balance + asset2_pooled_amount], self.amplification_factor)
-            lps_issued = self.lp_circulation * (D1 - D0) / D0
+            lps_issued = int(self.lp_circulation * (D1 - D0) // D0)
             num_iter = num_iter_D0 + num_iter_D1
         else:
-            lps_issued = int(asset1_pooled_amount * self.lp_circulation / self.asset1_balance)
+            lps_issued = int(asset1_pooled_amount * self.lp_circulation // self.asset1_balance)
             num_iter = 0
 
         return BalanceDelta(self, -1 * asset1_pooled_amount, -1 * asset2_pooled_amount, lps_issued, num_iter)
@@ -639,8 +639,8 @@ class Pool:
         if (self.lp_circulation < lp_amount):
             raise Exception("Error: cannot burn more lp tokens than are in circulation")
 
-        asset1_amount = int(lp_amount * self.asset1_balance / self.lp_circulation)
-        asset2_amount = int(lp_amount * self.asset2_balance / self.lp_circulation)
+        asset1_amount = int(lp_amount * self.asset1_balance // self.lp_circulation)
+        asset2_amount = int(lp_amount * self.asset2_balance // self.lp_circulation)
 
         return BalanceDelta(self, asset1_amount, asset2_amount, -1 * lp_amount)
 
@@ -668,7 +668,7 @@ class Pool:
                 swap_out_amount = self.asset2_balance - y
                 num_iter = num_iter_D + num_iter_y
             else:
-                swap_out_amount = int((self.asset2_balance * swap_in_amount_less_fees) / (self.asset1_balance + swap_in_amount_less_fees))
+                swap_out_amount = int((self.asset2_balance * swap_in_amount_less_fees) // (self.asset1_balance + swap_in_amount_less_fees))
                 num_iter = 0
             return BalanceDelta(self, -1 * swap_in_amount, swap_out_amount, 0, num_iter)
         else:
@@ -678,7 +678,7 @@ class Pool:
                 swap_out_amount = self.asset1_balance - y
                 num_iter = num_iter_D + num_iter_y
             else:
-                swap_out_amount = int((self.asset1_balance * swap_in_amount_less_fees) / (self.asset2_balance + swap_in_amount_less_fees))
+                swap_out_amount = int((self.asset1_balance * swap_in_amount_less_fees) // (self.asset2_balance + swap_in_amount_less_fees))
                 num_iter = 0
             return BalanceDelta(self, swap_out_amount, -1 * swap_in_amount, 0, num_iter)
 
@@ -703,7 +703,7 @@ class Pool:
                 swap_in_amount_less_fees = y - self.asset2_balance
                 num_iter = num_iter_D + num_iter_y
             else:
-                swap_in_amount_less_fees = int((self.asset2_balance * swap_out_amount) / (self.asset1_balance - swap_out_amount)) - 1
+                swap_in_amount_less_fees = int((self.asset2_balance * swap_out_amount) // (self.asset1_balance - swap_out_amount)) - 1
                 num_iter = 0
         else:
             if self.pool_type == PoolType.NANOSWAP:
@@ -712,10 +712,10 @@ class Pool:
                 swap_in_amount_less_fees = y - self.asset1_balance
                 num_iter = num_iter_D + num_iter_y
             else:
-                swap_in_amount_less_fees = int((self.asset1_balance * swap_out_amount) / (self.asset2_balance - swap_out_amount)) - 1
+                swap_in_amount_less_fees = int((self.asset1_balance * swap_out_amount) // (self.asset2_balance - swap_out_amount)) - 1
                 num_iter = 0
 
-        swap_in_amount = math.ceil(swap_in_amount_less_fees / (1 - self.swap_fee))
+        swap_in_amount = math.ceil(swap_in_amount_less_fees // (1 - self.swap_fee))
 
         if (swap_out_asset_id == self.asset1.asset_id):
             return BalanceDelta(self, swap_out_amount, -1 * swap_in_amount, 0, num_iter)

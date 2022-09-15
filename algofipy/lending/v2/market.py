@@ -206,10 +206,9 @@ class Market:
 
         if amount == 0:
             return AssetAmount(0, 0)
-        raw_underlying_amount = amount * self.get_underlying_supplied() / self.b_asset_circulation
-        underlying_amount = raw_underlying_amount / 10 ** self.lending_client.algofi_client.assets[self.underlying_asset_id].decimals
+        raw_underlying_amount = int(amount * self.get_underlying_supplied() // self.b_asset_circulation)
         usd_amount = self.underlying_to_usd(raw_underlying_amount)
-        return AssetAmount(underlying_amount, usd_amount)
+        return AssetAmount(raw_underlying_amount, usd_amount)
     
     def borrow_shares_to_asset_amount(self, amount):
         """Converts borrow shares to underlying borrowed amount.

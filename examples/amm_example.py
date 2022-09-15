@@ -13,7 +13,7 @@ from algofipy.transaction_utils import wait_for_confirmation, get_payment_txn, g
 from algofipy.utils import create_asset_transaction
 
 #my_path = os.path.abspath(os.path.dirname(__file__))
-ENV_PATH = "/home/jaclarke/algofi-python-sdk/examples/.env"
+ENV_PATH = "/home/ubuntu/algofi-python-sdk/examples/.env"
 
 # load user passphrase
 env_vars = dotenv_values(ENV_PATH)
@@ -168,8 +168,8 @@ wait_for_confirmation(algod, txid)
 
 # -----------------------------------------------------------
 # nanoswap operations for specified assets
-asset1_id = 31566704
-asset2_id = 465865291
+asset1_id = 818182311
+asset2_id = 841157954
 asset1 = Asset(client.amm, asset1_id)
 asset2 = Asset(client.amm, asset2_id)
 
@@ -184,7 +184,7 @@ if not user.is_opted_in_to_asset(asset1_id):
         user.address,
         int(0),
         asset_id=asset1_id
-    ).sign(txn)
+    ).sign(key)
     txid = algod.send_transaction(stxn)
     wait_for_confirmation(algod, txid)
 
@@ -195,7 +195,7 @@ if not user.is_opted_in_to_asset(asset2_id):
         user.address,
         int(0),
         asset_id=asset2_id
-    ).sign(txn)
+    ).sign(key)
     txid = algod.send_transaction(stxn)
     wait_for_confirmation(algod, txid)
 
@@ -229,7 +229,7 @@ txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
 # swap exact for in the amount of swap asset you specify
-swap_in_asset = asset1
+swap_in_asset = asset2
 swap_in_amount = int(10)
 group = pool.get_swap_exact_for_txns(
     user.address,
