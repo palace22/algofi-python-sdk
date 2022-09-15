@@ -103,14 +103,14 @@ class LendingPoolInterface:
             b_asset1_swap_amount = self.market1.underlying_to_b_asset(swap_in_amount)
             pool_quote = self.pool.get_swap_exact_for_quote(self.market1.b_asset_id, b_asset1_swap_amount)
             b_asset2_swap_amount = pool_quote.asset2_delta
-            asset2_swap_amount = self.market2.b_asset_to_asset_amount(b_asset2_swap_amount)
+            asset2_swap_amount = self.market2.b_asset_to_asset_amount(b_asset2_swap_amount).underlying
             num_iter = pool_quote.num_iter
         else:
             asset2_swap_amount = -1 * swap_in_amount
             b_asset2_swap_amount = self.market2.underlying_to_b_asset(swap_in_amount)
             pool_quote = self.pool.get_swap_exact_for_quote(self.market2.b_asset_id, b_asset2_swap_amount)
             b_asset1_swap_amount = pool_quote.asset1_delta
-            asset1_swap_amount = self.market1.b_asset_to_asset_amount(b_asset1_swap_amount)
+            asset1_swap_amount = self.market1.b_asset_to_asset_amount(b_asset1_swap_amount).underlying
             num_iter = pool_quote.num_iter
         
         return BalanceDelta(self.pool, asset1_swap_amount, asset2_swap_amount, 0, num_iter)
@@ -313,7 +313,7 @@ class LendingPoolInterface:
 
         return TransactionGroup([txn0, txn1, txn2, txn3, txn4])
     
-    def get_swap_txns(self, user, quote, max_slippage, is_swap_for_exact=False):
+    def get_swap_txns(self, user, quote, max_slippage, is_swap_for_exact=False, params=None):
 
         if params is None:
             params = get_default_params(self.algod)
@@ -323,7 +323,7 @@ class LendingPoolInterface:
         input_is_asset1 = quote.asset1_delta < 0
         input_asset = self.market1.underlying_asset_id if input_is_asset1 else self.market2.underlying_asset_id
         input_amount = -1 * quote.asset1_delta if input_is_asset1 else -1 * quote.asset2_delta
-        min_b_asset_output_amount = self.market2.underlying_to_b_asset(quote.asset2_delta) if input_is_asset1 else self.market1.underlying_to_b_asset(quote.asset1_delta)
+        min_b_asset_output_amount = floor(self.market2.underlying_to_b_asset(quote.asset2_delta) if input_is_asset1 else self.market1.underlying_to_b_asset(quote.asset1_delta))
         
         if is_swap_for_exact:
             min_b_asset_output_amount = floor(min_b_asset_output_amount * (1 - max_slippage))
@@ -348,7 +348,7 @@ class LendingPoolInterface:
         # swap step 2
         params.fee = 0
         txn2 = ApplicationNoOpTxn(
-            sender=sender=PERMISSIONLESS_SENDER_LOGIC_SIG.address(),
+            sender=PERMISSIONLESS_SENDER_LOGIC_SIG.address(),
             sp=params,
             index=self.app_id,
             app_args=[
@@ -363,7 +363,7 @@ class LendingPoolInterface:
         # swap step 3
         params.fee = 0
         txn3 = ApplicationNoOpTxn(
-            sender=sender=PERMISSIONLESS_SENDER_LOGIC_SIG.address(),
+            sender=PERMISSIONLESS_SENDER_LOGIC_SIG.address(),
             sp=params,
             index=self.app_id,
             app_args=[
@@ -374,13 +374,13 @@ class LendingPoolInterface:
             ],
             accounts=[self.pool.address],
             foreign_apps=[self.pool.application_id, self.pool.manager_application_id],
-            foreign_assets=[self.pool.asset1_id, self.pool.asset2_id]
+            foreign_assets=[self.pool.asset1.asset_id, self.pool.asset2.asset_id]
         )
 
         # swap step 4
         params.fee = 0
         txn4 = ApplicationNoOpTxn(
-            sender=sender=PERMISSIONLESS_SENDER_LOGIC_SIG.address(),
+            sender=PERMISSIONLESS_SENDER_LOGIC_SIG.address(),
             sp=params,
             index=self.app_id,
             app_args=[
@@ -393,8 +393,8 @@ class LendingPoolInterface:
 
         # swap step 5
         params.fee = 0
-        txn4 = ApplicationNoOpTxn(
-            sender=sender=PERMISSIONLESS_SENDER_LOGIC_SIG.address(),
+        txn5 = ApplicationNoOpTxn(
+            sender=PERMISSIONLESS_SENDER_LOGIC_SIG.address(),
             sp=params,
             index=self.app_id,
             app_args=[
@@ -405,4 +405,4 @@ class LendingPoolInterface:
             foreign_assets=[self.market2.underlying_asset_id, self.market2.b_asset_id]
         )
 
-        return TransactionGroup([txn0, txn1, txn2, txn3, txn4])
+        return TransactionGroup([txn0, txn1, txn2, txn3, txn4, txn5])
