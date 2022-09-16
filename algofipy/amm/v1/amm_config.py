@@ -136,7 +136,7 @@ def get_manager_application_id(network, nanoswap_key=None):
     if (network == Network.MAINNET):
         if nanoswap_key:
             return NANOSWAP_MANAGER[nanoswap_key]
-        return 605753404
+        return 841165954 # New V2 pool manager. V1 pool manager: 605753404. Needs to differentiate V1 vs V2 pools and return the correct manager app id
     elif (network == Network.TESTNET):
         if nanoswap_key:
             return NANOSWAP_MANAGER[nanoswap_key]
