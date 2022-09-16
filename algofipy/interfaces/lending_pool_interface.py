@@ -118,16 +118,19 @@ class LendingPoolInterface:
     def get_swap_for_exact_quote(self, swap_out_asset_id, swap_out_amount):
 
         if swap_out_asset_id == self.market1.underlying_asset_id:
+            asset1_swap_amount = swap_out_amount
             b_asset1_swap_amount = self.market1.underlying_to_b_asset(swap_out_amount)
             pool_quote = self.pool.get_swap_for_exact_quote(self.market1.b_asset_id, b_asset1_swap_amount)
             b_asset2_swap_amount = pool_quote.asset2_delta
-            asset2_swap_amount = self.marker2.b_asset_to_asset_amount(b_asset2_swap_amount)
+            asset2_swap_amount = 
+            self.marker2.b_asset_to_asset_amount(b_asset2_swap_amount)
             num_iter = pool_quote.num_iter
         else:
+            asset2_swap_amount = swap_out_amount
             b_asset2_swap_amount = self.market2.underlying_to_b_asset(swap_out_amount)
             pool_quote = self.pool.get_swap_for_exact_quote(self.market2.b_asset_id, b_asset2_swap_amount)
             b_asset1_swap_amount = pool_quote.asset1_delta
-            asset1_swap_amount = self.market1.b_asset_to_asset_amount(b_asset1_swap_amount).amount
+            asset1_swap_amount = self.market1.b_asset_to_asset_amount(b_asset1_swap_amount).underlying
             num_iter = pool_quote.num_iter
         
         return BalanceDelta(self.pool, asset1_swap_amount, asset2_swap_amount, 0, num_iter)
@@ -327,6 +330,7 @@ class LendingPoolInterface:
         
         if is_swap_for_exact:
             min_b_asset_output_amount = floor(min_b_asset_output_amount * (1 - max_slippage))
+            # for is_swap_for_exact swaps the additional_permisionless_fee must be increased by ~7_000
         else:
             input_amount = ceil(input_amount * (1 + max_slippage))
         
