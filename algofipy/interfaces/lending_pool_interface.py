@@ -330,7 +330,7 @@ class LendingPoolInterface:
         
         if is_swap_for_exact:
             input_amount = ceil(input_amount * (1 + max_slippage)) # for fixed output, slippage is applied on input
-            # for is_swap_for_exact swaps the additional_permisionless_fee must be increased by ~7_000
+            additional_permisionless_fee += 7_000 # for is_swap_for_exact swaps the additional_permisionless_fee must be increased by ~7_000
         else:
             min_b_asset_output_amount = floor(min_b_asset_output_amount * (1 - max_slippage)) # for fixed input, slippage is applied on output
         
