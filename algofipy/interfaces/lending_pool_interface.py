@@ -329,10 +329,10 @@ class LendingPoolInterface:
         min_b_asset_output_amount = floor(self.market2.underlying_to_b_asset(quote.asset2_delta) if input_is_asset1 else self.market1.underlying_to_b_asset(quote.asset1_delta))
         
         if is_swap_for_exact:
-            min_b_asset_output_amount = floor(min_b_asset_output_amount * (1 - max_slippage))
+            input_amount = ceil(input_amount * (1 + max_slippage)) # for fixed output, slippage is applied on input
             # for is_swap_for_exact swaps the additional_permisionless_fee must be increased by ~7_000
         else:
-            input_amount = ceil(input_amount * (1 + max_slippage))
+            min_b_asset_output_amount = floor(min_b_asset_output_amount * (1 - max_slippage)) # for fixed input, slippage is applied on output
         
         txn0 = get_payment_txn(user.address, params, self.address, input_amount, input_asset)
 
