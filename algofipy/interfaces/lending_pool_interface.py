@@ -122,8 +122,7 @@ class LendingPoolInterface:
             b_asset1_swap_amount = self.market1.underlying_to_b_asset(swap_out_amount)
             pool_quote = self.pool.get_swap_for_exact_quote(self.market1.b_asset_id, b_asset1_swap_amount)
             b_asset2_swap_amount = pool_quote.asset2_delta
-            asset2_swap_amount = 
-            self.marker2.b_asset_to_asset_amount(b_asset2_swap_amount)
+            asset2_swap_amount = self.market2.b_asset_to_asset_amount(b_asset2_swap_amount)
             num_iter = pool_quote.num_iter
         else:
             asset2_swap_amount = swap_out_amount
