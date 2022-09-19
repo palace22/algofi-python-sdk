@@ -221,11 +221,10 @@ class Market:
 
         if amount == 0:
             return AssetAmount(0, 0)
-        raw_underlying_amount = amount * self.underlying_borrowed / self.borrow_share_circulation
-        underlying_amount = raw_underlying_amount / 10**self.lending_client.algofi_client.assets[self.underlying_asset_id].decimals
+        raw_underlying_amount = int(amount * self.underlying_borrowed // self.borrow_share_circulation)
         usd_amount = self.underlying_to_usd(raw_underlying_amount)
-        return AssetAmount(underlying_amount, usd_amount)
-    
+        return AssetAmount(raw_underlying_amount, usd_amount)
+
     def underlying_to_b_asset(self, amount):
         """Convert underlying asset amount to b asset amount.
 
