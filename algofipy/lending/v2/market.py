@@ -70,13 +70,13 @@ class Market:
         self.underlying_asset_id = market_config.underlying_asset_id
         self.b_asset_id = market_config.b_asset_id
         self.market_type = market_config.market_type
-        
+
         self.load_state()
-        
+
     def load_state(self, block=None):
         """
         Loads market state from the blockchain
-        
+
         :param block: block at which to query market state
         :type block: int, optional
         :rtype: None
@@ -84,7 +84,7 @@ class Market:
 
         indexer = self.historical_indexer if block else self.indexer
         state = get_global_state(indexer, self.app_id, decode_byte_values=False, block=block)
-        
+
         # parameters
         self.borrow_factor = state.get(MARKET_STRINGS.borrow_factor, 0)
         self.collateral_factor = state.get(MARKET_STRINGS.collateral_factor, 0)
@@ -96,13 +96,13 @@ class Market:
         self.reserve_factor = state.get(MARKET_STRINGS.reserve_factor, 0)
         self.underlying_supply_cap = state.get(MARKET_STRINGS.underlying_supply_cap, 0)
         self.underlying_borrow_cap = state.get(MARKET_STRINGS.underlying_borrow_cap, 0)
-    
+
         # interest rate model
         self.base_interest_rate = state.get(MARKET_STRINGS.base_interest_rate, 0)
         self.base_interest_slope = state.get(MARKET_STRINGS.base_interest_slope, 0)
         self.quadratic_interest_amplification_factor = state.get(MARKET_STRINGS.quadratic_interest_amplification_factor, 0)
         self.target_utilization_ratio = state.get(MARKET_STRINGS.target_utilization_ratio, 0)
-    
+
         # oracle
         self.oracle = Oracle(
             self.indexer,
@@ -112,7 +112,7 @@ class Market:
             state.get(MARKET_STRINGS.oracle_price_scale_factor, 0)
         )
         self.oracle.load_price(block=block)
-    
+
         # balance
         self.underlying_cash = state.get(MARKET_STRINGS.underlying_cash, 0)
         self.underlying_borrowed = state.get(MARKET_STRINGS.underlying_borrowed, 0)
@@ -121,23 +121,23 @@ class Market:
         self.b_asset_circulation = state.get(MARKET_STRINGS.b_asset_circulation, 0)
         self.active_b_asset_collateral = state.get(MARKET_STRINGS.active_b_asset_collateral, 0)
         self.underlying_protocol_reserve = state.get(MARKET_STRINGS.underlying_protocol_reserve, 0)
-    
+
         # interest
         self.latest_time = state.get(MARKET_STRINGS.latest_time, 0)
         self.borrow_index= state.get(MARKET_STRINGS.borrow_index, 0)
         self.implied_borrow_index = state.get(MARKET_STRINGS.implied_borrow_index, 0)
-        
+
         # calculated values
         self.total_supplied = AssetAmount(
           self.get_underlying_supplied() / (10 ** self.lending_client.algofi_client.assets[self.underlying_asset_id].decimals),
           self.underlying_to_usd(self.get_underlying_supplied())
         )
-        
+
         self.total_borrowed = AssetAmount(
           self.underlying_borrowed / (10 ** self.lending_client.algofi_client.assets[self.underlying_asset_id].decimals),
           self.underlying_to_usd(self.underlying_borrowed)
         )
-        
+
         self.supply_apr, self.borrow_apr = self.get_aprs(self.total_supplied.underlying, self.total_borrowed.underlying)
 
         # rewards
@@ -147,9 +147,9 @@ class Market:
         self.rewards_programs = []
         for i in range(self.max_rewards_program_index + 1):
             self.rewards_programs.append(RewardsProgramState(state, i))
-    
+
     # GETTERS
-    
+
     def get_underlying_supplied(self):
         """Returns the total amount of underlying asset that has been supplied to the market,
         including the amount that has been borrowed
@@ -162,9 +162,9 @@ class Market:
             return self.underlying_cash
         else:
             return self.underlying_borrowed + self.underlying_cash - self.underlying_reserves
-  
+
     def get_aprs(self, total_supplied, total_borrowed):
-        """Return the supply and borrow APR for the market. 
+        """Return the supply and borrow APR for the market.
 
         :param total_supplied: total amount underlying assets supplied
         :type total_supplied: int
@@ -181,9 +181,9 @@ class Market:
             borrow_apr += self.quadratic_interest_amplification_factor * ((borrow_utilization - self.target_utilization_ratio / FIXED_6_SCALE_FACTOR)**2)
         supply_apr = borrow_apr * borrow_utilization * (1 - self.reserve_factor / FIXED_6_SCALE_FACTOR)
         return supply_apr, borrow_apr
-    
+
     # CONVERSIONS
-    
+
     def underlying_to_usd(self, amount):
         """Converts underlying to usd
 
@@ -194,7 +194,7 @@ class Market:
         """
 
         return (amount * self.oracle.raw_price) / (self.oracle.scale_factor * FIXED_3_SCALE_FACTOR)
-    
+
     def b_asset_to_asset_amount(self, amount):
         """Converts b asset amount to underlying amount
 
@@ -209,7 +209,7 @@ class Market:
         raw_underlying_amount = int(amount * self.get_underlying_supplied() // self.b_asset_circulation)
         usd_amount = self.underlying_to_usd(raw_underlying_amount)
         return AssetAmount(raw_underlying_amount, usd_amount)
-    
+
     def borrow_shares_to_asset_amount(self, amount):
         """Converts borrow shares to underlying borrowed amount.
 
@@ -236,7 +236,7 @@ class Market:
         """
 
         return amount * self.b_asset_circulation / self.get_underlying_supplied()
-    
+
     # TRANSACTION BUILDERS
     def get_b_asset_opt_in_txn(self, user, params=None):
         """Returns a :class:`AssetTransferTxn` object representing a transfer of zero units of the b asset.
@@ -306,7 +306,7 @@ class Market:
         foreign_apps1 = [self.manager_app_id]
         foreign_assets1 = [self.b_asset_id]
         txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, foreign_apps=foreign_apps1, foreign_assets=foreign_assets1)
-        
+
         return TransactionGroup([txn0, txn1])
 
     def get_add_underlying_collateral_txns(self, user, underlying_amount, params=None):
@@ -337,9 +337,9 @@ class Market:
         accounts1 = [user.storage_address]
         foreign_apps1 = [self.manager_app_id]
         txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, accounts=accounts1, foreign_apps=foreign_apps1)
-        
+
         return TransactionGroup([txn0, txn1])
-        
+
     def get_add_b_asset_collateral_txns(self, user, b_asset_amount, params=None):
         """Returns a :class:`TransactionGroup` object representing an add collateral group
         transaction against the algofi protocol. Sender adds bank asset amount to collateral by sending
@@ -356,7 +356,7 @@ class Market:
         """
 
         assert self.market_type != MarketType.VAULT
-        
+
         if params is None:
             params = get_default_params(self.algod)
 
@@ -369,9 +369,9 @@ class Market:
         accounts1 = [user.storage_address]
         foreign_apps1 = [self.manager_app_id]
         txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, accounts=accounts1, foreign_apps=foreign_apps1)
-        
+
         return TransactionGroup([txn0, txn1])
-        
+
     def get_remove_underlying_collateral_txns(self, user, underlying_amount, params=None):
         """Returns a :class:`TransactionGroup` object representing a remove collateral group
         transaction against the algofi protocol. Sender reclaims underlying collateral asset by reducing their active
@@ -400,9 +400,9 @@ class Market:
         foreign_apps0 = [self.manager_app_id]
         foreign_assets0 = [self.underlying_asset_id]
         txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args0, accounts=accounts0, foreign_apps=foreign_apps0, foreign_assets=foreign_assets0)
-        
+
         return preamble_txns + TransactionGroup([txn0])
-        
+
     def get_remove_b_asset_collateral_txns(self, user, b_asset_amount, params=None):
         """Returns a :class:`TransactionGroup` object representing a remove collateral group
         transaction against the algofi protocol. Sender reclaims collateral bank asset by reducing their active
@@ -419,7 +419,7 @@ class Market:
         """
 
         assert self.market_type != MarketType.VAULT
-        
+
         if params is None:
             params = get_default_params(self.algod)
 
@@ -432,9 +432,9 @@ class Market:
         foreign_apps0 = [self.manager_app_id]
         foreign_assets0 = [self.b_asset_id]
         txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args0, accounts=accounts0, foreign_apps=foreign_apps0, foreign_assets=foreign_assets0)
-        
+
         return preamble_txns + TransactionGroup([txn0])
-    
+
     def get_burn_txns(self, user, b_asset_amount, params=None):
         """Returns a :class:`TransactionGroup` object representing a burn group
         transaction against the algofi protocol. Sender reclaims underlying collateral asset by burning bank asset.
@@ -450,20 +450,20 @@ class Market:
         """
 
         assert self.market_type != MarketType.VAULT
-        
+
         if params is None:
             params = get_default_params(self.algod)
 
         # payment
         txn0 = get_payment_txn(user.address, params, self.address, b_asset_amount, self.b_asset_id)
-        
+
         # application call
         app_args1 = [bytes(MARKET_STRINGS.burn_b_asset, "utf-8")]
         foreign_apps1 = [self.manager_app_id]
         foreign_assets1 = [self.underlying_asset_id]
         params.fee = 3000
         txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, foreign_apps=foreign_apps1, foreign_assets=foreign_assets1)
-        
+
         return TransactionGroup([txn0, txn1])
 
     def get_borrow_txns(self, user, underlying_amount, params=None):
@@ -482,7 +482,7 @@ class Market:
         """
 
         assert (self.market_type != MarketType.VAULT) and (self.market_type != MarketType.LP)
-        
+
         if params is None:
             params = get_default_params(self.algod)
 
@@ -494,9 +494,9 @@ class Market:
         foreign_apps0 = [self.manager_app_id]
         foreign_assets0 = [self.underlying_asset_id]
         txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args0, accounts=accounts0, foreign_apps=foreign_apps0, foreign_assets=foreign_assets0)
-        
+
         return preamble_txns + TransactionGroup([txn0])
-    
+
     def get_repay_borrow_txns(self, user, underlying_amount, params=None):
         """Returns a :class:`TransactionGroup` object representing a repay borrow group
         transaction against the algofi protocol. Sender repays borrowed underlying asset + interest to the protocol.
@@ -512,13 +512,13 @@ class Market:
         """
 
         assert (self.market_type != MarketType.VAULT) and (self.market_type != MarketType.LP)
-        
+
         if params is None:
             params = get_default_params(self.algod)
 
         # payment
         txn0 = get_payment_txn(user.address, params, self.address, underlying_amount, self.underlying_asset_id)
-        
+
         # application call
         params.fee = 3000
         app_args1 = [bytes(MARKET_STRINGS.repay_borrow, "utf-8")]
@@ -526,9 +526,9 @@ class Market:
         foreign_apps1 = [self.manager_app_id]
         foreign_assets = [self.underlying_asset_id]
         txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, accounts=accounts1, foreign_apps=foreign_apps1, foreign_assets=foreign_assets)
-        
+
         return TransactionGroup([txn0, txn1])
-    
+
     def get_liquidate_txns(self, user, target_user, repay_amount, seize_collateral_market, params=None):
         """Returns a :class:`TransactionGroup` object representing a liquidate group
         transaction against the algofi protocol. Sender repays borrowed underlying asset + interest on behalf of
@@ -549,23 +549,23 @@ class Market:
         """
 
         assert self.market_type != MarketType.VAULT
-        
+
         if params is None:
             params = get_default_params(self.algod)
-        
+
         preamble_txns = target_user.get_preamble_txns(params, self.app_id, user.address)
-        
+
         # liquidate application call
         params.fee = 1000 + 1000 * preamble_txns.length()
         app_args0 = [bytes(MARKET_STRINGS.liquidate, 'utf-8')]
         accounts0 = [target_user.storage_address, get_application_address(seize_collateral_market.app_id)]
         foreign_apps0 = [self.manager_app_id, seize_collateral_market.app_id]
         txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args=app_args0, accounts=accounts0, foreign_apps=foreign_apps0)
-        
+
         # payment
         params.fee = 1000
         txn1 = get_payment_txn(user.address, params, self.address, repay_amount, self.underlying_asset_id)
-        
+
         # seize collateral application call
         params.fee = 2000 + 1000 * preamble_txns.length()
         app_args2 = [bytes(MARKET_STRINGS.seize_collateral, 'utf-8')]
