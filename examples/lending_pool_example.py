@@ -12,8 +12,8 @@ from algofipy.amm.v1.asset import Asset
 from algofipy.transaction_utils import wait_for_confirmation, get_payment_txn, get_default_params
 from algofipy.utils import create_asset_transaction
 
-#my_path = os.path.abspath(os.path.dirname(__file__))
-ENV_PATH = "/home/ubuntu/algofi-python-sdk/examples/.env"
+my_path = os.path.abspath(os.path.dirname(__file__))
+ENV_PATH = os.path.join(my_path, "../.env")
 
 # load user passphrase
 env_vars = dotenv_values(ENV_PATH)
