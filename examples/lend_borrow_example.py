@@ -9,8 +9,8 @@ from algofipy.algofi_client import AlgofiClient
 from algofipy.globals import Network
 from algofipy.transaction_utils import wait_for_confirmation
 
-#my_path = os.path.abspath(os.path.dirname(__file__))
-ENV_PATH = "/home/jaclarke/algofi-python-sdk/examples/.env"
+my_path = os.path.abspath(os.path.dirname(__file__))
+ENV_PATH = os.path.join(my_path, "../.env")
 
 # load user passphrase
 env_vars = dotenv_values(ENV_PATH)
