@@ -11,6 +11,16 @@ import pprint
 
 class Staking:
     def __init__(self, staking_client, rewards_manager_app_id, staking_config):
+        """The python representation of an algofi staking smart contract
+
+        :param staking_client:
+        :type staking_client: :class:`StakingClient`
+        :param rewards_manager_app_id:
+        :type rewards_manager_app_id: int
+        :param staking_config: staking config with staking metadata
+        :type staking_config: :class:`StakingConfig`
+        """
+
         self.staking_client = staking_client
         self.algod = self.staking_client.algod
         self.indexer = self.staking_client.indexer
@@ -23,6 +33,14 @@ class Staking:
         self.rewards_manager_app_id = rewards_manager_app_id
 
     def load_state(self, block=None):
+        """
+        Loads staking state from the blockchain
+
+        :param block: block at which to query staking state
+        :type block: int, optional
+        :rtype: None
+        """
+
         indexer = self.historical_indexer if block else self.indexer
         global_state = get_global_state(indexer, self.app_id, block=block)
 
@@ -42,10 +60,24 @@ class Staking:
             self.rewards_program_states[i] = RewardsProgramState(self, formatted_state, i)
 
     def get_total_staked(self):
-        # TODO: Is this correct?
+        """Returns the total staked amount.
+
+        :return: Staked amount in base unit terms
+        :rtype: int
+        """
+
         return self.total_staked
 
     def get_user_opt_in_txns(self, user):
+        """Returns a :class:`TransactionGroup` object representing a staking opt in
+        transaction against the algofi protocol.
+
+        :param user: staking account for the sender
+        :type user: :class:`StakingUser`
+        :return: :class:`TransactionGroup` object representing an opt in group transaction of size 1
+        :rtype: :class:`TransactionGroup`
+        """
+
         if params is None:
             params = get_default_params(self.algod)
 
@@ -54,6 +86,15 @@ class Staking:
         return TransactionGroup([txn0])
 
     def get_user_close_out_txns(self, user):
+        """Returns a :class:`TransactionGroup` object representing a staking close out
+        transaction against the algofi protocol.
+
+        :param user: staking account for the sender
+        :type user: :class:`StakingUser`
+        :return: :class:`TransactionGroup` object representing an opt in group transaction of size 1
+        :rtype: :class:`TransactionGroup`
+        """
+
         if params is None:
             params = get_default_params(self.algod)
 
@@ -62,7 +103,21 @@ class Staking:
 
         return TransactionGroup([txn0])
 
-    def get_stake_txns(self, user, amount, params=None):
+    def get_stake_txns(self, user, b_asset_amount, params=None):
+        """Returns a :class:`TransactionGroup` object representing a stake group
+        transaction against the algofi protocol. Sender adds bank asset amount to staking
+        contract by sending them to the account address of the staking application.
+
+        :param user: staking account for the sender
+        :type user: :class:`StakingUser`
+        :param b_asset_amount: amount of bank asset to add to collateral
+        :type b_asset_amount: int
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
+        :return: :class:`TransactionGroup` object representing an opt in group transaction of size 3
+        :rtype: :class:`TransactionGroup`
+        """
+
         if params is None:
             params = get_default_params(self.algod)
 
@@ -71,7 +126,7 @@ class Staking:
         txn0 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args0)
 
         # sending staking asset
-        txn1 = get_payment_txn(user.address, params, self.address, amount, self.asset_id)
+        txn1 = get_payment_txn(user.address, params, self.address, b_asset_amount, self.asset_id)
 
         # stake
         params.fee = 2000
@@ -81,7 +136,20 @@ class Staking:
 
         return TransactionGroup([txn0, txn1, txn2])
 
-    def get_unstake_txns(self, user, amount, params=None):
+    def get_unstake_txns(self, user, b_asset_amount, params=None):
+        """Returns a :class:`TransactionGroup` object representing a unstake group
+        transaction against the algofi protocol. Sender reclaims bank asset by unstaking.
+
+        :param user: staking account for the sender
+        :type user: :class:`StakingUser`
+        :param b_asset_amount: amount of bank asset to add to collateral
+        :type b_asset_amount: int
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
+        :return: :class:`TransactionGroup` object representing an opt in group transaction of size 2
+        :rtype: :class:`TransactionGroup`
+        """
+
         if params is None:
             params = get_default_params(self.algod)
 
@@ -91,14 +159,25 @@ class Staking:
 
         # unstake
         params.fee = 3000
-        app_args1 = [bytes(STAKING_STRINGS.unstake, "utf-8"), int_to_bytes(amount)]
+        app_args1 = [bytes(STAKING_STRINGS.unstake, "utf-8"), int_to_bytes(b_asset_amount)]
         foreign_apps1 = [self.voting_escrow_app_id or 1]
         foreign_assets1 = [self.asset_id]
         txn1 = ApplicationNoOpTxn(user.address, params, self.app_id, app_args1, foreign_apps=foreign_apps1, foreign_assets=foreign_assets1)
 
         return TransactionGroup([txn0, txn1])
 
-    def get_claim_txns(self, user):
+    def get_claim_txns(self, user, params=None):
+        """Returns a :class:`TransactionGroup` object representing a claim rewards group
+        transaction against the algofi protocol. Sender claims accrued rewards from all rewards program.
+
+        :param user: account for the sender
+        :type user: :class:`StakingUser`
+        :param params: algod params
+        :type params: :class: `algosdk.future.transaction.SuggestedParams`
+        :return: :class:`TransactionGroup` object representing a claim rewards group transaction.
+        :rtype: :class:`TransactionGroup`
+        """
+
         if params is None:
             params = get_default_params(self.algod)
 
