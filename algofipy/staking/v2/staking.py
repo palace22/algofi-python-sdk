@@ -45,7 +45,6 @@ class Staking:
         global_state = get_global_state(indexer, self.app_id, block=block)
 
         self.latest_time = global_state[STAKING_STRINGS.latest_time]
-        # TODO: Do this need a "encode_address(b64decode" like market.py does?
         self.rewards_escrow_account = global_state[STAKING_STRINGS.rewards_escrow_account]
         self.voting_escrow_app_id = global_state[STAKING_STRINGS.voting_escrow_app_id]
         self.total_staked = global_state[STAKING_STRINGS.total_staked]
