@@ -11,7 +11,7 @@ from algosdk.future.transaction import LogicSigAccount, LogicSigTransaction, OnC
 # local
 from .amm_config import PoolStatus, Network, get_validator_index, get_approval_program_by_pool_type, \
     get_clear_state_program, get_swap_fee, get_manager_application_id, PoolType, TESTNET_NANOSWAP_POOLS, \
-    MAINNET_NANOSWAP_POOLS, POOL_STRINGS, MANAGER_STRINGS, PARAMETER_SCALE_FACTOR
+    MAINNET_NANOSWAP_POOLS, LENDING_POOLS, POOL_STRINGS, MANAGER_STRINGS, PARAMETER_SCALE_FACTOR
 from .balance_delta import BalanceDelta
 from .logic_sig_generator import generate_logic_sig
 from .stable_swap_math import get_D, get_y
@@ -49,10 +49,7 @@ class Pool:
         self.pool_type = pool_type
         self.asset1 = asset1
         self.asset2 = asset2
-        if pool_type == PoolType.NANOSWAP:
-            self.manager_application_id = get_manager_application_id(self.network, nanoswap_key=(asset1.asset_id, asset2.asset_id))
-        else:
-            self.manager_application_id = get_manager_application_id(self.network)
+        self.manager_application_id = get_manager_application_id(self.network, pool_key=(asset1.asset_id, asset2.asset_id))
         self.manager_address = get_application_address(self.manager_application_id)
         self.validator_index = get_validator_index(self.network, pool_type)
         self.swap_fee = get_swap_fee(pool_type)
@@ -70,6 +67,9 @@ class Pool:
             else:
                 self.pool_status = PoolStatus.ACTIVE
                 self.application_id = self.nanoswap_pools[key]
+        elif (asset1.asset_id, asset2.asset_id) in LENDING_POOLS:
+            self.pool_status = PoolStatus.ACTIVE
+            self.application_id = LENDING_POOLS[(asset1.asset_id, asset2.asset_id)]
         else:
             # get local state
             self.logic_sig = LogicSigAccount(generate_logic_sig(asset1.asset_id, asset2.asset_id, self.manager_application_id, self.validator_index))
