@@ -86,7 +86,7 @@ class Pool:
                 (logic_sig_local_state[MANAGER_STRINGS.registered_asset_2_id] != asset2.asset_id) or \
                 (logic_sig_local_state[MANAGER_STRINGS.validator_index] != self.validator_index):
                     raise Exception("Logic sig state does not match as expected")
-                
+
                 self.application_id = logic_sig_local_state[MANAGER_STRINGS.registered_pool_id]
 
         # if application id has been set, then either nanoswap pool or vanilla pool is active
@@ -99,7 +99,7 @@ class Pool:
             self.reserve_factor = pool_state[POOL_STRINGS.reserve_factor]
             self.flash_loan_fee = pool_state[POOL_STRINGS.flash_loan_fee]
             self.max_flash_loan_ratio = pool_state[POOL_STRINGS.max_flash_loan_ratio]
-            
+
             # additionally save down nanoswap metadata if applicable
             if self.pool_type == PoolType.NANOSWAP:
                 self.initial_amplification_factor = pool_state.get(POOL_STRINGS.initial_amplification_factor, 0)
@@ -133,7 +133,7 @@ class Pool:
                 (logic_sig_local_state[MANAGER_STRINGS.registered_asset_2_id] != self.asset2.asset_id) or \
                 (logic_sig_local_state[MANAGER_STRINGS.validator_index] != self.validator_index):
                     raise Exception("Logic sig state does not match as expected")
-                
+
                 self.application_id = logic_sig_local_state[MANAGER_STRINGS.registered_pool_id]
 
                 self.address = get_application_address(self.application_id)
@@ -247,7 +247,7 @@ class Pool:
         return TransactionGroup([txn0])
 
     def get_initialize_pool_txns(self, sender, pool_app_id, params=None):
-        """Get group transaction for initializing the pool. First, the manager is 
+        """Get group transaction for initializing the pool. First, the manager is
         funded (which funds the pool contract (for opting into assets, creating LP token)
         via an inner payment txn. Then, the logic sig is funded to opt into manager.
         After, the sender calls the initialize function on the pool. This transaction
@@ -426,7 +426,7 @@ class Pool:
 
     def get_swap_exact_for_txns(self, sender, swap_in_asset, swap_in_amount, min_amount_to_receive, params=None, fee=2000):
         """Get group transaction for swap exact for transaction. An exact amount of the asset
-        to be swapped is sent via a :class:`PaymentTxn` or :class:`AssetTransferTxn`. 
+        to be swapped is sent via a :class:`PaymentTxn` or :class:`AssetTransferTxn`.
         Then, a swap exact for call is made from which the output asset is sent via inner transaction.
         If the output asset amount exceeds the min_amount_to_receive, the transaction succeeds.
 
@@ -467,7 +467,7 @@ class Pool:
         """Get group transaction for swap for exact transaction. An amount of the asset to be
         swapped is sent via a :class:`PaymentTxn` or :class:`AssetTransferTxn`. Then, swap for exact
         call is made to swap for an exact amount of the output asset. If a sufficient amount
-        of the incoming asset has been sent, the transaction succeeds. If it succeeds, a 
+        of the incoming asset has been sent, the transaction succeeds. If it succeeds, a
         residual amount of the incoming asset is redeemed by the user in the next call.
 
         :param sender: sender
