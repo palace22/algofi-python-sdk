@@ -144,7 +144,7 @@ def get_manager_application_id(network, pool_key=None):
             return LENDING_POOLS_MANAGER[pool_key]
         return 605753404
     elif (network == Network.TESTNET):
-        if pool_key:
+        if pool_key in NANOSWAP_MANAGER:
             return NANOSWAP_MANAGER[pool_key]
         elif pool_key in LENDING_POOLS_MANAGER:
             return LENDING_POOLS_MANAGER[pool_key]
