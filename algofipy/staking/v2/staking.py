@@ -1,4 +1,5 @@
 from algosdk import logic
+from algosdk.encoding import encode_address
 from ...state_utils import get_global_state, format_prefix_state
 from .staking_config import STAKING_STRINGS
 from .rewards_program_state import RewardsProgramState
@@ -23,7 +24,7 @@ class Staking:
         global_state = get_global_state(indexer, self.app_id, block=block)
 
         self.latest_time = global_state[STAKING_STRINGS.latest_time]
-        self.rewards_escrow_account = global_state[STAKING_STRINGS.rewards_escrow_account]
+        self.rewards_escrow_account = encode_address(b64decode(global_state.get(STAKING_STRINGS.rewards_escrow_account, '')))
         self.voting_escrow_app_id = global_state[STAKING_STRINGS.voting_escrow_app_id]
         self.total_staked = global_state[STAKING_STRINGS.total_staked]
         self.scaled_total_staked = global_state[STAKING_STRINGS.scaled_total_staked]
@@ -34,4 +35,4 @@ class Staking:
         formatted_state = format_prefix_state(global_state)
 
         for i in range(self.rewards_program_count):
-            self.rewards_program_states[i] = RewardsProgramState(self, formatted_state, i)
+            self.rewards_program_states[i] = RewardsProgramState(self, global_state, formatted_state, i)
