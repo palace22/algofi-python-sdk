@@ -45,7 +45,7 @@ class Staking:
         global_state = get_global_state(indexer, self.app_id, block=block)
 
         self.latest_time = global_state[STAKING_STRINGS.latest_time]
-        self.rewards_escrow_account = global_state[STAKING_STRINGS.rewards_escrow_account]
+        self.rewards_escrow_account = encode_address(b64decode(state.get(STAKING_STRINGS.rewards_escrow_account, '')))
         self.voting_escrow_app_id = global_state[STAKING_STRINGS.voting_escrow_app_id]
         self.total_staked = global_state[STAKING_STRINGS.total_staked]
         self.scaled_total_staked = global_state[STAKING_STRINGS.scaled_total_staked]
