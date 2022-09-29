@@ -67,7 +67,7 @@ class Staking:
 
         return self.total_staked
 
-    def get_user_opt_in_txns(self, user):
+    def get_user_opt_in_txns(self, user, params=None):
         """Returns a :class:`TransactionGroup` object representing a staking opt in
         transaction against the algofi protocol.
 
@@ -84,7 +84,7 @@ class Staking:
 
         return TransactionGroup([txn0])
 
-    def get_user_close_out_txns(self, user):
+    def get_user_close_out_txns(self, user, params=None):
         """Returns a :class:`TransactionGroup` object representing a staking close out
         transaction against the algofi protocol.
 
