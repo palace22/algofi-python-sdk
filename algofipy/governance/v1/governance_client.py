@@ -57,7 +57,6 @@ class GovernanceClient:
         """
 
         params = get_default_params(self.algod)
-        txns = []
 
         txn0 = PaymentTxn(
             sender=user.address,
