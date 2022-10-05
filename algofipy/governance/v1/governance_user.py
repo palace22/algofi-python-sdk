@@ -23,18 +23,24 @@ class GovernanceUser:
         self.governance_client = governance_client
         self.algod = self.governance_client.algod
         self.indexer = self.governance_client.indexer
+        self.historical_indexer = self.governance_client.historical_indexer
         self.address = address
+        self.load_state()
 
-    def load_state(self, user_local_states):
+    def load_state(self, block=None):
         """A function which will load in all of the state for a governance user
         including their admin state, voting escrow state, and rewards manager
         state into the governance user object.
 
-        :param user_local_states: a dict of all of the local states for the
-        particular user with the admin, voting escrow, and rewards manager
-        contracts.
-        :type user_local_states: dict
+        :param block: block at which to load user governance state
+        :type block: int, optional
         """
+
+        # get user local states
+        if block:
+            user_local_states = get_local_states(self.historical_indexer, self.address, block=block)
+        else:
+            user_local_states = get_local_states(self.indexer, self.address)
 
         for app_id in user_local_states:
             user_local_state = user_local_states[app_id]

@@ -22,6 +22,7 @@ class VotingEscrow:
         self.governance_token = self.governance_client.governance_config.governance_token
         self.voting_escrow_min_time_lock_seconds = governance_client.governance_config.voting_escrow_min_time_lock_seconds
         self.voting_escrow_max_time_lock_seconds = governance_client.governance_config.voting_escrow_max_time_lock_seconds
+        self.load_state()
 
     def load_state(self):
         """Function which will update the data on the voting escrow object to match

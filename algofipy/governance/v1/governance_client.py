@@ -5,7 +5,10 @@ from algosdk.future.transaction import PaymentTxn, ApplicationOptInTxn
 # INTERFACE
 from algofipy.globals import Network
 from algofipy.transaction_utils import get_default_params, TransactionGroup
-from algofipy.governance.v1.governance_config import ADMIN_STRINGS
+from algofipy.governance.v1.governance_config import GOVERNANCE_CONFIGS, ADMIN_STRINGS
+from algofipy.governance.v1.admin import Admin
+from algofipy.governance.v1.voting_escrow import VotingEscrow
+from algofipy.governance.v1.rewards_manager import RewardsManager
 
 class GovernanceClient:
 
@@ -19,8 +22,10 @@ class GovernanceClient:
         self.algofi_client = algofi_client
         self.algod = algofi_client.algod
         self.indexer = algofi_client.indexer
+        self.historical_indexer = algofi_client.historical_indexer
         self.network = algofi_client.network
-        self.governance_config = GovernanceConfig[self.network]
+        self.governance_config = GOVERNANCE_CONFIGS[self.network]
+        self.load_state()
 
     def load_state(self):
         """Creates new admin, voting escrow, and rewards managers on the algofi client 

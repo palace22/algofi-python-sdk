@@ -5,10 +5,10 @@ from algosdk import logic
 from requests import get
 
 # INTERFACE
-from algofipy.state_utils import get_local_states
+from algofipy.state_utils import get_local_states, get_global_state
 from algofipy.utils import base64_to_utf8
 from algofipy.globals import get_analytics_endpoint
-from algofipy.governance.v1.governance_config import ADMIN_STRINGS
+from algofipy.governance.v1.governance_config import ADMIN_STRINGS, PROPOSAL_STRINGS
 
 class Proposal:
 
@@ -25,10 +25,11 @@ class Proposal:
         self.algod = governance_client.algod
         self.indexer = governance_client.indexer
         self.app_id = proposal_app_id
-        self.admin_app_id = admin_app_id
+        self.admin_app_id = governance_client.governance_config.admin_app_id
         self.proposal_address = logic.get_application_address(self.app_id)
+        self.load_state()
     
-    def load_state():
+    def load_state(self):
         """Function that will update the data on the proposal object with the global
         and local data of the proposal contract on chain.
         """
@@ -48,8 +49,8 @@ class Proposal:
         
         # get proposal metadata from proposal contract
         proposal_global_state = get_global_state(self.indexer, self.app_id)
-        self.title = base64_to_utf8(proposal_global_state[PROPOSAL_STRINGS.title])
-        self.link = base64_to_utf8(proposal_global_state[PROPOSAL_STRINGS.link])
+        self.title = proposal_global_state[PROPOSAL_STRINGS.title]
+        self.link = proposal_global_state[PROPOSAL_STRINGS.link]
 
 
     def get_proposal_data(topic_id):

@@ -29,13 +29,9 @@ class GovernanceConfig:
         self.voting_escrow_max_time_lock_seconds = 60 * 60 * 24 * 365 * 4
         self.voting_escrow_min_time_lock_seconds = 60 * 60 * 24 * 7
 
-MARKET_CONFIGS = {
-    Network.MAINNET : [
-        GovernanceConfig(0, 0, 0, 0, 0),
-    ],
-    Network.TESTNET : [
-        GovernanceConfig(107210614, 107210153, 107211052, 107210021, 107212062)
-    ]
+GOVERNANCE_CONFIGS = {
+    Network.MAINNET : GovernanceConfig(0, 0, 0, 0, 0),
+    Network.TESTNET : GovernanceConfig(107210614, 107210153, 107211052, 107210021, 107212062)
 }
 
 class ProposalConfig:

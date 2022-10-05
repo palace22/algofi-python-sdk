@@ -4,7 +4,8 @@ from algosdk import logic
 from algosdk.future.transaction import PaymentTxn, ApplicationNoOpTxn, AssetTransferTxn, ApplicationCloseOutTxn
 
 # INTERFACE
-from algofipy.governance.v1.governance_config import VOTING_ESCROW_STRINGS
+from algofipy.governance.v1.governance_config import VOTING_ESCROW_STRINGS, ADMIN_STRINGS, PROPOSAL_FACTORY_STRINGS
+from algofipy.governance.v1.proposal import Proposal
 from algofipy.state_utils import get_global_state
 from algofipy.utils import int_to_bytes
 from algofipy.transaction_utils import TransactionGroup, get_default_params
@@ -49,8 +50,9 @@ class Admin:
 
         # get the proposals created from the factory
         proposal_factory_info = self.indexer.account_info(self.proposal_factory_address)["account"]
+        self.proposals = {}
         for app_object in proposal_factory_info["created-apps"]:
-            self.proposals[app_object["id"]] = Proposal(self.goverance_client, app_object["id"])
+            self.proposals[app_object["id"]] = Proposal(self.governance_client, app_object["id"])
             self.proposals[app_object["id"]].load_state()
     
     def get_update_user_vebank_txns(self, user_calling, user_updating):
@@ -202,7 +204,7 @@ class Admin:
             sp=params,
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.delegated_vote, "utf-8")],
-            foreign_apps=[proposal.app_id, self.goverance_client.voting_escrow.app_id],
+            foreign_apps=[proposal.app_id, self.governance_client.voting_escrow.app_id],
             accounts=[
                 voting_user.address,
                 voting_user.governance.v1.user_admin_state.storage_address,
