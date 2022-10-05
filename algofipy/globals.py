@@ -28,3 +28,21 @@ class Network:
 
 # LOGIC SIG
 PERMISSIONLESS_SENDER_LOGIC_SIG = LogicSigAccount([6, 49, 16, 129, 6, 18, 68, 49, 25, 129, 0, 18, 68, 49, 9, 50, 3, 18, 68, 49, 32, 50, 3, 18, 68, 129, 1, 67])
+
+# ANALYTICS ENDPOINT
+MAINNET_ANALYTICS_ENDPOINT = "https://api.algofi.org"
+TESTNET_ANALYTICS_ENDPOINT = "https://api-dev.algofi.org"
+
+def get_analytics_endpoint(network):
+    """Get Algofi analytics endpoint for given network
+
+    :param network: algofi network
+    :type network: :class:`Network`
+    :return: algofi analytics url
+    :rtype: str
+    """
+
+    if network == Network.MAINNET:
+        return MAINNET_ANALYTICS_ENDPOINT
+    else:
+        return TESTNET_ANALYTICS_ENDPOINT

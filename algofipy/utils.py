@@ -1,4 +1,5 @@
 # IMPORTS
+import base64
 
 # external
 from algosdk import account, mnemonic
@@ -18,6 +19,17 @@ def int_to_bytes(num):
     """
 
     return num.to_bytes(8, 'big')
+
+def base64_to_utf8(b64_str):
+    """Convert base64 to utf8.
+    :param b64_str: base64 string to convert
+    :type b64_str: str
+    :return: utf8 string
+    :rtype: str
+    """
+
+    return base64.b64decode(b64_str).decode("utf-8")
+
 
 def bytes_to_int(bytes):
     """Bytes to convert to int.
