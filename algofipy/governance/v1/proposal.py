@@ -15,6 +15,7 @@ class Proposal:
     def __init__(self, governance_client, app_id, admin_app_id):
         """Initialize a proposal contract.
         """
+
         self.governance_client = governance_client
         self.network = governance_client.network
         self.algod = governance_client.algod
@@ -52,6 +53,7 @@ class Proposal:
         :param topic_id: topic id for proposal posted on Algofi governance portal.
         :type topic_id: int
         """
+
         try:
             data = get(get_analytics_endpoint(self.network) + "/getDiscourseTopic?topic_id=" + topic_id).json()
         except:
