@@ -1,4 +1,39 @@
 
+# IMPORTS
+
+# INTERFACE
+from algofipy.globals import Network
+
+class GovernanceConfig:
+
+    def __init__(self, admin_app_id, voting_escrow_app_id, proposal_factory_app_id, rewards_manager_app_id, governance_token):
+        """Initialize governance config.
+        """
+
+        self.admin_app_id = admin_app_id
+        self.voting_escrow_app_id = voting_escrow_app_id
+        self.proposal_factory_app_id = proposal_factory_app_id
+        self.rewards_manager_app_id = rewards_manager_app_id
+        self.governance_token = governance_token
+        self.voting_escrow_max_time_lock_seconds = 60 * 60 * 24 * 365 * 4
+        self.voting_escrow_min_time_lock_seconds = 60 * 60 * 24 * 7
+
+MARKET_CONFIGS = {
+    Network.MAINNET : [
+        GovernanceConfig(0, 0, 0, 0, 0),
+    ],
+    Network.TESTNET : [
+        GovernanceConfig(107210614, 107210153, 107211052, 107210021, 107212062)
+    ]
+}
+
+class ProposalConfig:
+
+    def __init__(self, app_id):
+        """Initialize proposal config.
+        """
+
+        self.app_id = app_id
 
 class VOTING_ESCROW_STRINGS:
     admin_contract_app_id = "acid"
