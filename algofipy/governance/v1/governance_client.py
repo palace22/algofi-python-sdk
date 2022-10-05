@@ -10,7 +10,10 @@ from algofipy.governance.v1.governance_config import ADMIN_STRINGS
 class GovernanceClient:
 
     def __init__(self, algofi_client):
-        """Initialize governance client.
+        """Constructor for the algofi governance client.
+
+        :param algofi_client: an instance of an algofi client
+        :type algofi_client: :class:`AlgofiClient`
         """
 
         self.algofi_client = algofi_client
@@ -20,7 +23,8 @@ class GovernanceClient:
         self.governance_config = GovernanceConfig[self.network]
 
     def load_state(self):
-        """Load state of the Algofi governance client.
+        """Creates new admin, voting escrow, and rewards managers on the algofi client 
+        object and loads their state.
         """
 
         # load admin contract data
@@ -35,11 +39,11 @@ class GovernanceClient:
         self.rewards_manager = RewardsManager(self, self.governance_config)
     
     def get_user(user_address):
-        """Get Algofi governance user.
+        """Gets an algofi governance user given an address.
 
-        :param user_address: user address in Algofi governance
+        :param user_address: the address of the user we are interested in.
         :type user_address: str
-        :return: governance user object
+        :return: an algofi governance user.
         :rtype: :class:`GovernanceUser`
         """
 
@@ -50,10 +54,15 @@ class GovernanceClient:
         account into all of the necessary applications for governance including the
         admin, the voting escrow, and the rewards manager.
 
-        :param user: Algofi user object
+        :param user: user we are opting into the contracts
         :type user: :class:`AlgofiUser`
-        :param storage_address: address of the user storage account for governance
+        :param storage_address: a newly created account that will serve as the
+        storage account for the user on the protocol
         :type storage_address: str
+        :return: a series of transactions to opt the user and their storage
+        account into all of the necessary applications for governance including the
+        admin, the voting escrow, and the rewards manager.
+        :rtype: :class:`TransactionGroup`
         """
 
         params = get_default_params(self.algod)

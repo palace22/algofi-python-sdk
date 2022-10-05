@@ -7,7 +7,18 @@ from algofipy.globals import Network
 class GovernanceConfig:
 
     def __init__(self, admin_app_id, voting_escrow_app_id, proposal_factory_app_id, rewards_manager_app_id, governance_token):
-        """Initialize governance config.
+        """Constructor for the governance config clas
+
+        :param admin_app_id: admin app id
+        :type admin_app_id: int
+        :param voting_escrow_app_id: voting escrow app id
+        :type voting_escrow_app_id: int
+        :param proposal_factory_app_id: proposal factory app id
+        :type proposal_factory_app_id: int
+        :param rewards_manager_app_id: rewards manager app id
+        :type rewards_manager_app_id: int
+        :param governance_token: governance token asset id
+        :type governance_token: int
         """
 
         self.admin_app_id = admin_app_id
@@ -30,7 +41,10 @@ MARKET_CONFIGS = {
 class ProposalConfig:
 
     def __init__(self, app_id):
-        """Initialize proposal config.
+        """Constructor for the proposal config class.
+
+        :param app_id: proposal app id
+        :type app_id: int
         """
 
         self.app_id = app_id

@@ -12,7 +12,12 @@ from algofipy.governance.v1.user_rewards_manager_state import UserRewardsManager
 class GovernanceUser:
 
     def __init__(self, governance_client, address):
-        """Initialize Algofi governance user.
+        """Constructor for the governance user class.
+
+        :param governance_client: a governance client
+        :type governance_client: :class:`GovernanceClient`
+        :param address: address of the user
+        :type address: str
         """
 
         self.governance_client = governance_client
@@ -21,9 +26,13 @@ class GovernanceUser:
         self.address = address
 
     def load_state(self, user_local_states):
-        """Load state for governance user.
+        """A function which will load in all of the state for a governance user
+        including their admin state, voting escrow state, and rewards manager
+        state into the governance user object.
 
-        :param user_local_states: dict mapping app ids to local state dicts of user
+        :param user_local_states: a dict of all of the local states for the
+        particular user with the admin, voting escrow, and rewards manager
+        contracts.
         :type user_local_states: dict
         """
 
