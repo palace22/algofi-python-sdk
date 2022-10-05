@@ -12,20 +12,25 @@ from algofipy.governance.v1.governance_config import ADMIN_STRINGS
 
 class Proposal:
 
-    def __init__(self, governance_client, app_id, admin_app_id):
-        """Initialize a proposal contract.
+    def __init__(self, governance_client, proposal_app_id):
+        """Constructor for the proposal class.
+
+        :param governance_client: a governance client
+        :type governance_client: :class:`GovernanceClient`
+        :param proposal_app_id: proposal app id
+        :type proposal_app_id: int
         """
 
         self.governance_client = governance_client
-        self.network = governance_client.network
         self.algod = governance_client.algod
         self.indexer = governance_client.indexer
-        self.proposal_app_id = app_id
+        self.app_id = proposal_app_id
         self.admin_app_id = admin_app_id
-        self.proposal_address = logic.get_application_address(app_id)
+        self.proposal_address = logic.get_application_address(self.app_id)
     
     def load_state():
-        """Load state for the proposal application.
+        """Function that will update the data on the proposal object with the global
+        and local data of the proposal contract on chain.
         """
 
         # get vote state from admin contract
@@ -42,7 +47,7 @@ class Proposal:
             raise Exception("Proposal is not opted into admin contract.")
         
         # get proposal metadata from proposal contract
-        proposal_global_state = get_global_state(self.indexer, self.proposal_app_id)
+        proposal_global_state = get_global_state(self.indexer, self.app_id)
         self.title = base64_to_utf8(proposal_global_state[PROPOSAL_STRINGS.title])
         self.link = base64_to_utf8(proposal_global_state[PROPOSAL_STRINGS.link])
 
@@ -55,7 +60,7 @@ class Proposal:
         """
 
         try:
-            data = get(get_analytics_endpoint(self.network) + "/getDiscourseTopic?topic_id=" + topic_id).json()
+            data = get(get_analytics_endpoint(self.governance_client.network) + "/getDiscourseTopic?topic_id=" + topic_id).json()
         except:
             raise Exception("Unable to find proposal with topic_id %i)" % (topic_id))
         self.data = data

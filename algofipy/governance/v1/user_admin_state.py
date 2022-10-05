@@ -9,7 +9,14 @@ from algofipy.governance.v1.governance_config import ADMIN_STRINGS, PROPOSAL_STR
 class UserAdminState:
 
     def __init__(self, storage_address, user_storage_local_states, governance_client):
-        """Initialize a user admin contract state.
+        """Constructor for the user admin state class.
+
+        :param storage_address: the address of the storage account for the user
+        :type storage_address: str
+        :param user_storage_local_states: dict of local states for the user's storage account
+        :type user_storage_local_states: dict
+        :param governance_client: a governance client
+        :type governance_client: :class:`GovernanceClient`
         """
 
         proposal_app_ids = [proposal.proposal_app_id for proposal in governance_client.admin.proposals]
@@ -30,7 +37,11 @@ class UserAdminState:
 class UserProposalState:
 
     def __init__(self, storage_proposal_local_state):
-        """Initiialize user proposal state.
+        """Constructor for the user proposal state object.
+
+        :param storage_proposal_local_state: n dictionary representing the local
+        state of the proposal contract with the admin contract.
+        :type storage_proposal_local_state: dict
         """
 
         self.for_or_against = storage_proposal_local_state[PROPOSAL_STRINGS.for_or_against]

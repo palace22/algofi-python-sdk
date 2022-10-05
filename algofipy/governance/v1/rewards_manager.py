@@ -7,7 +7,12 @@
 class RewardsManager:
 
     def __init__(self, governance_client, governance_config):
-        """Initialize the rewards manager contract.
+        """Constructor for the rewards manager object.
+
+        :param governance_client: a governance client
+        :type governance_client: :class:`GovernanceClient`
+        :param governance_config: a governance config
+        :type governance_config: :class:`GovernanceConfig`
         """
 
         self.governance_client = governance_client
