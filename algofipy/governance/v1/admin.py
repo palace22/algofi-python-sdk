@@ -7,7 +7,7 @@ from algosdk.future.transaction import PaymentTxn, ApplicationNoOpTxn, AssetTran
 from algofipy.governance.v1.governance_config import VOTING_ESCROW_STRINGS
 from algofipy.state_utils import get_global_state
 from algofipy.utils import int_to_bytes
-from algofipy.transaction_utils import TransactionGroup, get_default_params, 
+from algofipy.transaction_utils import TransactionGroup, get_default_params
 
 class Admin:
 
