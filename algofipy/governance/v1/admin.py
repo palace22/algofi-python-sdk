@@ -103,7 +103,7 @@ class Admin:
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.vote, "utf-8"), int_to_bytes(for_or_against)],
             foreign_apps=[proposal.app_id],
-            accounts=[user.governance.user_admin_state.storage_address, logic.get_application_address(proposal_app_id)]
+            accounts=[user.governance.user_admin_state.storage_address, logic.get_application_address(proposal.app_id)]
         )
 
         return txn0 + TransactionGroup([txn1])
@@ -126,7 +126,6 @@ class Admin:
             sp=params,
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.delegate, "utf-8")],
-            foreign_apps=[proposal.app_id],
             accounts=[user.governance.user_admin_state.storage_address, delegatee.governance.user_admin_state.storage_address]
         )
 
@@ -169,6 +168,11 @@ class Admin:
 
         params = get_default_params(self.algod)
 
+        if user.governance.user_admin_state.delegating_to:
+            delegating_to = user.governance.user_admin_state.delegating_to
+        else:
+            delegating_to = ""
+
         txn0 = ApplicationNoOpTxn(
             sender=user.address,
             sp=params,
@@ -179,7 +183,7 @@ class Admin:
 
         return TransactionGroup([txn0])
 
-    def get_delegated_vote_txns(calling_user, voting_user, proposal):
+    def get_delegated_vote_txns(self, calling_user, voting_user, proposal):
         """Constructs a series of transactions that will make a user vote on a
         proposal as their delegatee has.
 
@@ -197,7 +201,7 @@ class Admin:
         params = get_default_params(self.algod)
 
         # update ve bank for user
-        txn0 = self.get_update_user_vebank_txns(user, user)
+        txn0 = self.get_update_user_vebank_txns(calling_user, voting_user)
 
         txn1 = ApplicationNoOpTxn(
             sender=calling_user.address,
