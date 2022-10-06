@@ -2,6 +2,7 @@
 # IMPORTS
 from algosdk.future.transaction import ApplicationNoOpTxn, AssetTransferTxn
 from algosdk import logic
+import time
 
 # INTERFACE
 from algofipy.state_utils import get_global_state
@@ -162,3 +163,21 @@ class VotingEscrow:
         )
 
         return TransactionGroup([txn0])
+    
+    def get_projected_vebank_amount(self, user_voting_escrow_state):
+        """Get projected vebank amount for user.
+
+        :param user_voting_escrow_state: user voting escrow state
+        :type user_voting_escrow_state: :class:`UserVotingEscrowState`
+        :return: projected vebank amount
+        :rtype: int
+        """
+
+        current_time = int(time.time())
+        lock_end_time = user_voting_escrow_state.lock_start_time + user_voting_escrow_state.lock_duration
+        time_remaining = lock_end_time - current_time
+        amount_locked = user_voting_escrow_state.amount_locked
+        if time_remaining <= 0 or amount_locked == 0:
+            return 0
+        else:
+            return int((amount_locked * time_remaining * 1e3) // self.voting_escrow_max_time_lock_seconds)

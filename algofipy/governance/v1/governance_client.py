@@ -1,6 +1,8 @@
 
 # IMPORTS
 from algosdk.future.transaction import PaymentTxn, ApplicationOptInTxn
+from algosdk.encoding import encode_address
+from base64 import b64encode, b64decode
 
 # INTERFACE
 from algofipy.globals import Network
@@ -9,6 +11,7 @@ from algofipy.governance.v1.governance_config import GOVERNANCE_CONFIGS, ADMIN_S
 from algofipy.governance.v1.admin import Admin
 from algofipy.governance.v1.voting_escrow import VotingEscrow
 from algofipy.governance.v1.rewards_manager import RewardsManager
+from algofipy.governance.v1.governance_user import GovernanceUser
 
 class GovernanceClient:
 
@@ -43,7 +46,7 @@ class GovernanceClient:
         # load rewards manager contract data
         self.rewards_manager = RewardsManager(self, self.governance_config)
     
-    def get_user(user_address):
+    def get_user(self, user_address):
         """Gets an algofi governance user given an address.
 
         :param user_address: the address of the user we are interested in.
@@ -112,3 +115,35 @@ class GovernanceClient:
         )
 
         return TransactionGroup([txn0, txn1, txn2, txn3, txn4])
+    
+    def get_governors(self):
+        """Function that uses indexer to query for governors (users opted into the admin contract).
+
+        :return: list of governor addresses
+        :rtype: list
+        """
+
+        STORAGE_ACCOUNT_KEY_B64 = b64encode(bytes(ADMIN_STRINGS.storage_account, "utf-8")).decode("utf-8")
+        # query all users opted into admin contract
+        admin_app_id = self.governance_config.admin_app_id
+        next_page = ""
+        tot_users = []
+        while next_page != None:
+            users = self.indexer.accounts(next_page=next_page, limit=1000, application_id=admin_app_id)
+            if len(users.get("accounts",[])):
+                tot_users.extend(users["accounts"])
+            if users.get("next-token", None):
+                next_page = users["next-token"]
+            else:
+                next_page = None
+        # filter to accounts with relevant key
+        tot_users_filtered = []
+        for user in tot_users:
+            user_local_state = user.get("apps-local-state", {})
+            for app_local_state in user_local_state:
+                kvs = app_local_state.get("key-value", [])
+                for kv in kvs:
+                    if kv.get("key", None) == STORAGE_ACCOUNT_KEY_B64:
+                        tot_users_filtered.append((user["address"], encode_address(b64decode(kv["value"]["bytes"]))))
+
+        return tot_users_filtered

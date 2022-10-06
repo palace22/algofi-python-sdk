@@ -59,3 +59,15 @@ class GovernanceUser:
             # rewards manager user local state
             if app_id == self.governance_client.rewards_manager.app_id:
                 self.user_rewards_manager_state = UserRewardsManagerState()
+    
+    def voted_in_proposal(self, proposal_app_id):
+        """Return a dict of information for the user vote in a proposal
+
+        :param proposal_app_id: proposal app id for a proposal
+        :type proposal_app_id: int
+        :return: dict of information about the user proposal vote
+        :rtype: dict
+        """
+
+        user_local_states = get_local_states(self.indexer, self.user_admin_state.storage_address)
+        return user_local_states.get(proposal_app_id, {})
