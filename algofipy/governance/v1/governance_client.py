@@ -5,7 +5,7 @@ from algosdk.future.transaction import PaymentTxn, ApplicationOptInTxn
 # INTERFACE
 from algofipy.globals import Network
 from algofipy.transaction_utils import get_default_params, TransactionGroup
-from algofipy.governance.v1.governance_config import GOVERNANCE_CONFIGS, ADMIN_STRINGS
+from algofipy.governance.v1.governance_config import GOVERNANCE_CONFIGS, ADMIN_STRINGS, REWARDS_MANAGER_STRINGS
 from algofipy.governance.v1.admin import Admin
 from algofipy.governance.v1.voting_escrow import VotingEscrow
 from algofipy.governance.v1.rewards_manager import RewardsManager
@@ -74,14 +74,14 @@ class GovernanceClient:
 
         txn0 = PaymentTxn(
             sender=user.address,
-            params=params,
+            sp=params,
             receiver=storage_address,
             amt=1_000_000 # TODO: figure out the exact amount
         )
 
         txn1 = ApplicationOptInTxn(
             sender=storage_address,
-            params=params,
+            sp=params,
             index=self.admin.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.storage_account_opt_in, "utf-8")],
             accounts=[user.address],
@@ -90,7 +90,7 @@ class GovernanceClient:
 
         txn2 = ApplicationOptInTxn(
             sender=user.address,
-            params=params,
+            sp=params,
             index=self.admin.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.user_opt_in, "utf-8")],
             accounts=[storage_address]
@@ -98,14 +98,14 @@ class GovernanceClient:
 
         txn3 = ApplicationOptInTxn(
             sender=user.address,
-            params=params,
+            sp=params,
             index=self.voting_escrow.app_id,
             foreign_apps=[self.rewards_manager.app_id],
         )
 
         txn4 = ApplicationOptInTxn(
             sender=user.address,
-            params=params,
+            sp=params,
             index=self.rewards_manager.app_id,
             app_args=[bytes(REWARDS_MANAGER_STRINGS.user_opt_in, "utf-8")],
             foreign_apps=[self.voting_escrow.app_id]

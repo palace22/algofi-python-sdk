@@ -152,6 +152,7 @@ class VotingEscrow:
 
         params = get_default_params(self.algod)
         
+        params.fee = 2000
         txn0 = ApplicationNoOpTxn(
             sender=user.address,
             sp=params,

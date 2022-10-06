@@ -42,6 +42,8 @@ class GovernanceUser:
         else:
             user_local_states = get_local_states(self.indexer, self.address)
 
+        self.opted_into_governance = False
+        
         for app_id in user_local_states:
             user_local_state = user_local_states[app_id]
             # admin user local state
