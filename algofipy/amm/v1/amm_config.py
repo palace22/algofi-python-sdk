@@ -26,9 +26,17 @@ MAINNET_NANOSWAP_POOLS = {
     (312769, 465865291): 659677335,
     (312769, 31566704): 659678644,
     (818182311, 841157954): 841170409,
+}
+
+LENDING_POOLS = {
     (818179690, 841157954): 855716333,
     (818184214, 841157954): 870150391,
     (818188553, 841157954): 870143131
+}
+LENDING_POOLS_MANAGER = {
+    (818179690, 841157954): 841165954,
+    (818184214, 841157954): 841165954,
+    (818188553, 841157954): 841165954
 }
 
 # nanoswap manager
@@ -112,24 +120,28 @@ def get_clear_state_program():
     return bytes(CLEAR_STATE_PROGRAM)
 
 
-def get_manager_application_id(network, nanoswap_key=None):
+def get_manager_application_id(network, pool_key=None):
     """Gets the manager application id for the given network
 
     :param network: network :class:`Network` ("testnet" or "mainnet")
     :type network: str
-    :param nanoswap_key: tuple of (asset1_id, asset2_id)
-    :type nanoswap_key: tuple (int, int)
+    :param pool_key: tuple of (asset1_id, asset2_id)
+    :type pool_key: tuple (int, int)
     :return: manager application id for the given network
     :rtype: int
     """
 
     if (network == Network.MAINNET):
-        if nanoswap_key:
-            return NANOSWAP_MANAGER[nanoswap_key]
+        if pool_key in NANOSWAP_MANAGER:
+            return NANOSWAP_MANAGER[pool_key]
+        elif pool_key in LENDING_POOLS_MANAGER:
+            return LENDING_POOLS_MANAGER[pool_key]
         return 605753404
     elif (network == Network.TESTNET):
-        if nanoswap_key:
-            return NANOSWAP_MANAGER[nanoswap_key]
+        if pool_key in NANOSWAP_MANAGER:
+            return NANOSWAP_MANAGER[pool_key]
+        elif pool_key in LENDING_POOLS_MANAGER:
+            return LENDING_POOLS_MANAGER[pool_key]
         return 66008735
 
 
