@@ -6,6 +6,8 @@ algofi-python-sdk
    lending/index
    amm/index
    staking/index
+   interfaces
+   governance/index
    algofi_client
    algofi_user
    asset_amount
