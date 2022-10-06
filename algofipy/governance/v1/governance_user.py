@@ -5,6 +5,7 @@ from algosdk.encoding import encode_address
 
 # INTERFACE
 from algofipy.state_utils import get_local_states
+from algofipy.governance.v1.governance_config import ADMIN_STRINGS
 from algofipy.governance.v1.user_admin_state import UserAdminState
 from algofipy.governance.v1.user_voting_escrow_state import UserVotingEscrowState
 from algofipy.governance.v1.user_rewards_manager_state import UserRewardsManagerState
