@@ -75,7 +75,7 @@ class Admin:
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.update_user_vebank, "utf-8")],
             foreign_apps=[self.governance_client.voting_escrow.app_id],
-            accounts=[user_updating.address, user_updating.governance.v1.user_admin_state.storage_address]
+            accounts=[user_updating.address, user_updating.governance.user_admin_state.storage_address]
         )
 
         return TransactionGroup([txn0])
@@ -103,7 +103,7 @@ class Admin:
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.vote, "utf-8"), int_to_bytes(for_or_against)],
             foreign_apps=[proposal.app_id],
-            accounts=[user.governance.v1.user_admin_state.storage_address, logic.get_application_address(proposal_app_id)]
+            accounts=[user.governance.user_admin_state.storage_address, logic.get_application_address(proposal_app_id)]
         )
 
         return txn0 + TransactionGroup([txn1])
@@ -127,7 +127,7 @@ class Admin:
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.delegate, "utf-8")],
             foreign_apps=[proposal.app_id],
-            accounts=[user.governance.v1.user_admin_state.storage_address, delegatee.governance.v1.user_admin_state.storage_address]
+            accounts=[user.governance.user_admin_state.storage_address, delegatee.governance.user_admin_state.storage_address]
         )
 
         return TransactionGroup([txn0])
@@ -174,7 +174,7 @@ class Admin:
             sp=params,
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.undelegate, "utf-8")],
-            accounts=[user.governance.v1.user_admin_state.storage_address, user.governance.v1.user_admin_state.delegating_to]
+            accounts=[user.governance.user_admin_state.storage_address, user.governance.user_admin_state.delegating_to]
         )
 
         return TransactionGroup([txn0])
@@ -207,8 +207,8 @@ class Admin:
             foreign_apps=[proposal.app_id, self.governance_client.voting_escrow.app_id],
             accounts=[
                 voting_user.address,
-                voting_user.governance.v1.user_admin_state.storage_address,
-                voting_user.governance.v1.user_admin_state.delegating_to,
+                voting_user.governance.user_admin_state.storage_address,
+                voting_user.governance.user_admin_state.delegating_to,
                 logic.get_application_address(proposal.app_id)
             ]
         )
@@ -236,7 +236,7 @@ class Admin:
             sp=params,
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.close_out_from_proposal, "utf-8")],
-            accounts=[logic.get_application_address(proposal.app_id), user_close_out.governance.v1.user_admin_state.storage_address],
+            accounts=[logic.get_application_address(proposal.app_id), user_close_out.governance.user_admin_state.storage_address],
             foreign_apps=[proposal.app_id]
         )
 
@@ -258,7 +258,7 @@ class Admin:
             sp=params,
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.set_open_to_delegation, "utf-8")],
-            accounts=[user.governance.v1.user_admin_state.storage_address]   
+            accounts=[user.governance.user_admin_state.storage_address]
         )
 
         return TransactionGroup([txn0])
@@ -279,7 +279,7 @@ class Admin:
             sp=params,
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.set_not_open_to_delegation, "utf-8")],
-            accounts=[user.governance.v1.user_admin_state.storage_address]   
+            accounts=[user.governance.user_admin_state.storage_address]   
         )
 
         return TransactionGroup([txn0])
@@ -301,7 +301,7 @@ class Admin:
 
         txn0 = PaymentTxn(
             sender=user.address,
-            params=params,
+            sp=params,
             receiver=self.proposal_factory_address,
             amt=4_000_000 # TODO: figure out the exact amount
         )
@@ -310,7 +310,7 @@ class Admin:
             sender=user.address,
             sp=params,
             index=self.proposal_factory_app_id,
-            app_args=[bytes(ADMIN_STRINGS.validate_user_account, "utf-8")]
+            app_args=[bytes(PROPOSAL_FACTORY_STRINGS.validate_user_account, "utf-8")]
         )
 
         # TODO: find out if fee is correct
