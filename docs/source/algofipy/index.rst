@@ -6,7 +6,7 @@ algofi-python-sdk
    lending/index
    amm/index
    staking/index
-   interfaces
+   interfaces/index
    governance/index
    algofi_client
    algofi_user
