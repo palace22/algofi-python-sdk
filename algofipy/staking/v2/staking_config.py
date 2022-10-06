@@ -16,11 +16,15 @@ STAKING_CONFIGS = {
   Network.MAINNET: [
     StakingConfig("USDC Lend and Earn", 821882730, 818182311, StakingType.BASSET),
     StakingConfig("USDT Lend and Earn", 821882927, 818190568, StakingType.BASSET)
+  ],
+  Network.TESTNET: [
+    StakingConfig("USDC Lend and Earn", 104267989, 104207173, StakingType.BASSET),
   ]
 }
 
 rewards_manager_app_id = {
-  Network.MAINNET: 0
+  Network.MAINNET: 0,
+  Network.TESTNET: 107210021
 }
 
 class STAKING_STRINGS:

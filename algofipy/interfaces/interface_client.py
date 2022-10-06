@@ -22,8 +22,8 @@ class InterfaceClient:
         self.algod = algofi_client.algod
         self.indexer = algofi_client.indexer
         self.historical_indexer = algofi_client.historical_indexer
-        
-        self.lending_pool_configs = LENDING_POOL_INTERFACE_CONFIGS[self.algofi_client.network]
+        self.network = self.algofi_client.network
+        self.lending_pool_configs = LENDING_POOL_INTERFACE_CONFIGS[self.network]
         
         self.lending_pools = {}
         self.asset_lending_pool_map = {}

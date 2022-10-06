@@ -43,7 +43,7 @@ class Pool:
         self.algod = self.amm_client.algod
         self.indexer = self.amm_client.indexer
         self.historical_indexer = self.amm_client.historical_indexer
-        self.network = Network.MAINNET
+        self.network = self.amm_client.network
 
         # load generic pool metadata
         self.pool_type = pool_type

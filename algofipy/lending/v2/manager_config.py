@@ -16,4 +16,5 @@ class ManagerConfig:
 
 MANAGER_CONFIGS = {
     Network.MAINNET : ManagerConfig(818176933),
+    Network.TESTNET : ManagerConfig(104184985)
 }

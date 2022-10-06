@@ -44,5 +44,22 @@ ASSET_CONFIGS = {
         870380101: AssetConfig("AF-BANK-AF-POOL-LP", 870380101, 6),
         870150187: AssetConfig("AF-NANO-POOL-AF-BANK-AF-BANK", 870150187, 6),
         870391958: AssetConfig("AF-BANK-AF-POOL-LP", 870391958, 6)
+    },
+    Network.TESTNET : {
+        1: AssetConfig("ALGO", 1, 6),
+        107212062: AssetConfig("BANK", 107212062, 6),
+        104193939: AssetConfig("AF-BANK-ALGO-STANDARD", 104193939, 6),
+        104194013: AssetConfig("USDC", 104194013, 6),
+        104207173: AssetConfig("AF-BANK-USDC-STANDARD", 104207173, 6),
+        104207287: AssetConfig("goBTC", 104207287, 8),
+        104207503: AssetConfig("AF-BANK-GOBTC-STANDARD", 104207503, 6),
+        104207533: AssetConfig("goETH", 104207533, 8),
+        104207983: AssetConfig("AF-BANK-GOETH-STANDARD", 104207983, 6),
+        104208050: AssetConfig("USDT", 104208050, 6),
+        104222974: AssetConfig("AF-BANK-USDT-STANDARD", 104222974, 6),
+        104210500: AssetConfig("STBL2", 104210500, 6),
+        104217422: AssetConfig("AF-BANK-STBL2-STABLE", 104217422, 6),
+        104228491: AssetConfig("AF-bUSDC-bSTBL2-NANO-LP", 104228491, 6),
+        104238470: AssetConfig("AF-BANK-AF-bUSDC-bSTBL2-NANO-LP-LP", 104238470, 6),
     }
 }

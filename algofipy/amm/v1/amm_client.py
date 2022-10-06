@@ -28,7 +28,7 @@ class AMMClient():
         self.algod = algofi_client.algod
         self.indexer = algofi_client.indexer
         self.historical_indexer = algofi_client.historical_indexer
-        self.network = Network.MAINNET
+        self.network = self.algofi_client.network
         self.manager_application_id = get_manager_application_id(self.network, False)
 
     def get_pool(self, pool_type, asset1_id, asset2_id):
