@@ -1,7 +1,6 @@
 
 # IMPORTS
 
-
 # INTERFACE
 from algofipy.governance.v1.governance_config import VOTING_ESCROW_STRINGS
 

@@ -56,7 +56,7 @@ class Staking:
         formatted_state = format_prefix_state(global_state)
 
         for i in range(self.rewards_program_count):
-            self.rewards_program_states[i] = RewardsProgramState(self, formatted_state, i)
+            self.rewards_program_states[i] = RewardsProgramState(self, global_state, formatted_state, i)
 
     def get_total_staked(self):
         """Returns the total staked amount.

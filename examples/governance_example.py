@@ -123,6 +123,12 @@ for i in range(2, 5):
         txn = voting_escrow.get_lock_txns(user_, amount=100_000_000, duration_seconds=int(60*5))
         txn.sign_with_private_key(key_)
         txn.submit(algod, wait=False)
+    else:
+        delta = (lock_end_time - int(time.time())) - 5 * 60 - 10
+        if delta > 0:
+            txn = voting_escrow.get_extend_lock_txns(user_, duration_seconds=int(delta))
+            txn.sign_with_private_key(key_)
+            txn.submit(algod, wait=True)
     # undelegate
     if user_.governance.user_admin_state.delegating_to:
         txn = admin.get_undelegate_txns(user_)
