@@ -21,5 +21,5 @@ class StakingClient:
             self.staking_contracts[staking_config.app_id] = Staking(self, rewards_manager_app_id[self.network], staking_config)
             self.staking_contracts[staking_config.app_id].load_state()
 
-    def get_user(address):
+    def get_user(self, address):
         return StakingUser(self, address)

@@ -181,3 +181,18 @@ class VotingEscrow:
             return 0
         else:
             return int((amount_locked * time_remaining * 1e3) // self.voting_escrow_max_time_lock_seconds)
+    
+    def get_projected_boost_multiplier(self, user_voting_escrow_state):
+        """Get projected vebank amount for user.
+
+        :param user_voting_escrow_state: user voting escrow state
+        :type user_voting_escrow_state: :class:`UserVotingEscrowState`
+        :return: projected vebank amount
+        :rtype: int
+        """
+
+        projected_vebank = self.get_projected_vebank_amount(user_voting_escrow_state)
+        if self.total_vebank > 0:
+            return int((projected_vebank * 1e12) // self.total_vebank)
+        else:
+            return 0
