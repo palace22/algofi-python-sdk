@@ -13,9 +13,9 @@ from algofipy.transaction_utils import wait_for_confirmation, get_payment_txn, g
 my_path = os.path.abspath(os.path.dirname(__file__))
 ENV_PATH = os.path.join(my_path, "../.env")
 
-algod = AlgodClient("", "https://node.testnet.algoexplorerapi.io", headers={"User-Agent": "algosdk"})
-indexer = IndexerClient("", "https://algoindexer.testnet.algoexplorerapi.io/", headers={'User-Agent': 'algosdk'})
-client = AlgofiClient(Network.TESTNET, algod, indexer)
+algod = AlgodClient("", "https://node.algoexplorerapi.io", headers={"User-Agent": "algosdk"})
+indexer = IndexerClient("", "https://algoindexer.algoexplorerapi.io/", headers={'User-Agent': 'algosdk'})
+client = AlgofiClient(Network.MAINNET, algod, indexer)
 
 # load user passphrase
 env_vars = dotenv_values(ENV_PATH)
