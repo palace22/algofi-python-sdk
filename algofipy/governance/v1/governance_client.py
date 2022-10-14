@@ -129,7 +129,7 @@ class GovernanceClient:
         next_page = ""
         tot_users = []
         while next_page != None:
-            users = self.indexer.accounts(next_page=next_page, limit=1000, application_id=admin_app_id)
+            users = self.indexer.accounts(next_page=next_page, limit=100, application_id=admin_app_id)
             if len(users.get("accounts",[])):
                 tot_users.extend(users["accounts"])
             if users.get("next-token", None):
