@@ -30,7 +30,7 @@ class GovernanceConfig:
         self.voting_escrow_min_time_lock_seconds = 60 * 60 * 24 * 7
 
 GOVERNANCE_CONFIGS = {
-    Network.MAINNET : GovernanceConfig(0, 0, 0, 0, 0),
+    Network.MAINNET : GovernanceConfig(900653388, 900653165, 900653632, 900652834, 900652777),
     Network.TESTNET : GovernanceConfig(107210614, 107210153, 107211052, 107210021, 107212062)
 }
 

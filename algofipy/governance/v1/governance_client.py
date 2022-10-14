@@ -28,8 +28,7 @@ class GovernanceClient:
         self.historical_indexer = algofi_client.historical_indexer
         self.network = algofi_client.network
         self.governance_config = GOVERNANCE_CONFIGS[self.network]
-        if self.network == Network.TESTNET:
-            self.load_state()
+        self.load_state()
 
     def load_state(self):
         """Creates new admin, voting escrow, and rewards managers on the algofi client 
