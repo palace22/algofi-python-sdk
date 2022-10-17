@@ -43,7 +43,8 @@ ASSET_CONFIGS = {
         870151164: AssetConfig("AF-NANO-POOL-AF-BANK-AF-BANK", 870151164, 6),
         870380101: AssetConfig("AF-BANK-AF-POOL-LP", 870380101, 6),
         870150187: AssetConfig("AF-NANO-POOL-AF-BANK-AF-BANK", 870150187, 6),
-        870391958: AssetConfig("AF-BANK-AF-POOL-LP", 870391958, 6)
+        870391958: AssetConfig("AF-BANK-AF-POOL-LP", 870391958, 6),
+        900652777: AssetConfig("BANK", 900652777, 6)
     },
     Network.TESTNET : {
         1: AssetConfig("ALGO", 1, 6),
