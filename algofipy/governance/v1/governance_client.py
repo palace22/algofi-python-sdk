@@ -141,9 +141,9 @@ class GovernanceClient:
         for user in tot_users:
             user_local_state = user.get("apps-local-state", {})
             for app_local_state in user_local_state:
-                kvs = app_local_state.get("key-value", [])
-                for kv in kvs:
-                    if kv.get("key", None) == STORAGE_ACCOUNT_KEY_B64:
-                        tot_users_filtered.append((user["address"], encode_address(b64decode(kv["value"]["bytes"]))))
-
+                if app_local_state["id"] == admin_app_id:
+                    kvs = app_local_state.get("key-value", [])
+                    for kv in kvs:
+                        if kv.get("key", None) == STORAGE_ACCOUNT_KEY_B64:
+                            tot_users_filtered.append((user["address"], encode_address(b64decode(kv["value"]["bytes"]))))
         return tot_users_filtered
