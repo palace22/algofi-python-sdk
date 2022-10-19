@@ -18,11 +18,11 @@ class RewardsProgramState:
 
 class UserRewardsProgramState:
 
-    def __init__(self, formatted_user_local_state, rewards_program_index, staking, user_scaled_total_staked):
+    def __init__(self, non_formated_state, user_staking_state, rewards_program_index, staking, user_scaled_total_staked):
         self.staking = staking
         self.rewards_program_index = rewards_program_index
-        self.user_rewards_program_counter = formatted_user_local_state[STAKING_STRINGS.user_rewards_coefficient_prefix + str(self.rewards_program_index)]
-        self.user_unclaimed_rewards = formatted_user_local_state[STAKING_STRINGS.user_rewards_coefficient_prefix + str(self.rewards_program_index)]
+        self.user_rewards_program_counter = user_staking_state[STAKING_STRINGS.user_rewards_coefficient_prefix + str(self.rewards_program_index)]
+        self.user_unclaimed_rewards = user_staking_state[STAKING_STRINGS.user_rewards_coefficient_prefix + str(self.rewards_program_index)]
 
-        non_formatted_rewards_coefficient = formatted_user_local_state[STAKING_STRINGS.user_rewards_coefficient_prefix + str(self.rewards_program_index)]
+        non_formatted_rewards_coefficient = non_formated_state.get(STAKING_STRINGS.user_rewards_coefficient_prefix + str(self.rewards_program_index), "")
         self.rewards_coefficient = bytes_to_int(b64decode(non_formatted_rewards_coefficient))
