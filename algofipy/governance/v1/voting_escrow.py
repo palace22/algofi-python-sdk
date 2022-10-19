@@ -180,7 +180,7 @@ class VotingEscrow:
         if time_remaining <= 0 or amount_locked == 0:
             return 0
         else:
-            return int((amount_locked * time_remaining) // 365 * 24 * 60 * 60)
+            return int((amount_locked * time_remaining) // (365 * 24 * 60 * 60))
     
     def get_projected_boost_multiplier(self, user_voting_escrow_state):
         """Get projected vebank amount for user.
