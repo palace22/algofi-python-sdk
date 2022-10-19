@@ -12,6 +12,7 @@ class UserStakingState:
 
         for i in range(rewards_program_count):
             self.user_rewards_program_states[i] = UserRewardsProgramState(
+                user_local_state,
                 format_prefix_state(user_local_state),
                 i,
                 staking,
