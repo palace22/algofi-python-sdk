@@ -127,23 +127,13 @@ class GovernanceClient:
         # query all users opted into admin contract
         admin_app_id = self.governance_config.admin_app_id
         next_page = ""
-        tot_users = []
+        user_addresses = []
         while next_page != None:
-            users = self.indexer.accounts(next_page=next_page, limit=1000, application_id=admin_app_id, exclude="assets")
+            users = self.indexer.accounts(next_page=next_page, limit=1000, application_id=admin_app_id, exclude="all")
             if len(users.get("accounts",[])):
-                tot_users.extend(users["accounts"])
+                user_addresses.extend([user["address"] for user in users["accounts"]])
             if users.get("next-token", None):
                 next_page = users["next-token"]
             else:
                 next_page = None
-        # filter to accounts with relevant key
-        tot_users_filtered = []
-        for user in tot_users:
-            user_local_state = user.get("apps-local-state", {})
-            for app_local_state in user_local_state:
-                if app_local_state["id"] == admin_app_id:
-                    kvs = app_local_state.get("key-value", [])
-                    for kv in kvs:
-                        if kv.get("key", None) == STORAGE_ACCOUNT_KEY_B64:
-                            tot_users_filtered.append((user["address"], encode_address(b64decode(kv["value"]["bytes"]))))
-        return tot_users_filtered
+        return user_addresses
