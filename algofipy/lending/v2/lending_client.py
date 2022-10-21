@@ -50,7 +50,7 @@ class LendingClient:
         next_page = ""
         accounts = []
         while next_page is not None:
-            account_data = self.indexer.accounts(limit=1000, next_page=next_page, application_id=self.manager.app_id, exclude="assets")
+            account_data = self.indexer.accounts(limit=1000, next_page=next_page, application_id=self.manager.app_id, exclude="assets,created-apps,created-assets")
             accounts_filtered = []
             for account in account_data["accounts"]:
                 user_local_state = account.get("apps-local-state",[])
