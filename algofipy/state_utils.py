@@ -107,7 +107,7 @@ def get_local_states(indexer, address, decode_byte_values=True, block=None):
     """
 
     try:
-        results = indexer.account_info(address, round_num=block, exclude="assets").get("account", {})
+        results = indexer.account_info(address, round_num=block, exclude="assets,created-apps,created-assets").get("account", {})
     except:
         raise Exception("Account does not exist.")
 
