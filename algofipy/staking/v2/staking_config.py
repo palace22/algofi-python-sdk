@@ -39,7 +39,7 @@ class STAKING_STRINGS:
   asset_id = "ai"
   user_total_staked = "uts"
   user_scaled_total_staked = "usts"
-  boost_multiplier = "bm"
+  boost_multiplier = "lm"
   user_rewards_program_counter_prefix = "urpc_"
   user_rewards_coefficient_prefix = "urc_"
   user_unclaimed_rewards_prefix = "uur_"
