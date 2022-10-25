@@ -12,6 +12,7 @@ from ...state_utils import get_local_state_at_app, get_local_states
 from .manager import Manager
 from .manager_config import MANAGER_CONFIGS
 from .market import Market
+from .lending_user import LendingUser
 from .market_config import MARKET_CONFIGS
 from .lending_config import MANAGER_STRINGS
 
@@ -43,6 +44,17 @@ class LendingClient:
         """
         for market_app_id in self.markets:
             self.markets[market_app_id].load_state()
+    
+    def get_user(self, user_address):
+        """Gets an algofi lending v2 user given an address.
+
+        :param user_address: the address of the user we are interested in.
+        :type user_address: str
+        :return: an algofi lending v2 user.
+        :rtype: :class:`GovernanceUser`
+        """
+
+        return LendingUser(self, user_address)
 
     def get_storage_accounts(self, verbose=False):
         """Fetches the list of user storage accounts on the lending protocol from the blockchain
