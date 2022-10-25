@@ -37,6 +37,12 @@ class LendingClient:
         self.markets = {}
         for market_config in self.market_configs:
             self.markets[market_config.app_id] = Market(self, market_config)
+    
+    def load_state(self):
+        """Function to update the state of the lending client markets
+        """
+        for market_app_id in self.markets:
+            self.markets[market_app_id].load_state()
 
     def get_storage_accounts(self, verbose=False):
         """Fetches the list of user storage accounts on the lending protocol from the blockchain
