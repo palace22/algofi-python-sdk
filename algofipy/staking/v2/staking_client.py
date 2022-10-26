@@ -1,4 +1,4 @@
-from .staking_config import STAKING_CONFIGS, rewards_manager_app_id
+from .staking_config import STAKING_CONFIGS, rewards_manager_app_id, STAKING_STRINGS
 from .staking import Staking
 from .staking_user import StakingUser
 
@@ -23,3 +23,32 @@ class StakingClient:
 
     def get_user(self, address):
         return StakingUser(self, address)
+
+    def get_staking_state(self, staking_app_id):
+        """Function that uses indexer to query for users' staking state
+        """
+
+        # query all users opted into admin contract
+        next_page = ""
+        staking_accounts = []
+        while next_page != None:
+            users = self.indexer.accounts(next_page=next_page, limit=1000, application_id=staking_app_id, exclude="assets,created-apps,created-assets")
+            if len(users.get("accounts",[])):
+                staking_accounts.extend(users["accounts"])
+            if users.get("next-token", None):
+                next_page = users["next-token"]
+            else:
+                next_page = None
+
+        # filter to accounts with relevant key
+        user_data = {}
+        for user in staking_accounts:
+            user_local_state = user.get("apps-local-state", {})
+            for app_local_state in user_local_state:
+                if app_local_state["id"] == staking_app_id:
+                    formatted_state = format_state(app_local_state.get("key-value", []))
+                    boost_multiplier = formatted_state.get(STAKING_STRINGS.boost_multiplier, 0)
+                    user_data[user["address"]] = {
+                        "boost_multiplier": boost_multiplier
+                    }
+        return user_data
