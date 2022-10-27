@@ -3,7 +3,8 @@
 
 # external
 from algosdk import logic
-from .amm_config import Network, get_manager_application_id, b64_to_utf_keys, utf_to_b64_keys, POOL_STRINGS, MANAGER_STRINGS
+from .amm_config import Network, b64_to_utf_keys, utf_to_b64_keys, POOL_STRINGS, MANAGER_STRINGS, MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID, \
+                        TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID
 from .logic_sig_generator import generate_logic_sig
 from .pool import Pool
 from .asset import Asset
@@ -29,7 +30,7 @@ class AMMClient():
         self.indexer = algofi_client.indexer
         self.historical_indexer = algofi_client.historical_indexer
         self.network = self.algofi_client.network
-        self.manager_application_id = get_manager_application_id(self.network, False)
+        self.manager_application_id = MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID if self.network == Network.MAINNET else TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID
 
     def get_pool(self, pool_type, asset1_id, asset2_id):
         """Returns a :class:`Pool` object for given assets and pool_type
