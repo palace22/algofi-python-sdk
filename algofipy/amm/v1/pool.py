@@ -10,8 +10,11 @@ from algosdk.future.transaction import LogicSigAccount, LogicSigTransaction, OnC
 
 # local
 from .amm_config import PoolStatus, Network, get_validator_index, get_approval_program_by_pool_type, \
-    get_clear_state_program, get_swap_fee, get_manager_application_id, PoolType, TESTNET_NANOSWAP_POOLS, \
-    MAINNET_NANOSWAP_POOLS, LENDING_POOLS, POOL_STRINGS, MANAGER_STRINGS, PARAMETER_SCALE_FACTOR
+    get_clear_state_program, PoolType, TESTNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID, \
+    MAINNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID, POOL_STRINGS, MANAGER_STRINGS, PARAMETER_SCALE_FACTOR, \
+    MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID, TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID, \
+    LENDING_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID, LENDING_POOLS_ASSET_PAIR_TO_APP_ID, TESTNET_NANOSWAP_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID, \
+    MAINNET_NANOSWAP_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID
 from .balance_delta import BalanceDelta
 from .logic_sig_generator import generate_logic_sig
 from .stable_swap_math import get_D, get_y
@@ -49,29 +52,25 @@ class Pool:
         self.pool_type = pool_type
         self.asset1 = asset1
         self.asset2 = asset2
-        self.manager_application_id = get_manager_application_id(self.network, pool_key=(asset1.asset_id, asset2.asset_id))
-        self.manager_address = get_application_address(self.manager_application_id)
         self.validator_index = get_validator_index(self.network, pool_type)
-        self.swap_fee = get_swap_fee(pool_type)
 
-        # load pool status + application id if available
+        # get pool app id using hard-coded dictionaries for NANOSWAP + LENDING_POOLS and on-chain logic sigs for vanilla AMM pools
         self.application_id = None
+        key = (asset1.asset_id, asset2.asset_id)
         if pool_type == PoolType.NANOSWAP:
-            if self.network == Network.TESTNET:
-                self.nanoswap_pools = TESTNET_NANOSWAP_POOLS
-            else:
-                self.nanoswap_pools = MAINNET_NANOSWAP_POOLS
-            key = (asset1.asset_id, asset2.asset_id)
-            if key not in self.nanoswap_pools:
-                raise Exception("Nanoswap pool does not exist")
-            else:
-                self.pool_status = PoolStatus.ACTIVE
-                self.application_id = self.nanoswap_pools[key]
-        elif (asset1.asset_id, asset2.asset_id) in LENDING_POOLS:
             self.pool_status = PoolStatus.ACTIVE
-            self.application_id = LENDING_POOLS[(asset1.asset_id, asset2.asset_id)]
+            self.application_id = (TESTNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID if self.network == Network.TESTNET else MAINNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID)[key]
+            self.manager_application_id = (TESTNET_NANOSWAP_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID if self.network == Network.TESTNET else MAINNET_NANOSWAP_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID)[key]
+        elif pool_type == PoolType.NANOSWAP_LENDING_POOL or pool_type == PoolType.CONSTANT_PRODUCT_25BP_FEE_LENDING_POOL:
+            if self.network == Network.TESTNET:
+                raise Exception("Lending Pool is not on testnet")
+            self.pool_status = PoolStatus.ACTIVE
+            self.application_id = LENDING_POOLS_ASSET_PAIR_TO_APP_ID[key]
+            self.manager_application_id = LENDING_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID[key]
         else:
             # get local state
+            self.manager_application_id = MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID if self.network == Network.MAINNET else TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID
+            self.manager_address = get_application_address(self.manager_application_id)
             self.logic_sig = LogicSigAccount(generate_logic_sig(asset1.asset_id, asset2.asset_id, self.manager_application_id, self.validator_index))
             try:
                 logic_sig_local_state = get_local_state_at_app(self.indexer, self.logic_sig.address(), self.manager_application_id)
@@ -99,6 +98,7 @@ class Pool:
             self.reserve_factor = pool_state[POOL_STRINGS.reserve_factor]
             self.flash_loan_fee = pool_state[POOL_STRINGS.flash_loan_fee]
             self.max_flash_loan_ratio = pool_state[POOL_STRINGS.max_flash_loan_ratio]
+            self.swap_fee = pool_state[POOL_STRINGS.swap_fee_pct_scaled_var] / 1e6
 
             # additionally save down nanoswap metadata if applicable
             if self.pool_type == PoolType.NANOSWAP:

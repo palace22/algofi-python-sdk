@@ -7,6 +7,7 @@ from dotenv import dotenv_values
 
 from algofipy.algofi_client import AlgofiClient
 from algofipy.globals import Network
+from algofipy.interfaces.lending_pool_interface import PERMISSIONLESS_SENDER_LOGIC_SIG
 from algofipy.amm.v1.amm_config import PoolType, PoolStatus
 from algofipy.amm.v1.asset import Asset
 from algofipy.transaction_utils import wait_for_confirmation, get_payment_txn, get_default_params
@@ -27,7 +28,7 @@ client = AlgofiClient(Network.MAINNET, algod, indexer)
 user = client.get_user(sender)
 
 lending_pool_app_id = 841198034
-lending_pool = client.interfaces.lending_pools[lending_pool_app_id]
+lending_pool = client.interfaces.lending_pool_interfaces[lending_pool_app_id]
 
 # pool
 input_asset_id = 31566704

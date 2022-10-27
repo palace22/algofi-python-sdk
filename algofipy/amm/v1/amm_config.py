@@ -16,33 +16,50 @@ from algofipy.globals import Network
 ALGO_ASSET_ID = 1
 PARAMETER_SCALE_FACTOR = 1000000
 
-# nanoswap pools
-TESTNET_NANOSWAP_POOLS = {
+# vanilla constant product pool app ids
+MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID = 605753404
+TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID = 66008735
+
+# nanoswap pool app ids
+# (asset1_id, asset2_id) -> pool_app_id
+TESTNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID = {
     (77279127, 77279142): 77282939,
     (104207173, 104217422): 104228342
 }
-MAINNET_NANOSWAP_POOLS = {
+MAINNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID = {
     (31566704, 465865291): 658337046,
     (312769, 465865291): 659677335,
-    (312769, 31566704): 659678644,
-    (818182311, 841157954): 841170409,
+    (312769, 31566704): 659678644
+}
+# nanoswap pool manager app ids
+TESTNET_NANOSWAP_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID = {
+    (77279127, 77279142): 104225849,
+    (104207173, 104217422): 104225849
+}
+MAINNET_NANOSWAP_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID = {
+    (31566704, 465865291): 658336870,
+    (312769, 465865291): 658336870,
+    (312769, 31566704): 658336870
 }
 
-LENDING_POOLS = {
+# lending pool app ids
+# (asset1_id, asset2_id) -> pool_app_id
+LENDING_POOLS_ASSET_PAIR_TO_APP_ID = {
+    (818182311, 841157954): 841170409,
     (818179690, 841157954): 855716333,
     (818184214, 841157954): 870150391,
-    (818188553, 841157954): 870143131
+    (818188553, 841157954): 870143131,
+    (841157954, 900919286): 900923609
 }
-LENDING_POOLS_MANAGER = {
+# lending pool manager app ids
+# (asset1_id, asset2_id) -> manager_app_id
+LENDING_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID = {
+    (818182311, 841157954): 841165954,
     (818179690, 841157954): 841165954,
     (818184214, 841157954): 841165954,
-    (818188553, 841157954): 841165954
+    (818188553, 841157954): 841165954,
+    (841157954, 900919286): 841165954
 }
-
-# nanoswap manager
-NANOSWAP_MANAGER = MAINNET_NANOSWAP_POOLS
-NANOSWAP_MANAGER.update(TESTNET_NANOSWAP_POOLS)
-
 
 class PoolType(Enum):
     """Pool type enum
@@ -52,6 +69,8 @@ class PoolType(Enum):
     CONSTANT_PRODUCT_75BP_FEE = 3
     CONSTANT_PRODUCT_100BP_FEE = 4
     NANOSWAP = 5
+    NANOSWAP_LENDING_POOL = 6
+    CONSTANT_PRODUCT_25BP_FEE_LENDING_POOL = 7
 
 
 class PoolStatus(Enum):
@@ -120,53 +139,10 @@ def get_clear_state_program():
     return bytes(CLEAR_STATE_PROGRAM)
 
 
-def get_manager_application_id(network, pool_key=None):
-    """Gets the manager application id for the given network
-
-    :param network: network :class:`Network` ("testnet" or "mainnet")
-    :type network: str
-    :param pool_key: tuple of (asset1_id, asset2_id)
-    :type pool_key: tuple (int, int)
-    :return: manager application id for the given network
-    :rtype: int
-    """
-
-    if (network == Network.MAINNET):
-        if pool_key in NANOSWAP_MANAGER:
-            return NANOSWAP_MANAGER[pool_key]
-        elif pool_key in LENDING_POOLS_MANAGER:
-            return LENDING_POOLS_MANAGER[pool_key]
-        return 605753404
-    elif (network == Network.TESTNET):
-        if pool_key in NANOSWAP_MANAGER:
-            return NANOSWAP_MANAGER[pool_key]
-        elif pool_key in LENDING_POOLS_MANAGER:
-            return LENDING_POOLS_MANAGER[pool_key]
-        return 66008735
-
-
-def get_swap_fee(pool_type):
-    """Gets the swap fee for a given pool type
-
-    :param pool_type: a :class:`PoolType` object for the type of pool (e.g. 30bp, 100bp fee)
-    :type pool_type: :class:`PoolType`
-    :return: swap fee for a given pool type
-    :rtype: float
-    """
-
-    if (pool_type == PoolType.CONSTANT_PRODUCT_25BP_FEE):
-        return 0.0025
-    elif (pool_type == PoolType.CONSTANT_PRODUCT_30BP_FEE):
-        return 0.003
-    elif (pool_type == PoolType.CONSTANT_PRODUCT_75BP_FEE):
-        return 0.0075
-    elif (pool_type == PoolType.CONSTANT_PRODUCT_100BP_FEE):
-        return 0.01
-    elif (pool_type == PoolType.NANOSWAP):
-        return 0.001
-
-
+MAINNET_USDC_ASSET_ID = 31566704
+TESTNET_USDC_ASSET_ID = 51435943
 def get_usdc_asset_id(network):
+    
     """Gets asset id of USDC for a given network
 
     :param network: network :class:`Network` ("testnet" or "mainnet")
@@ -176,11 +152,12 @@ def get_usdc_asset_id(network):
     """
 
     if (network == Network.MAINNET):
-        return 31566704
+        return MAINNET_USDC_ASSET_ID
     elif (network == Network.TESTNET):
-        return 51435943
+        return TESTNET_USDC_ASSET_ID
 
-
+TESTNET_STBL_ASSET_ID = 51437163
+MAINNET_STBL_ASSET_ID = 465865291
 def get_stbl_asset_id(network):
     """Gets asset id of STBL for a given network
 
@@ -191,9 +168,10 @@ def get_stbl_asset_id(network):
     """
 
     if (network == Network.MAINNET):
-        return 465865291
+        return MAINNET_STBL_ASSET_ID
     elif (network == Network.TESTNET):
-        return 51437163
+        return TESTNET_STBL_ASSET_ID
+
 
 class POOL_STRINGS:
     # user variables
@@ -224,6 +202,7 @@ class POOL_STRINGS:
     lp_circulation = "lc"
     lp_id = "l"
     manager = "m"
+    manager_app_id_var = "ma"
     max_flash_loan_ratio = "mflr"
     opt_into_assets = "o"
     pool = "p"
@@ -233,6 +212,7 @@ class POOL_STRINGS:
     remove_reserves = "rr"
     reserve_factor = "rf"
     schedule_contract_update = "scu"
+    swap_fee_pct_scaled_var = "sfp"
     swap_exact_for = "sef"
     swap_for_exact = "sfe"
     initialized = "i"
@@ -241,6 +221,8 @@ class POOL_STRINGS:
     future_amplification_factor = "faf"
     initial_amplification_factor_time = "iat"
     future_amplification_factor_time = "fat"
+    ramp_amplification_factor = "raf"
+    validator_index = "vi"
 
 
 class MANAGER_STRINGS:
