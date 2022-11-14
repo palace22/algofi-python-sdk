@@ -6,7 +6,7 @@ with open("README.md", "r") as f:
 
 setuptools.setup(
     name="algofi-python-sdk",
-    description="Official Algofi Protocol Python SDK",
+    description="The official Algofi Python SDK",
     author="Algofi",
     author_email="founders@algofi.org",
     version="2.4.0",
