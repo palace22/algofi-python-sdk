@@ -18,4 +18,4 @@ __all__ = [
     "utils",
 ]
 __version__ = "2.4.0"
-__author__ = "Algofi"
+__author__ = "Algofi, Inc."
