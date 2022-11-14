@@ -8,18 +8,26 @@ from dotenv import dotenv_values
 
 from algofipy.algofi_client import AlgofiClient
 from algofipy.globals import Network
-from algofipy.transaction_utils import wait_for_confirmation, get_payment_txn, get_default_params
+from algofipy.transaction_utils import (
+    wait_for_confirmation,
+    get_payment_txn,
+    get_default_params,
+)
 
 my_path = os.path.abspath(os.path.dirname(__file__))
 ENV_PATH = os.path.join(my_path, "../.env")
 
-algod = AlgodClient("", "https://node.algoexplorerapi.io", headers={"User-Agent": "algosdk"})
-indexer = IndexerClient("", "https://algoindexer.algoexplorerapi.io/", headers={'User-Agent': 'algosdk'})
+algod = AlgodClient(
+    "", "https://node.algoexplorerapi.io", headers={"User-Agent": "algosdk"}
+)
+indexer = IndexerClient(
+    "", "https://algoindexer.algoexplorerapi.io/", headers={"User-Agent": "algosdk"}
+)
 client = AlgofiClient(Network.MAINNET, algod, indexer)
 
 # load user passphrase
 env_vars = dotenv_values(ENV_PATH)
-MNEMONICS=["user1", "user2", "user3", "user4"]
+MNEMONICS = ["user1", "user2", "user3", "user4"]
 user_keys = {}
 for user_key in MNEMONICS:
     key = mnemonic.to_private_key(env_vars[user_key])
@@ -42,12 +50,14 @@ for user_key in user_keys:
 key, user = user_keys["user1"]["key"], user_keys["user1"]["user"]
 
 # lock into voting escrow
-txn = voting_escrow.get_lock_txns(user, amount=100_000_000, duration_seconds=int(60*5))
+txn = voting_escrow.get_lock_txns(
+    user, amount=100_000_000, duration_seconds=int(60 * 5)
+)
 txn.sign_with_private_key(key)
 txn.submit(algod, wait=True)
 
 # extend lock
-txn = voting_escrow.get_extend_lock_txns(user, duration_seconds=int(60*4))
+txn = voting_escrow.get_extend_lock_txns(user, duration_seconds=int(60 * 4))
 txn.sign_with_private_key(key)
 txn.submit(algod, wait=True)
 
@@ -99,7 +109,7 @@ client.governance.admin.load_state()
 print("Number of proposals ", len(client.governance.admin.proposals))
 
 # vote on proposal
-PROPOSAL_APP_ID = max(list(client.governance.admin.proposals.keys())) 
+PROPOSAL_APP_ID = max(list(client.governance.admin.proposals.keys()))
 proposal = client.governance.admin.proposals[PROPOSAL_APP_ID]
 txn = admin.get_vote_txns(user, proposal, 1)
 txn.sign_with_private_key(key)
@@ -107,19 +117,24 @@ txn.submit(algod, wait=True)
 
 # claim && lock vebank & undelegate & set not open to delegation & delegate to a user
 for i in range(2, 5):
-    user_key = "user"+str(i)
+    user_key = "user" + str(i)
     user_, key_ = user_keys[user_key]["user"], user_keys[user_key]["key"]
     # update user
     user_.load_state()
     # claim
-    lock_end_time = user_.governance.user_voting_escrow_state.lock_start_time + user_.governance.user_voting_escrow_state.lock_duration
+    lock_end_time = (
+        user_.governance.user_voting_escrow_state.lock_start_time
+        + user_.governance.user_voting_escrow_state.lock_duration
+    )
     vebank = user_.governance.user_voting_escrow_state.amount_vebank
     if lock_end_time != 0 and int(time.time()) > lock_end_time and vebank > 0:
         txn = voting_escrow.get_claim_txns(user_)
         txn.sign_with_private_key(key_)
         txn.submit(algod, wait=True)
         # lock vebank
-        txn = voting_escrow.get_lock_txns(user_, amount=100_000_000, duration_seconds=int(60*5))
+        txn = voting_escrow.get_lock_txns(
+            user_, amount=100_000_000, duration_seconds=int(60 * 5)
+        )
         txn.sign_with_private_key(key_)
         txn.submit(algod, wait=False)
     else:
@@ -144,9 +159,11 @@ for i in range(2, 5):
 
 # delegate voted
 for i in range(2, 5):
-    user_key = "user"+str(i)
+    user_key = "user" + str(i)
     user_, key_ = user_keys[user_key]["user"], user_keys[user_key]["key"]
-    txn = admin.get_delegated_vote_txns(calling_user=user, voting_user=user_, proposal=proposal)
+    txn = admin.get_delegated_vote_txns(
+        calling_user=user, voting_user=user_, proposal=proposal
+    )
     txn.sign_with_private_key(key)
     txn.submit(algod, wait=True)
 

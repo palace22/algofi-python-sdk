@@ -1,17 +1,25 @@
-
 # IMPORTS
 from algosdk import logic
-from algosdk.future.transaction import PaymentTxn, ApplicationNoOpTxn, AssetTransferTxn, ApplicationCloseOutTxn
+from algosdk.future.transaction import (
+    PaymentTxn,
+    ApplicationNoOpTxn,
+    AssetTransferTxn,
+    ApplicationCloseOutTxn,
+)
 
 # INTERFACE
-from algofipy.governance.v1.governance_config import VOTING_ESCROW_STRINGS, ADMIN_STRINGS, PROPOSAL_FACTORY_STRINGS
+from algofipy.governance.v1.governance_config import (
+    VOTING_ESCROW_STRINGS,
+    ADMIN_STRINGS,
+    PROPOSAL_FACTORY_STRINGS,
+)
 from algofipy.governance.v1.proposal import Proposal
 from algofipy.state_utils import get_global_state
 from algofipy.utils import int_to_bytes
 from algofipy.transaction_utils import TransactionGroup, get_default_params
 
-class Admin:
 
+class Admin:
     def __init__(self, governance_client):
         """Constructor for the Admin class.
 
@@ -23,8 +31,12 @@ class Admin:
         self.algod = self.governance_client.algod
         self.indexer = self.governance_client.indexer
         self.admin_app_id = self.governance_client.governance_config.admin_app_id
-        self.proposal_factory_app_id = self.governance_client.governance_config.proposal_factory_app_id
-        self.proposal_factory_address = logic.get_application_address(self.proposal_factory_app_id)
+        self.proposal_factory_app_id = (
+            self.governance_client.governance_config.proposal_factory_app_id
+        )
+        self.proposal_factory_address = logic.get_application_address(
+            self.proposal_factory_app_id
+        )
         self.admin_address = logic.get_application_address(self.admin_app_id)
 
     def load_state(self):
@@ -37,26 +49,42 @@ class Admin:
         global_state_admin = get_global_state(self.indexer, self.admin_app_id)
         self.quorum_value = global_state_admin.get(ADMIN_STRINGS.quorum_value, 0)
         self.super_majority = global_state_admin.get(ADMIN_STRINGS.super_majority, 0)
-        self.proposal_duration = global_state_admin.get(ADMIN_STRINGS.proposal_duration, 0)
-        self.proposal_execution_delay = global_state_admin.get(ADMIN_STRINGS.proposal_execution_delay, 0)
+        self.proposal_duration = global_state_admin.get(
+            ADMIN_STRINGS.proposal_duration, 0
+        )
+        self.proposal_execution_delay = global_state_admin.get(
+            ADMIN_STRINGS.proposal_execution_delay, 0
+        )
 
         # setting state for the proposal factory
-        global_state_proposal_factory = get_global_state(self.indexer, self.proposal_factory_app_id)
+        global_state_proposal_factory = get_global_state(
+            self.indexer, self.proposal_factory_app_id
+        )
 
         # put into config
-        self.gov_token = global_state_proposal_factory.get(PROPOSAL_FACTORY_STRINGS.gov_token, 0)
-        self.proposal_template_app_id = global_state_proposal_factory.get(PROPOSAL_FACTORY_STRINGS.proposal_template, 0)
-        self.minimum_vebank_to_propose = global_state_proposal_factory.get(PROPOSAL_FACTORY_STRINGS.minimum_ve_bank_to_propose, 0)
+        self.gov_token = global_state_proposal_factory.get(
+            PROPOSAL_FACTORY_STRINGS.gov_token, 0
+        )
+        self.proposal_template_app_id = global_state_proposal_factory.get(
+            PROPOSAL_FACTORY_STRINGS.proposal_template, 0
+        )
+        self.minimum_vebank_to_propose = global_state_proposal_factory.get(
+            PROPOSAL_FACTORY_STRINGS.minimum_ve_bank_to_propose, 0
+        )
 
         # get the proposals created from the factory
-        proposal_factory_info = self.indexer.account_info(self.proposal_factory_address)["account"]
+        proposal_factory_info = self.indexer.account_info(
+            self.proposal_factory_address
+        )["account"]
         self.proposals = {}
         for app_object in proposal_factory_info["created-apps"]:
-            self.proposals[app_object["id"]] = Proposal(self.governance_client, app_object["id"])
+            self.proposals[app_object["id"]] = Proposal(
+                self.governance_client, app_object["id"]
+            )
             self.proposals[app_object["id"]].load_state()
-    
+
     def get_update_user_vebank_txns(self, user_calling, user_updating):
-        """ Constructs a series of transactions to update a target user's vebank.
+        """Constructs a series of transactions to update a target user's vebank.
 
         :param user_calling: the user who is calling the transaction
         :type user_calling: :class:`AlgofiUser`
@@ -75,11 +103,14 @@ class Admin:
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.update_user_vebank, "utf-8")],
             foreign_apps=[self.governance_client.voting_escrow.app_id],
-            accounts=[user_updating.address, user_updating.governance.user_admin_state.storage_address]
+            accounts=[
+                user_updating.address,
+                user_updating.governance.user_admin_state.storage_address,
+            ],
         )
 
         return TransactionGroup([txn0])
-    
+
     def get_vote_txns(self, user, proposal, for_or_against):
         """Constructs a series of transactions to vote on a proposal.
 
@@ -95,7 +126,7 @@ class Admin:
 
         # update ve bank for user
         txn0 = self.get_update_user_vebank_txns(user, user)
-        
+
         params.fee = 2000
         txn1 = ApplicationNoOpTxn(
             sender=user.address,
@@ -103,7 +134,10 @@ class Admin:
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.vote, "utf-8"), int_to_bytes(for_or_against)],
             foreign_apps=[proposal.app_id],
-            accounts=[user.governance.user_admin_state.storage_address, logic.get_application_address(proposal.app_id)]
+            accounts=[
+                user.governance.user_admin_state.storage_address,
+                logic.get_application_address(proposal.app_id),
+            ],
         )
 
         return txn0 + TransactionGroup([txn1])
@@ -126,7 +160,10 @@ class Admin:
             sp=params,
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.delegate, "utf-8")],
-            accounts=[user.governance.user_admin_state.storage_address, delegatee.governance.user_admin_state.storage_address]
+            accounts=[
+                user.governance.user_admin_state.storage_address,
+                delegatee.governance.user_admin_state.storage_address,
+            ],
         )
 
         return TransactionGroup([txn0])
@@ -150,7 +187,7 @@ class Admin:
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.validate, "utf-8")],
             foreign_apps=[proposal.app_id],
-            accounts=[logic.get_application_address(proposal.app_id)]
+            accounts=[logic.get_application_address(proposal.app_id)],
         )
 
         return TransactionGroup([txn0])
@@ -178,7 +215,10 @@ class Admin:
             sp=params,
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.undelegate, "utf-8")],
-            accounts=[user.governance.user_admin_state.storage_address, user.governance.user_admin_state.delegating_to]
+            accounts=[
+                user.governance.user_admin_state.storage_address,
+                user.governance.user_admin_state.delegating_to,
+            ],
         )
 
         return TransactionGroup([txn0])
@@ -213,8 +253,8 @@ class Admin:
                 voting_user.address,
                 voting_user.governance.user_admin_state.storage_address,
                 voting_user.governance.user_admin_state.delegating_to,
-                logic.get_application_address(proposal.app_id)
-            ]
+                logic.get_application_address(proposal.app_id),
+            ],
         )
 
         return txn0 + TransactionGroup([txn1])
@@ -226,7 +266,7 @@ class Admin:
         :type user_calling: :class:`AlgofiUser`
         :param user_closing_out: user who is closing out
         :type user_closing_out: :class:`AlgofiUser`
-        :param proposal: proposal being closed out of 
+        :param proposal: proposal being closed out of
         :type proposal: :class:`Proposal`
         :return: a series of transactions which will close out a target user from a proposal.
         :rtype: :class:`TransactionGroup`
@@ -240,8 +280,11 @@ class Admin:
             sp=params,
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.close_out_from_proposal, "utf-8")],
-            accounts=[logic.get_application_address(proposal.app_id), user_close_out.governance.user_admin_state.storage_address],
-            foreign_apps=[proposal.app_id]
+            accounts=[
+                logic.get_application_address(proposal.app_id),
+                user_close_out.governance.user_admin_state.storage_address,
+            ],
+            foreign_apps=[proposal.app_id],
         )
 
         return TransactionGroup([txn0])
@@ -262,7 +305,7 @@ class Admin:
             sp=params,
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.set_open_to_delegation, "utf-8")],
-            accounts=[user.governance.user_admin_state.storage_address]
+            accounts=[user.governance.user_admin_state.storage_address],
         )
 
         return TransactionGroup([txn0])
@@ -283,11 +326,11 @@ class Admin:
             sp=params,
             index=self.admin_app_id,
             app_args=[bytes(ADMIN_STRINGS.set_not_open_to_delegation, "utf-8")],
-            accounts=[user.governance.user_admin_state.storage_address]   
+            accounts=[user.governance.user_admin_state.storage_address],
         )
 
         return TransactionGroup([txn0])
-    
+
     def get_create_proposal_txns(self, user, title, link):
         """Constructs a series of transactions to create a proposal.
 
@@ -307,14 +350,14 @@ class Admin:
             sender=user.address,
             sp=params,
             receiver=self.proposal_factory_address,
-            amt=4_000_000 # TODO: figure out the exact amount
+            amt=4_000_000,  # TODO: figure out the exact amount
         )
 
         txn1 = ApplicationNoOpTxn(
             sender=user.address,
             sp=params,
             index=self.proposal_factory_app_id,
-            app_args=[bytes(PROPOSAL_FACTORY_STRINGS.validate_user_account, "utf-8")]
+            app_args=[bytes(PROPOSAL_FACTORY_STRINGS.validate_user_account, "utf-8")],
         )
 
         # TODO: find out if fee is correct
@@ -326,10 +369,14 @@ class Admin:
             app_args=[
                 bytes(PROPOSAL_FACTORY_STRINGS.create_proposal, "utf-8"),
                 bytes(title, "utf-8"),
-                bytes(link, "utf-8")
+                bytes(link, "utf-8"),
             ],
             accounts=[user.address],
-            foreign_apps=[self.governance_client.voting_escrow.app_id, self.proposal_template_app_id, self.admin_app_id]
+            foreign_apps=[
+                self.governance_client.voting_escrow.app_id,
+                self.proposal_template_app_id,
+                self.admin_app_id,
+            ],
         )
 
         return TransactionGroup([txn0, txn1, txn2])

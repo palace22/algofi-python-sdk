@@ -11,7 +11,9 @@ from algofipy.state_utils import get_global_state
 
 
 class Oracle:
-    def __init__(self, indexer, historical_indexer, app_id, price_field_name, scale_factor):
+    def __init__(
+        self, indexer, historical_indexer, app_id, price_field_name, scale_factor
+    ):
         """The python representation of an algofi lending market oracle
 
         :param indexer: Algorand indexer client
@@ -32,7 +34,7 @@ class Oracle:
         self.price_field_name = price_field_name
         self.scale_factor = scale_factor
         self.load_price()
-    
+
     def load_price(self, block=None):
         """Populates the price field on the object
 

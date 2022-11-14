@@ -5,11 +5,18 @@ from algosdk.error import AlgodHTTPError
 from algosdk.v2client.algod import AlgodClient
 
 # local
-from algosdk.future.transaction import assign_group_id, PaymentTxn, AssetTransferTxn, LogicSig, LogicSigTransaction
+from algosdk.future.transaction import (
+    assign_group_id,
+    PaymentTxn,
+    AssetTransferTxn,
+    LogicSig,
+    LogicSigTransaction,
+)
 
 from .globals import ALGO_ASSET_ID
 
 # FUNCTIONS
+
 
 def get_default_params(algod):
     """Get default params for an Algorand transaction with fee = 1000, flat_fee = True.
@@ -24,6 +31,7 @@ def get_default_params(algod):
     params.flat_fee = True
     params.fee = 1000
     return params
+
 
 def get_payment_txn(sender, params, receiver, amount, asset_id=ALGO_ASSET_ID):
     """Get a payment transaction object.
@@ -43,8 +51,11 @@ def get_payment_txn(sender, params, receiver, amount, asset_id=ALGO_ASSET_ID):
     if asset_id == ALGO_ASSET_ID:
         txn = PaymentTxn(sender=sender, sp=params, receiver=receiver, amt=amount)
     else:
-        txn = AssetTransferTxn(sender=sender, sp=params, receiver=receiver, amt=amount, index=asset_id)
+        txn = AssetTransferTxn(
+            sender=sender, sp=params, receiver=receiver, amt=amount, index=asset_id
+        )
     return txn
+
 
 def wait_for_confirmation(algod, txid):
     """Wait for confirmation from network for transaction with given id.
@@ -57,15 +68,16 @@ def wait_for_confirmation(algod, txid):
     :rtype: dict
     """
 
-    last_round = algod.status().get('last-round')
+    last_round = algod.status().get("last-round")
     txinfo = algod.pending_transaction_info(txid)
-    while not (txinfo.get('confirmed-round') and txinfo.get('confirmed-round') > 0):
+    while not (txinfo.get("confirmed-round") and txinfo.get("confirmed-round") > 0):
         print("Waiting for confirmation")
         last_round += 1
         algod.status_after_block(last_round)
         txinfo = algod.pending_transaction_info(txid)
-    txinfo['txid'] = txid
+    txinfo["txid"] = txid
     return txinfo
+
 
 class TransactionGroup:
     def __init__(self, transactions):
@@ -107,7 +119,7 @@ class TransactionGroup:
 
         for i, txn in enumerate(self.transactions):
             self.signed_transactions[i] = txn.sign(private_key)
-    
+
     def sign_with_private_keys(self, private_keys, is_logic_sig=None):
         """Signs the transactions with specified private key and saves to class state
         :param private_keys: private key of user
@@ -119,8 +131,8 @@ class TransactionGroup:
         if not is_logic_sig:
             is_logic_sig = [False] * len(private_keys)
 
-        assert(len(private_keys) == len(self.transactions))
-        assert(len(private_keys) == len(is_logic_sig))
+        assert len(private_keys) == len(self.transactions)
+        assert len(private_keys) == len(is_logic_sig)
         for i, txn in enumerate(self.transactions):
             if is_logic_sig[i]:
                 self.signed_transactions[i] = LogicSigTransaction(txn, private_keys[i])
@@ -144,4 +156,4 @@ class TransactionGroup:
             raise Exception(str(e))
         if wait:
             return wait_for_confirmation(algod, txid)
-        return {'txid': txid}
+        return {"txid": txid}

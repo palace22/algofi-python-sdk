@@ -1,4 +1,3 @@
-
 # IMPORTS
 
 # external
@@ -6,8 +5,13 @@ from enum import Enum
 from base64 import b64encode
 
 # local
-from .approval_programs import MAINNET_APPROVAL_PROGRAM_25BP_CONSTANT_PRODUCT, MAINNET_APPROVAL_PROGRAM_75BP_CONSTANT_PRODUCT, \
-    TESTNET_APPROVAL_PROGRAM_30BP_CONSTANT_PRODUCT, TESTNET_APPROVAL_PROGRAM_100BP_CONSTANT_PRODUCT, CLEAR_STATE_PROGRAM
+from .approval_programs import (
+    MAINNET_APPROVAL_PROGRAM_25BP_CONSTANT_PRODUCT,
+    MAINNET_APPROVAL_PROGRAM_75BP_CONSTANT_PRODUCT,
+    TESTNET_APPROVAL_PROGRAM_30BP_CONSTANT_PRODUCT,
+    TESTNET_APPROVAL_PROGRAM_100BP_CONSTANT_PRODUCT,
+    CLEAR_STATE_PROGRAM,
+)
 from algofipy.globals import Network
 
 # INTERFACE
@@ -24,22 +28,22 @@ TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID = 66008735
 # (asset1_id, asset2_id) -> pool_app_id
 TESTNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID = {
     (77279127, 77279142): 77282939,
-    (104207173, 104217422): 104228342
+    (104207173, 104217422): 104228342,
 }
 MAINNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID = {
     (31566704, 465865291): 658337046,
     (312769, 465865291): 659677335,
-    (312769, 31566704): 659678644
+    (312769, 31566704): 659678644,
 }
 # nanoswap pool manager app ids
 TESTNET_NANOSWAP_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID = {
     (77279127, 77279142): 104225849,
-    (104207173, 104217422): 104225849
+    (104207173, 104217422): 104225849,
 }
 MAINNET_NANOSWAP_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID = {
     (31566704, 465865291): 658336870,
     (312769, 465865291): 658336870,
-    (312769, 31566704): 658336870
+    (312769, 31566704): 658336870,
 }
 
 # lending pool app ids
@@ -49,7 +53,7 @@ LENDING_POOLS_ASSET_PAIR_TO_APP_ID = {
     (818179690, 841157954): 855716333,
     (818184214, 841157954): 870150391,
     (818188553, 841157954): 870143131,
-    (841157954, 900919286): 900923609
+    (841157954, 900919286): 900923609,
 }
 # lending pool manager app ids
 # (asset1_id, asset2_id) -> manager_app_id
@@ -58,12 +62,13 @@ LENDING_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID = {
     (818179690, 841157954): 841165954,
     (818184214, 841157954): 841165954,
     (818188553, 841157954): 841165954,
-    (841157954, 900919286): 841165954
+    (841157954, 900919286): 841165954,
 }
 
+
 class PoolType(Enum):
-    """Pool type enum
-    """
+    """Pool type enum"""
+
     CONSTANT_PRODUCT_25BP_FEE = 1
     CONSTANT_PRODUCT_30BP_FEE = 2
     CONSTANT_PRODUCT_75BP_FEE = 3
@@ -74,8 +79,8 @@ class PoolType(Enum):
 
 
 class PoolStatus(Enum):
-    """Pool status enum
-    """
+    """Pool status enum"""
+
     UNINITIALIZED = 0
     ACTIVE = 1
 
@@ -93,16 +98,16 @@ def get_validator_index(network, pool_type):
     """
 
     if network == Network.MAINNET:
-        if (pool_type == PoolType.CONSTANT_PRODUCT_25BP_FEE):
+        if pool_type == PoolType.CONSTANT_PRODUCT_25BP_FEE:
             return 0
-        elif (pool_type == PoolType.CONSTANT_PRODUCT_75BP_FEE):
+        elif pool_type == PoolType.CONSTANT_PRODUCT_75BP_FEE:
             return 1
     elif network == Network.TESTNET:
-        if (pool_type == PoolType.CONSTANT_PRODUCT_30BP_FEE):
+        if pool_type == PoolType.CONSTANT_PRODUCT_30BP_FEE:
             return 0
-        elif (pool_type == PoolType.CONSTANT_PRODUCT_100BP_FEE):
+        elif pool_type == PoolType.CONSTANT_PRODUCT_100BP_FEE:
             return 1
-        elif (pool_type == PoolType.NANOSWAP):
+        elif pool_type == PoolType.NANOSWAP:
             return -1
 
 
@@ -118,14 +123,14 @@ def get_approval_program_by_pool_type(pool_type, network):
     """
 
     if network == Network.MAINNET:
-        if (pool_type == PoolType.CONSTANT_PRODUCT_25BP_FEE):
+        if pool_type == PoolType.CONSTANT_PRODUCT_25BP_FEE:
             return bytes(MAINNET_APPROVAL_PROGRAM_25BP_CONSTANT_PRODUCT)
-        elif (pool_type == PoolType.CONSTANT_PRODUCT_75BP_FEE):
+        elif pool_type == PoolType.CONSTANT_PRODUCT_75BP_FEE:
             return bytes(MAINNET_APPROVAL_PROGRAM_75BP_CONSTANT_PRODUCT)
     elif network == Network.TESTNET:
-        if (pool_type == PoolType.CONSTANT_PRODUCT_30BP_FEE):
+        if pool_type == PoolType.CONSTANT_PRODUCT_30BP_FEE:
             return bytes(TESTNET_APPROVAL_PROGRAM_30BP_CONSTANT_PRODUCT)
-        elif (pool_type == PoolType.CONSTANT_PRODUCT_100BP_FEE):
+        elif pool_type == PoolType.CONSTANT_PRODUCT_100BP_FEE:
             return bytes(TESTNET_APPROVAL_PROGRAM_100BP_CONSTANT_PRODUCT)
 
 
@@ -141,8 +146,10 @@ def get_clear_state_program():
 
 MAINNET_USDC_ASSET_ID = 31566704
 TESTNET_USDC_ASSET_ID = 51435943
+
+
 def get_usdc_asset_id(network):
-    
+
     """Gets asset id of USDC for a given network
 
     :param network: network :class:`Network` ("testnet" or "mainnet")
@@ -151,13 +158,16 @@ def get_usdc_asset_id(network):
     :rtype: int
     """
 
-    if (network == Network.MAINNET):
+    if network == Network.MAINNET:
         return MAINNET_USDC_ASSET_ID
-    elif (network == Network.TESTNET):
+    elif network == Network.TESTNET:
         return TESTNET_USDC_ASSET_ID
+
 
 TESTNET_STBL_ASSET_ID = 51437163
 MAINNET_STBL_ASSET_ID = 465865291
+
+
 def get_stbl_asset_id(network):
     """Gets asset id of STBL for a given network
 
@@ -167,9 +177,9 @@ def get_stbl_asset_id(network):
     :rtype: int
     """
 
-    if (network == Network.MAINNET):
+    if network == Network.MAINNET:
         return MAINNET_STBL_ASSET_ID
-    elif (network == Network.TESTNET):
+    elif network == Network.TESTNET:
         return TESTNET_STBL_ASSET_ID
 
 
@@ -243,24 +253,51 @@ class MANAGER_STRINGS:
     set_reserve_factor = "srf"
     set_max_flash_loan_ratio = "smflr"
     set_validator = "sv"
-    validator_index="vi"
+    validator_index = "vi"
+
 
 # valid pool app ids
 b64_to_utf_keys = {
-    b64encode(bytes(POOL_STRINGS.asset1_id, "utf-8")).decode("utf-8"): POOL_STRINGS.asset1_id,
-    b64encode(bytes(POOL_STRINGS.asset2_id, "utf-8")).decode("utf-8"): POOL_STRINGS.asset2_id,
+    b64encode(bytes(POOL_STRINGS.asset1_id, "utf-8")).decode(
+        "utf-8"
+    ): POOL_STRINGS.asset1_id,
+    b64encode(bytes(POOL_STRINGS.asset2_id, "utf-8")).decode(
+        "utf-8"
+    ): POOL_STRINGS.asset2_id,
     b64encode(bytes(POOL_STRINGS.pool, "utf-8")).decode("utf-8"): POOL_STRINGS.pool,
-    b64encode(bytes(MANAGER_STRINGS.validator_index, "utf-8")).decode("utf-8"): MANAGER_STRINGS.validator_index,
-    b64encode(bytes(POOL_STRINGS.balance_1, "utf-8")).decode("utf-8"): POOL_STRINGS.balance_1,
-    b64encode(bytes(POOL_STRINGS.balance_2, "utf-8")).decode("utf-8"): POOL_STRINGS.balance_2,
-    b64encode(bytes(POOL_STRINGS.cumsum_volume_asset1, "utf-8")).decode("utf-8"): POOL_STRINGS.cumsum_volume_asset1,
-    b64encode(bytes(POOL_STRINGS.cumsum_volume_asset2, "utf-8")).decode("utf-8"): POOL_STRINGS.cumsum_volume_asset2,
-    b64encode(bytes(POOL_STRINGS.cumsum_volume_weighted_asset1_to_asset2_price, "utf-8")).decode("utf-8"): POOL_STRINGS.cumsum_volume_weighted_asset1_to_asset2_price,
-    b64encode(bytes(POOL_STRINGS.cumsum_volume_weighted_asset2_to_asset1_price, "utf-8")).decode("utf-8"): POOL_STRINGS.cumsum_volume_weighted_asset2_to_asset1_price,
-    b64encode(bytes(POOL_STRINGS.cumsum_time_weighted_asset2_to_asset1_price, "utf-8")).decode("utf-8"): POOL_STRINGS.cumsum_time_weighted_asset2_to_asset1_price,
-    b64encode(bytes(POOL_STRINGS.cumsum_time_weighted_asset1_to_asset2_price, "utf-8")).decode("utf-8"): POOL_STRINGS.cumsum_time_weighted_asset1_to_asset2_price,
-    b64encode(bytes(POOL_STRINGS.cumsum_fees_asset1, "utf-8")).decode("utf-8"): POOL_STRINGS.cumsum_fees_asset1,
-    b64encode(bytes(POOL_STRINGS.cumsum_fees_asset2, "utf-8")).decode("utf-8"): POOL_STRINGS.cumsum_fees_asset2
+    b64encode(bytes(MANAGER_STRINGS.validator_index, "utf-8")).decode(
+        "utf-8"
+    ): MANAGER_STRINGS.validator_index,
+    b64encode(bytes(POOL_STRINGS.balance_1, "utf-8")).decode(
+        "utf-8"
+    ): POOL_STRINGS.balance_1,
+    b64encode(bytes(POOL_STRINGS.balance_2, "utf-8")).decode(
+        "utf-8"
+    ): POOL_STRINGS.balance_2,
+    b64encode(bytes(POOL_STRINGS.cumsum_volume_asset1, "utf-8")).decode(
+        "utf-8"
+    ): POOL_STRINGS.cumsum_volume_asset1,
+    b64encode(bytes(POOL_STRINGS.cumsum_volume_asset2, "utf-8")).decode(
+        "utf-8"
+    ): POOL_STRINGS.cumsum_volume_asset2,
+    b64encode(
+        bytes(POOL_STRINGS.cumsum_volume_weighted_asset1_to_asset2_price, "utf-8")
+    ).decode("utf-8"): POOL_STRINGS.cumsum_volume_weighted_asset1_to_asset2_price,
+    b64encode(
+        bytes(POOL_STRINGS.cumsum_volume_weighted_asset2_to_asset1_price, "utf-8")
+    ).decode("utf-8"): POOL_STRINGS.cumsum_volume_weighted_asset2_to_asset1_price,
+    b64encode(
+        bytes(POOL_STRINGS.cumsum_time_weighted_asset2_to_asset1_price, "utf-8")
+    ).decode("utf-8"): POOL_STRINGS.cumsum_time_weighted_asset2_to_asset1_price,
+    b64encode(
+        bytes(POOL_STRINGS.cumsum_time_weighted_asset1_to_asset2_price, "utf-8")
+    ).decode("utf-8"): POOL_STRINGS.cumsum_time_weighted_asset1_to_asset2_price,
+    b64encode(bytes(POOL_STRINGS.cumsum_fees_asset1, "utf-8")).decode(
+        "utf-8"
+    ): POOL_STRINGS.cumsum_fees_asset1,
+    b64encode(bytes(POOL_STRINGS.cumsum_fees_asset2, "utf-8")).decode(
+        "utf-8"
+    ): POOL_STRINGS.cumsum_fees_asset2,
 }
 
 utf_to_b64_keys = {v: k for k, v in b64_to_utf_keys.items()}

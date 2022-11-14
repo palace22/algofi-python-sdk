@@ -7,7 +7,9 @@ from algosdk.future.transaction import AssetCreateTxn
 
 # local
 from .transaction_utils import get_default_params
+
 # FUNCTIONS
+
 
 def int_to_bytes(num):
     """Int to convert to bytes.
@@ -18,7 +20,8 @@ def int_to_bytes(num):
     :rtype: bytes
     """
 
-    return num.to_bytes(8, 'big')
+    return num.to_bytes(8, "big")
+
 
 def base64_to_utf8(b64_str):
     """Convert base64 to utf8.
@@ -40,7 +43,8 @@ def bytes_to_int(bytes):
     :rtype: int
     """
 
-    return int.from_bytes(bytes, 'big')
+    return int.from_bytes(bytes, "big")
+
 
 def get_new_account():
     """Generate a random Algorand account.
@@ -53,6 +57,7 @@ def get_new_account():
     passphrase = mnemonic.from_private_key(key)
     return (key, address, passphrase)
 
+
 def encode_value(value, type):
     """Encode a value of a given type.
 
@@ -64,9 +69,10 @@ def encode_value(value, type):
     :rtype: int
     """
 
-    if type == 'int':
+    if type == "int":
         return encode_varint(value)
-    raise Exception('Unsupported value type %s!' % type)
+    raise Exception("Unsupported value type %s!" % type)
+
 
 def encode_varint(number):
     """Encode an int.
@@ -77,9 +83,9 @@ def encode_varint(number):
     :rtype: bytes
     """
 
-    buf = b''
+    buf = b""
     while True:
-        towrite = number & 0x7f
+        towrite = number & 0x7F
         number >>= 7
         if number:
             buf += bytes([towrite | 0x80])
@@ -88,8 +94,21 @@ def encode_varint(number):
             break
     return buf
 
-def create_asset_transaction(algod, sender, total, decimals, default_frozen, manager, reserve, freeze, clawback,
-                             unit_name, asset_name, url):
+
+def create_asset_transaction(
+    algod,
+    sender,
+    total,
+    decimals,
+    default_frozen,
+    manager,
+    reserve,
+    freeze,
+    clawback,
+    unit_name,
+    asset_name,
+    url,
+):
 
     params = get_default_params(algod)
 
@@ -105,5 +124,5 @@ def create_asset_transaction(algod, sender, total, decimals, default_frozen, man
         clawback=clawback,
         unit_name=unit_name,
         asset_name=asset_name,
-        url=url
+        url=url,
     )

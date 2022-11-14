@@ -18,6 +18,7 @@ from .lending_config import MANAGER_STRINGS
 
 # INTERFACE
 
+
 class LendingClient:
     def __init__(self, algofi_client):
         """Constructor for the client used to interact with algofi lending protocol
@@ -33,18 +34,17 @@ class LendingClient:
         self.network = self.algofi_client.network
         self.manager_config = MANAGER_CONFIGS[self.network]
         self.market_configs = MARKET_CONFIGS[self.network]
-        
+
         self.manager = Manager(self, self.manager_config)
         self.markets = {}
         for market_config in self.market_configs:
             self.markets[market_config.app_id] = Market(self, market_config)
-    
+
     def load_state(self):
-        """Function to update the state of the lending client markets
-        """
+        """Function to update the state of the lending client markets"""
         for market_app_id in self.markets:
             self.markets[market_app_id].load_state()
-    
+
     def get_user(self, user_address):
         """Gets an algofi lending v2 user given an address.
 
@@ -68,18 +68,30 @@ class LendingClient:
         next_page = ""
         accounts = []
         while next_page is not None:
-            account_data = self.indexer.accounts(limit=1000, next_page=next_page, application_id=self.manager.app_id, exclude="assets,created-apps,created-assets")
+            account_data = self.indexer.accounts(
+                limit=1000,
+                next_page=next_page,
+                application_id=self.manager.app_id,
+                exclude="assets,created-apps,created-assets",
+            )
             accounts_filtered = []
             for account in account_data["accounts"]:
-                user_local_state = account.get("apps-local-state",[])
+                user_local_state = account.get("apps-local-state", [])
                 for app_local_state in user_local_state:
                     if app_local_state["id"] == self.manager.app_id:
                         fields = app_local_state.get("key-value", [])
                         for field in fields:
                             key = field.get("key", None)
-                            if key ==  b64encode(bytes(MANAGER_STRINGS.user_account, "utf-8")).decode("utf-8"):
+                            if key == b64encode(
+                                bytes(MANAGER_STRINGS.user_account, "utf-8")
+                            ).decode("utf-8"):
                                 accounts_filtered.append(account)
-            accounts.extend([(account if verbose else account["address"]) for account in accounts_filtered])
+            accounts.extend(
+                [
+                    (account if verbose else account["address"])
+                    for account in accounts_filtered
+                ]
+            )
             if "next-token" in account_data:
                 next_page = account_data["next-token"]
             else:
@@ -87,7 +99,11 @@ class LendingClient:
         return accounts
 
     def get_user_account(self, storage_account):
-        manager_state = get_local_state_at_app(self.indexer, storage_account, self.manager.app_id)
+        manager_state = get_local_state_at_app(
+            self.indexer, storage_account, self.manager.app_id
+        )
         if manager_state:
-            return encode_address(b64decode(manager_state[MANAGER_STRINGS.user_account]))
+            return encode_address(
+                b64decode(manager_state[MANAGER_STRINGS.user_account])
+            )
         return ""

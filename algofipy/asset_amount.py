@@ -2,6 +2,7 @@
 
 # INTERFACE
 
+
 class AssetAmount:
     def __init__(self, underlying, usd):
         """A client for the algofi protocol

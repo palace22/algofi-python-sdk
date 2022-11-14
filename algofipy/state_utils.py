@@ -7,6 +7,7 @@ from .globals import ALGO_ASSET_ID
 
 # FUNCTIONS
 
+
 def get_balances(indexer, address, block=None):
     """Get balances for a given user.
 
@@ -21,13 +22,14 @@ def get_balances(indexer, address, block=None):
     """
 
     balances = {}
-    account_info = indexer.account_info(address, round_num=block)['account']
-    balances[ALGO_ASSET_ID] = account_info['amount']
-    if 'assets' in account_info:
-        for asset_info in account_info['assets']:
-            balances[asset_info['asset-id']] = asset_info['amount']
+    account_info = indexer.account_info(address, round_num=block)["account"]
+    balances[ALGO_ASSET_ID] = account_info["amount"]
+    if "assets" in account_info:
+        for asset_info in account_info["assets"]:
+            balances[asset_info["asset-id"]] = asset_info["amount"]
     return balances
-    
+
+
 def get_state_int(state, key):
     """Get int value from state dict for given key.
 
@@ -41,7 +43,8 @@ def get_state_int(state, key):
 
     if type(key) == str:
         key = b64encode(key.encode())
-    return state.get(key.decode(), {'uint': 0})['uint']
+    return state.get(key.decode(), {"uint": 0})["uint"]
+
 
 def get_state_bytes(state, key):
     """Get bytes value from state dict for given key.
@@ -56,7 +59,8 @@ def get_state_bytes(state, key):
 
     if type(key) == str:
         key = b64encode(key.encode())
-    return state.get(key.decode(), {'bytes': ''})['bytes']
+    return state.get(key.decode(), {"bytes": ""})["bytes"]
+
 
 def format_state(state, decode_byte_values=True):
     """Format state dict by base64 decoding keys and, optionally, bytes values.
@@ -71,25 +75,28 @@ def format_state(state, decode_byte_values=True):
 
     formatted_state = {}
     for item in state:
-        key = item['key']
-        value = item['value']
+        key = item["key"]
+        value = item["value"]
         try:
-            formatted_key = b64decode(key).decode('utf-8')
+            formatted_key = b64decode(key).decode("utf-8")
         except:
             formatted_key = b64decode(key)
-        if value['type'] == 1:
+        if value["type"] == 1:
             # byte string
             if decode_byte_values:
                 try:
-                    formatted_state[formatted_key] = b64decode(value['bytes']).decode('utf-8')
+                    formatted_state[formatted_key] = b64decode(value["bytes"]).decode(
+                        "utf-8"
+                    )
                 except:
-                    formatted_state[formatted_key] = value['bytes']
+                    formatted_state[formatted_key] = value["bytes"]
             else:
-                formatted_state[formatted_key] = value['bytes']
+                formatted_state[formatted_key] = value["bytes"]
         else:
             # integer
-            formatted_state[formatted_key] = value['uint']
+            formatted_state[formatted_key] = value["uint"]
     return formatted_state
+
 
 def get_local_states(indexer, address, decode_byte_values=True, block=None):
     """Get local state of user for all opted in apps.
@@ -107,15 +114,20 @@ def get_local_states(indexer, address, decode_byte_values=True, block=None):
     """
 
     try:
-        results = indexer.account_info(address, round_num=block, exclude="assets,created-apps,created-assets").get("account", {})
+        results = indexer.account_info(
+            address, round_num=block, exclude="assets,created-apps,created-assets"
+        ).get("account", {})
     except:
         raise Exception("Account does not exist.")
 
     result = {}
-    if 'apps-local-state' in results:
-        for local_state in results['apps-local-state']:
-            result[local_state['id']] = format_state(local_state.get('key-value', []), decode_byte_values=decode_byte_values)
+    if "apps-local-state" in results:
+        for local_state in results["apps-local-state"]:
+            result[local_state["id"]] = format_state(
+                local_state.get("key-value", []), decode_byte_values=decode_byte_values
+            )
     return result
+
 
 def get_local_state_at_app(indexer, address, app_id, decode_byte_values=True):
     """Get local state of user for given app.
@@ -132,11 +144,14 @@ def get_local_state_at_app(indexer, address, app_id, decode_byte_values=True):
     :rtype: dict
     """
 
-    local_states = get_local_states(indexer, address, decode_byte_values=decode_byte_values)
+    local_states = get_local_states(
+        indexer, address, decode_byte_values=decode_byte_values
+    )
     if app_id in local_states:
         return local_states[app_id]
     else:
         return None
+
 
 def get_global_state(indexer, app_id, decode_byte_values=True, block=None):
     """Get global state of a given application.
@@ -154,10 +169,16 @@ def get_global_state(indexer, app_id, decode_byte_values=True, block=None):
     """
 
     try:
-        application_info = indexer.applications(app_id, round_num=block).get("application", {})
+        application_info = indexer.applications(app_id, round_num=block).get(
+            "application", {}
+        )
     except:
         raise Exception("Application does not exist.")
-    return format_state(application_info["params"]["global-state"], decode_byte_values=decode_byte_values)
+    return format_state(
+        application_info["params"]["global-state"],
+        decode_byte_values=decode_byte_values,
+    )
+
 
 def format_prefix_state(state):
     """Format state dict including prefixes.
@@ -176,8 +197,8 @@ def format_prefix_state(state):
             index_of_underscore = -1
         # if the prefix actually exist
         if index_of_underscore > 0:
-            prefix = key[0: index_of_underscore + 1]
-            raw_bytes = bytes(key[index_of_underscore + 1:], "utf-8")
+            prefix = key[0 : index_of_underscore + 1]
+            raw_bytes = bytes(key[index_of_underscore + 1 :], "utf-8")
             formatted = int.from_bytes(raw_bytes, "big")
             formatted_state[prefix + str(formatted)] = value
         else:
