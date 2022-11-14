@@ -1,6 +1,4 @@
-
-class BalanceDelta():
-
+class BalanceDelta:
     def __init__(self, pool, asset1_delta, asset2_delta, lp_delta, num_iter=0):
         """Constructor method for :class:`BalanceDelta`
         :param pool: a :class:`Pool` object for querying pool data
@@ -21,11 +19,13 @@ class BalanceDelta():
         self.num_iter = num_iter
         self.extra_compute_fee = int(num_iter / (700 / 400)) * 1000
 
-        if (lp_delta != 0):
+        if lp_delta != 0:
             self.price_delta = 0
-        elif (pool.lp_circulation == 0):
+        elif pool.lp_circulation == 0:
             self.price_delta = 0
         else:
             starting_price_ratio = pool.asset1_balance / pool.asset2_balance
-            final_price_ratio = (pool.asset1_balance + asset1_delta) / (pool.asset2_balance + asset2_delta)
+            final_price_ratio = (pool.asset1_balance + asset1_delta) / (
+                pool.asset2_balance + asset2_delta
+            )
             self.price_delta = abs((starting_price_ratio / final_price_ratio) - 1)

@@ -1,70 +1,71 @@
 from algofipy.globals import Network
 
+
 class StakingType:
-  V1 = 0
-  V2 = 1
-  BASSET = 2
+    V1 = 0
+    V2 = 1
+    BASSET = 2
+
 
 class StakingConfig:
-  def __init__(self, name, app_id, asset_id, type):
-    self.name = name
-    self.app_id = app_id
-    self.asset_id = asset_id
-    self.type = type
+    def __init__(self, name, app_id, asset_id, type):
+        self.name = name
+        self.app_id = app_id
+        self.asset_id = asset_id
+        self.type = type
+
 
 STAKING_CONFIGS = {
-  Network.MAINNET: [
-    StakingConfig("USDC Lend and Earn", 821882730, 818182311, StakingType.BASSET),
-    StakingConfig("USDT Lend and Earn", 821882927, 818190568, StakingType.BASSET)
-  ],
-  Network.TESTNET: [
-    StakingConfig("USDC Lend and Earn", 104267989, 104207173, StakingType.BASSET),
-  ]
+    Network.MAINNET: [
+        StakingConfig("USDC Lend and Earn", 821882730, 818182311, StakingType.BASSET),
+        StakingConfig("USDT Lend and Earn", 821882927, 818190568, StakingType.BASSET),
+    ],
+    Network.TESTNET: [
+        StakingConfig("USDC Lend and Earn", 104267989, 104207173, StakingType.BASSET),
+    ],
 }
 
-rewards_manager_app_id = {
-  Network.MAINNET: 0,
-  Network.TESTNET: 107210021
-}
+rewards_manager_app_id = {Network.MAINNET: 0, Network.TESTNET: 107210021}
+
 
 class STAKING_STRINGS:
-  admin = "a"
-  rewards_program_count = "rpc"
-  rps_pusher = "rpsp"
-  contract_update_delay = "cud"
-  contract_update_time = "cut"
-  voting_escrow_app_id = "veai"
-  rewards_manager_app_id = "rmai"
-  external_boost_multiplier = "ebm"
-  asset_id = "ai"
-  user_total_staked = "uts"
-  user_scaled_total_staked = "usts"
-  boost_multiplier = "lm"
-  user_rewards_program_counter_prefix = "urpc_"
-  user_rewards_coefficient_prefix = "urc_"
-  user_unclaimed_rewards_prefix = "uur_"
-  total_staked = "ts"
-  scaled_total_staked = "sts"
-  latest_time = "lt"
-  rewards_escrow_account = "rea"
-  rewards_program_counter_prefix = "rpc_"
-  rewards_asset_id_prefix = "rai_"
-  rewards_per_second_prefix = "rps_"
-  rewards_coefficient_prefix = "rc_"
-  rewards_issued_prefix = "ri_"
-  rewards_payed_prefix = "rp_"
-  schedule_contract_update = "scu"
-  increase_contract_update_delay = "icud"
-  set_rewards_manager_app_id = "srma"
-  set_boost_app_id = "sbai"
-  set_rewards_program = "srp"
-  update_rewards_program = "urp"
-  opt_into_asset = "oia"
-  opt_into_rewards_manager = "oirm"
-  update_rewards_per_second = "urps"
-  farm_ops = "fo"
-  stake = "s"
-  unstake = "u"
-  claim_rewards = "cr"
-  update_target_user = "utu"
-  update_vebank_data = "update_vebank_data"
+    admin = "a"
+    rewards_program_count = "rpc"
+    rps_pusher = "rpsp"
+    contract_update_delay = "cud"
+    contract_update_time = "cut"
+    voting_escrow_app_id = "veai"
+    rewards_manager_app_id = "rmai"
+    external_boost_multiplier = "ebm"
+    asset_id = "ai"
+    user_total_staked = "uts"
+    user_scaled_total_staked = "usts"
+    boost_multiplier = "lm"
+    user_rewards_program_counter_prefix = "urpc_"
+    user_rewards_coefficient_prefix = "urc_"
+    user_unclaimed_rewards_prefix = "uur_"
+    total_staked = "ts"
+    scaled_total_staked = "sts"
+    latest_time = "lt"
+    rewards_escrow_account = "rea"
+    rewards_program_counter_prefix = "rpc_"
+    rewards_asset_id_prefix = "rai_"
+    rewards_per_second_prefix = "rps_"
+    rewards_coefficient_prefix = "rc_"
+    rewards_issued_prefix = "ri_"
+    rewards_payed_prefix = "rp_"
+    schedule_contract_update = "scu"
+    increase_contract_update_delay = "icud"
+    set_rewards_manager_app_id = "srma"
+    set_boost_app_id = "sbai"
+    set_rewards_program = "srp"
+    update_rewards_program = "urp"
+    opt_into_asset = "oia"
+    opt_into_rewards_manager = "oirm"
+    update_rewards_per_second = "urps"
+    farm_ops = "fo"
+    stake = "s"
+    unstake = "u"
+    claim_rewards = "cr"
+    update_target_user = "utu"
+    update_vebank_data = "update_vebank_data"

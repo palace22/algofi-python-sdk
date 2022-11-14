@@ -1,11 +1,10 @@
-
 # IMPORTS
 
 
 # INTERFACE
 
-class RewardsManager:
 
+class RewardsManager:
     def __init__(self, governance_client, governance_config):
         """Constructor for the rewards manager object.
 

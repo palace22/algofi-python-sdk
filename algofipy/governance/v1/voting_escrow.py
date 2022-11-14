@@ -1,4 +1,3 @@
-
 # IMPORTS
 from algosdk.future.transaction import ApplicationNoOpTxn, AssetTransferTxn
 from algosdk import logic
@@ -10,19 +9,24 @@ from algofipy.utils import int_to_bytes
 from algofipy.governance.v1.governance_config import VOTING_ESCROW_STRINGS
 from algofipy.transaction_utils import TransactionGroup, get_default_params
 
-class VotingEscrow:
 
+class VotingEscrow:
     def __init__(self, governance_client):
-        """The constructor for the voting escrow object.
-        """
+        """The constructor for the voting escrow object."""
 
         self.governance_client = governance_client
         self.algod = self.governance_client.algod
         self.indexer = self.governance_client.indexer
         self.app_id = self.governance_client.governance_config.voting_escrow_app_id
-        self.governance_token = self.governance_client.governance_config.governance_token
-        self.voting_escrow_min_time_lock_seconds = governance_client.governance_config.voting_escrow_min_time_lock_seconds
-        self.voting_escrow_max_time_lock_seconds = governance_client.governance_config.voting_escrow_max_time_lock_seconds
+        self.governance_token = (
+            self.governance_client.governance_config.governance_token
+        )
+        self.voting_escrow_min_time_lock_seconds = (
+            governance_client.governance_config.voting_escrow_min_time_lock_seconds
+        )
+        self.voting_escrow_max_time_lock_seconds = (
+            governance_client.governance_config.voting_escrow_max_time_lock_seconds
+        )
         self.load_state()
 
     def load_state(self):
@@ -53,7 +57,7 @@ class VotingEscrow:
             sp=params,
             index=self.app_id,
             app_args=[bytes(VOTING_ESCROW_STRINGS.update_vebank_data, "utf-8")],
-            accounts=[user_updating.address]
+            accounts=[user_updating.address],
         )
 
         return TransactionGroup([txn0])
@@ -72,20 +76,23 @@ class VotingEscrow:
         """
 
         params = get_default_params(self.algod)
-        
+
         txn0 = AssetTransferTxn(
             sender=user.address,
             sp=params,
             receiver=logic.get_application_address(self.app_id),
             amt=amount,
-            index=self.governance_token
+            index=self.governance_token,
         )
 
         txn1 = ApplicationNoOpTxn(
             sender=user.address,
             sp=params,
             index=self.app_id,
-            app_args=[bytes(VOTING_ESCROW_STRINGS.lock, "utf-8"), int_to_bytes(duration_seconds)],
+            app_args=[
+                bytes(VOTING_ESCROW_STRINGS.lock, "utf-8"),
+                int_to_bytes(duration_seconds),
+            ],
         )
 
         return TransactionGroup([txn0, txn1])
@@ -107,7 +114,10 @@ class VotingEscrow:
             sender=user.address,
             sp=params,
             index=self.app_id,
-            app_args=[bytes(VOTING_ESCROW_STRINGS.extend_lock, "utf-8"), int_to_bytes(duration_seconds)],
+            app_args=[
+                bytes(VOTING_ESCROW_STRINGS.extend_lock, "utf-8"),
+                int_to_bytes(duration_seconds),
+            ],
         )
 
         return TransactionGroup([txn0])
@@ -130,14 +140,14 @@ class VotingEscrow:
             sp=params,
             receiver=logic.get_application_address(self.app_id),
             amt=amount,
-            index=self.governance_token
+            index=self.governance_token,
         )
 
         txn1 = ApplicationNoOpTxn(
             sender=user.address,
             sp=params,
             index=self.app_id,
-            app_args=[bytes(VOTING_ESCROW_STRINGS.increase_lock_amount, "utf-8")]
+            app_args=[bytes(VOTING_ESCROW_STRINGS.increase_lock_amount, "utf-8")],
         )
 
         return TransactionGroup([txn0, txn1])
@@ -152,18 +162,18 @@ class VotingEscrow:
         """
 
         params = get_default_params(self.algod)
-        
+
         params.fee = 2000
         txn0 = ApplicationNoOpTxn(
             sender=user.address,
             sp=params,
             index=self.app_id,
             app_args=[bytes(VOTING_ESCROW_STRINGS.claim, "utf-8")],
-            foreign_assets=[self.governance_token]
+            foreign_assets=[self.governance_token],
         )
 
         return TransactionGroup([txn0])
-    
+
     def get_projected_vebank_amount(self, user_voting_escrow_state):
         """Get projected vebank amount for user.
 
@@ -174,14 +184,17 @@ class VotingEscrow:
         """
 
         current_time = int(time.time())
-        lock_end_time = user_voting_escrow_state.lock_start_time + user_voting_escrow_state.lock_duration
+        lock_end_time = (
+            user_voting_escrow_state.lock_start_time
+            + user_voting_escrow_state.lock_duration
+        )
         time_remaining = lock_end_time - current_time
         amount_locked = user_voting_escrow_state.amount_locked
         if time_remaining <= 0 or amount_locked == 0:
             return 0
         else:
             return int((amount_locked * time_remaining) // (365 * 24 * 60 * 60))
-    
+
     def get_projected_boost_multiplier(self, user_voting_escrow_state):
         """Get projected vebank amount for user.
 

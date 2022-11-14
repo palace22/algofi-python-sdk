@@ -1,10 +1,16 @@
-
 # IMPORTS
 
 # external
 from algosdk import logic
-from .amm_config import Network, b64_to_utf_keys, utf_to_b64_keys, POOL_STRINGS, MANAGER_STRINGS, MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID, \
-                        TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID
+from .amm_config import (
+    Network,
+    b64_to_utf_keys,
+    utf_to_b64_keys,
+    POOL_STRINGS,
+    MANAGER_STRINGS,
+    MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID,
+    TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID,
+)
 from .logic_sig_generator import generate_logic_sig
 from .pool import Pool
 from .asset import Asset
@@ -13,8 +19,8 @@ from .asset import Asset
 
 # INTERFACE
 
-class AMMClient():
 
+class AMMClient:
     def __init__(self, algofi_client):
         """Constructor method for :class:`Client`
 
@@ -30,7 +36,11 @@ class AMMClient():
         self.indexer = algofi_client.indexer
         self.historical_indexer = algofi_client.historical_indexer
         self.network = self.algofi_client.network
-        self.manager_application_id = MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID if self.network == Network.MAINNET else TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID
+        self.manager_application_id = (
+            MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID
+            if self.network == Network.MAINNET
+            else TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID
+        )
 
     def get_pool(self, pool_type, asset1_id, asset2_id):
         """Returns a :class:`Pool` object for given assets and pool_type
@@ -45,13 +55,13 @@ class AMMClient():
         :rtype: :class:`Pool`
         """
 
-        if (asset1_id == asset2_id):
+        if asset1_id == asset2_id:
             raise Exception("Invalid assets. must be different")
 
         asset1 = Asset(self, asset1_id)
         asset2 = Asset(self, asset2_id)
 
-        if (asset1_id < asset2_id):
+        if asset1_id < asset2_id:
             pool = Pool(self.algofi_client.amm, pool_type, asset1, asset2)
         else:
             pool = Pool(self.algofi_client.amm, pool_type, asset2, asset1)
@@ -81,7 +91,11 @@ class AMMClient():
         accounts = []
         # get accounts opted in to
         while nextpage is not None:
-            account_data = self.indexer.accounts(limit=1000, next_page=nextpage, application_id=self.manager_application_id)
+            account_data = self.indexer.accounts(
+                limit=1000,
+                next_page=nextpage,
+                application_id=self.manager_application_id,
+            )
             accounts_interim = account_data.get("accounts", [])
             if accounts_interim:
                 accounts.extend(accounts_interim)
@@ -110,7 +124,9 @@ class AMMClient():
                 # has data for each field
                 if a1 and a2 and p and (vi != None):
                     # compute address
-                    logic_sig_bytes = generate_logic_sig(a1, a2, self.manager_application_id, vi)
+                    logic_sig_bytes = generate_logic_sig(
+                        a1, a2, self.manager_application_id, vi
+                    )
                     address = logic.address(logic_sig_bytes)
                     # check implied logic sig address matches opted in account address
                     if address == account.get("address", None):

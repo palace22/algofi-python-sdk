@@ -9,7 +9,11 @@ from algofipy.algofi_client import AlgofiClient
 from algofipy.globals import Network
 from algofipy.amm.v1.amm_config import PoolType, PoolStatus
 from algofipy.amm.v1.asset import Asset
-from algofipy.transaction_utils import wait_for_confirmation, get_payment_txn, get_default_params
+from algofipy.transaction_utils import (
+    wait_for_confirmation,
+    get_payment_txn,
+    get_default_params,
+)
 from algofipy.utils import create_asset_transaction
 
 my_path = os.path.abspath(os.path.dirname(__file__))
@@ -17,11 +21,15 @@ ENV_PATH = os.path.join(my_path, "../.env")
 
 # load user passphrase
 env_vars = dotenv_values(ENV_PATH)
-key = mnemonic.to_private_key(env_vars['mnemonic'])
+key = mnemonic.to_private_key(env_vars["mnemonic"])
 sender = account.address_from_private_key(key)
 
-algod = AlgodClient("", "https://node.algoexplorerapi.io", headers={"User-Agent": "algosdk"})
-indexer = IndexerClient("", "https://algoindexer.algoexplorerapi.io/", headers={'User-Agent': 'algosdk'})
+algod = AlgodClient(
+    "", "https://node.algoexplorerapi.io", headers={"User-Agent": "algosdk"}
+)
+indexer = IndexerClient(
+    "", "https://algoindexer.algoexplorerapi.io/", headers={"User-Agent": "algosdk"}
+)
 client = AlgofiClient(Network.MAINNET, algod, indexer)
 
 user = client.get_user(sender)
@@ -36,7 +44,7 @@ asset2 = Asset(client.amm, asset2_id)
 if not asset1_id:
     create_test_asset1_txn = create_asset_transaction(
         algod,
-        user.address, 
+        user.address,
         total=int(1e19),
         decimals=6,
         default_frozen=False,
@@ -46,7 +54,7 @@ if not asset1_id:
         clawback=user.address,
         unit_name="TEST1",
         asset_name="TEST1",
-        url="https://test.com"
+        url="https://test.com",
     )
     txid = algod.send_transaction(create_test_asset1_txn.sign(key))
     wait_for_confirmation(algod, txid)
@@ -55,7 +63,7 @@ if not asset1_id:
 if not asset2_id:
     create_test_asset2_txn = create_asset_transaction(
         algod,
-        user.address, 
+        user.address,
         total=int(1e19),
         decimals=6,
         default_frozen=False,
@@ -65,7 +73,7 @@ if not asset2_id:
         clawback=user.address,
         unit_name="TEST2",
         asset_name="TEST2",
-        url="https://test.com"
+        url="https://test.com",
     )
     txid = algod.send_transaction(create_test_asset2_txn.sign(key))
     wait_for_confirmation(algod, txid)
@@ -85,7 +93,9 @@ if pool.pool_status == PoolStatus.UNINITIALIZED:
     pool_app_id = algod.pending_transaction_info(txid)["application-index"]
 
     group = pool.get_initialize_pool_txns(user.address, pool_app_id)
-    group.sign_with_private_keys([key, key]+[pool.logic_sig, key], [False, False, True, False])
+    group.sign_with_private_keys(
+        [key, key] + [pool.logic_sig, key], [False, False, True, False]
+    )
     txid = algod.send_transactions(group.signed_transactions)
     wait_for_confirmation(algod, txid)
     pool.refresh_metadata()
@@ -101,10 +111,7 @@ if not user.is_opted_in_to_asset(pool.lp_asset_id):
 asset1_amount = int(10e6)
 asset2_amount = int(20e6)
 group = pool.get_pool_txns(
-    user.address,
-    asset1_amount,
-    asset2_amount,
-    maximum_slippage=int(1000)
+    user.address, asset1_amount, asset2_amount, maximum_slippage=int(1000)
 )
 group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
@@ -112,10 +119,7 @@ wait_for_confirmation(algod, txid)
 
 # burn lp tokens in the amount you specify
 burn_amount = int(0.5e6)
-group = pool.get_burn_txns(
-    user.address,
-    burn_amount
-)
+group = pool.get_burn_txns(user.address, burn_amount)
 group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
@@ -124,10 +128,7 @@ wait_for_confirmation(algod, txid)
 swap_in_asset = asset1
 swap_in_amount = int(0.5e6)
 group = pool.get_swap_exact_for_txns(
-    user.address,
-    swap_in_asset,
-    swap_in_amount,
-    min_amount_to_receive=0
+    user.address, swap_in_asset, swap_in_amount, min_amount_to_receive=0
 )
 group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
@@ -138,10 +139,7 @@ swap_in_asset = asset1
 swap_in_amount = int(0.5e6)
 amount_to_receive = int(0.2e6)
 group = pool.get_swap_for_exact_txns(
-    user.address,
-    swap_in_asset,
-    swap_in_amount,
-    amount_to_receive
+    user.address, swap_in_asset, swap_in_amount, amount_to_receive
 )
 group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
@@ -151,16 +149,10 @@ wait_for_confirmation(algod, txid)
 swap_in_asset = asset1
 swap_in_amount = int(0.1e6)
 group = pool.get_swap_exact_for_txns(
-    user.address,
-    swap_in_asset,
-    swap_in_amount,
-    min_amount_to_receive=0
+    user.address, swap_in_asset, swap_in_amount, min_amount_to_receive=0
 )
 group = pool.get_flash_loan_txns(
-    user.address,
-    swap_in_asset,
-    swap_in_amount,
-    group_transaction=group
+    user.address, swap_in_asset, swap_in_amount, group_transaction=group
 )
 group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
@@ -183,7 +175,7 @@ if not user.is_opted_in_to_asset(asset1_id):
         get_default_params(algod),
         user.address,
         int(0),
-        asset_id=asset1_id
+        asset_id=asset1_id,
     ).sign(key)
     txid = algod.send_transaction(stxn)
     wait_for_confirmation(algod, txid)
@@ -194,7 +186,7 @@ if not user.is_opted_in_to_asset(asset2_id):
         get_default_params(algod),
         user.address,
         int(0),
-        asset_id=asset2_id
+        asset_id=asset2_id,
     ).sign(key)
     txid = algod.send_transaction(stxn)
     wait_for_confirmation(algod, txid)
@@ -209,10 +201,7 @@ if not user.is_opted_in_to_asset(pool.lp_asset_id):
 asset1_amount = int(0.1e6)
 asset2_amount = int(0.1e6)
 group = pool.get_pool_txns(
-    user.address,
-    asset1_amount,
-    asset2_amount,
-    maximum_slippage=int(100000)
+    user.address, asset1_amount, asset2_amount, maximum_slippage=int(100000)
 )
 group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
@@ -220,10 +209,7 @@ wait_for_confirmation(algod, txid)
 
 # burn lp tokens in the amount you specify
 burn_amount = int(0.1e6)
-group = pool.get_burn_txns(
-    user.address,
-    burn_amount
-)
+group = pool.get_burn_txns(user.address, burn_amount)
 group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
@@ -232,11 +218,7 @@ wait_for_confirmation(algod, txid)
 swap_in_asset = asset2
 swap_in_amount = int(10)
 group = pool.get_swap_exact_for_txns(
-    user.address,
-    swap_in_asset,
-    swap_in_amount,
-    min_amount_to_receive=0,
-    fee=5000
+    user.address, swap_in_asset, swap_in_amount, min_amount_to_receive=0, fee=5000
 )
 group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
@@ -247,11 +229,7 @@ swap_in_asset = asset1
 swap_in_amount = int(100)
 amount_to_receive = int(10)
 group = pool.get_swap_for_exact_txns(
-    user.address,
-    swap_in_asset,
-    swap_in_amount,
-    amount_to_receive,
-    fee=5000
+    user.address, swap_in_asset, swap_in_amount, amount_to_receive, fee=5000
 )
 group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)

@@ -3,8 +3,8 @@ from .staking import Staking
 from .staking_user import StakingUser
 from algofipy.state_utils import format_state
 
-class StakingClient: 
 
+class StakingClient:
     def __init__(self, algofi_client):
         self.algofi_client = algofi_client
         self.algod = self.algofi_client.algod
@@ -16,25 +16,31 @@ class StakingClient:
 
         self.staking_contracts = {}
         self.load_state()
-        
+
     def load_state(self):
         for staking_config in self.staking_configs:
-            self.staking_contracts[staking_config.app_id] = Staking(self, rewards_manager_app_id[self.network], staking_config)
+            self.staking_contracts[staking_config.app_id] = Staking(
+                self, rewards_manager_app_id[self.network], staking_config
+            )
             self.staking_contracts[staking_config.app_id].load_state()
 
     def get_user(self, address):
         return StakingUser(self, address)
 
     def get_staking_state(self, staking_app_id):
-        """Function that uses indexer to query for users' staking state
-        """
+        """Function that uses indexer to query for users' staking state"""
 
         # query all users opted into admin contract
         next_page = ""
         staking_accounts = []
         while next_page != None:
-            users = self.indexer.accounts(next_page=next_page, limit=1000, application_id=staking_app_id, exclude="assets,created-apps,created-assets")
-            if len(users.get("accounts",[])):
+            users = self.indexer.accounts(
+                next_page=next_page,
+                limit=1000,
+                application_id=staking_app_id,
+                exclude="assets,created-apps,created-assets",
+            )
+            if len(users.get("accounts", [])):
                 staking_accounts.extend(users["accounts"])
             if users.get("next-token", None):
                 next_page = users["next-token"]
@@ -48,8 +54,8 @@ class StakingClient:
             for app_local_state in user_local_state:
                 if app_local_state["id"] == staking_app_id:
                     formatted_state = format_state(app_local_state.get("key-value", []))
-                    boost_multiplier = formatted_state.get(STAKING_STRINGS.boost_multiplier, 0)
-                    user_data[user["address"]] = {
-                        "boost_multiplier": boost_multiplier
-                    }
+                    boost_multiplier = formatted_state.get(
+                        STAKING_STRINGS.boost_multiplier, 0
+                    )
+                    user_data[user["address"]] = {"boost_multiplier": boost_multiplier}
         return user_data

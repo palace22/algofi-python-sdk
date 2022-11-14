@@ -5,6 +5,7 @@ from algofipy.globals import Network
 
 # INTERFACE
 
+
 class AssetConfig:
     def __init__(self, name, asset_id, decimals):
         """Asset config storing asset information for a given asset id
@@ -21,13 +22,14 @@ class AssetConfig:
         self.asset_id = asset_id
         self.decimals = decimals
 
+
 ASSET_CONFIGS = {
-    Network.MAINNET : {
+    Network.MAINNET: {
         1: AssetConfig("ALGO", 1, 6),
         818179690: AssetConfig("AF-BANK-ALGO-STANDARD", 818179690, 6),
         31566704: AssetConfig("USDC", 31566704, 6),
         818182311: AssetConfig("AF-BANK-USDC-STANDARD", 818182311, 6),
-        386192725 : AssetConfig("GOBTC", 386192725, 8),
+        386192725: AssetConfig("GOBTC", 386192725, 8),
         818184214: AssetConfig("AF-BANK-GOBTC-STANDARD", 818184214, 6),
         386195940: AssetConfig("GOETH", 386195940, 8),
         818188553: AssetConfig("AF-BANK-GOETH-STANDARD", 818188553, 6),
@@ -44,9 +46,9 @@ ASSET_CONFIGS = {
         870380101: AssetConfig("AF-BANK-AF-POOL-LP", 870380101, 6),
         870150187: AssetConfig("AF-NANO-POOL-AF-BANK-AF-BANK", 870150187, 6),
         870391958: AssetConfig("AF-BANK-AF-POOL-LP", 870391958, 6),
-        900652777: AssetConfig("BANK", 900652777, 6)
+        900652777: AssetConfig("BANK", 900652777, 6),
     },
-    Network.TESTNET : {
+    Network.TESTNET: {
         1: AssetConfig("ALGO", 1, 6),
         107212062: AssetConfig("BANK", 107212062, 6),
         104193939: AssetConfig("AF-BANK-ALGO-STANDARD", 104193939, 6),
@@ -62,5 +64,5 @@ ASSET_CONFIGS = {
         104217422: AssetConfig("AF-BANK-STBL2-STABLE", 104217422, 6),
         104228491: AssetConfig("AF-bUSDC-bSTBL2-NANO-LP", 104228491, 6),
         104238470: AssetConfig("AF-BANK-AF-bUSDC-bSTBL2-NANO-LP-LP", 104238470, 6),
-    }
+    },
 }

@@ -14,6 +14,7 @@ from .amm.v1.amm_client import AMMClient
 from .interfaces.interface_client import InterfaceClient
 from .governance.v1.governance_client import GovernanceClient
 
+
 class AlgofiClient:
     def __init__(self, network, algod, indexer):
         """A client for the algofi protocol
@@ -30,11 +31,13 @@ class AlgofiClient:
         self.algod = algod
         self.indexer = indexer
         # load AlgoExplorer historical indexer
-        self.historical_indexer = IndexerClient("", "https://indexer.algoexplorerapi.io/", headers={"User-Agent": "algosdk"})
+        self.historical_indexer = IndexerClient(
+            "", "https://indexer.algoexplorerapi.io/", headers={"User-Agent": "algosdk"}
+        )
 
         # assets
         self.assets = ASSET_CONFIGS[self.network]
-        
+
         # lending
         self.lending = LendingClient(self)
 

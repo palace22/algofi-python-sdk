@@ -14,11 +14,15 @@ ENV_PATH = os.path.join(my_path, "../.env")
 
 # load user passphrase
 env_vars = dotenv_values(ENV_PATH)
-key = mnemonic.to_private_key(env_vars['mnemonic'])
+key = mnemonic.to_private_key(env_vars["mnemonic"])
 sender = account.address_from_private_key(key)
 
-algod = AlgodClient("", "https://node.algoexplorerapi.io", headers={"User-Agent": "algosdk"})
-indexer = IndexerClient("", "https://algoindexer.algoexplorerapi.io/", headers={'User-Agent': 'algosdk'})
+algod = AlgodClient(
+    "", "https://node.algoexplorerapi.io", headers={"User-Agent": "algosdk"}
+)
+indexer = IndexerClient(
+    "", "https://algoindexer.algoexplorerapi.io/", headers={"User-Agent": "algosdk"}
+)
 client = AlgofiClient(Network.MAINNET, algod, indexer)
 
 user = client.get_user(sender)
@@ -121,7 +125,7 @@ wait_for_confirmation(algod, txid)
 
 # BORROW
 print("borrow")
-group = stbl2_market.get_borrow_txns(user.lending,  int(1e3))
+group = stbl2_market.get_borrow_txns(user.lending, int(1e3))
 group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
@@ -158,7 +162,7 @@ txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
 
 print("claim rewards")
-group = algo_market.get_claim_rewards_txns(user.lending,  0)
+group = algo_market.get_claim_rewards_txns(user.lending, 0)
 group.sign_with_private_key(key)
 txid = algod.send_transactions(group.signed_transactions)
 wait_for_confirmation(algod, txid)
