@@ -1,2 +1,2 @@
-py-algorand-sdk==1.16.0
+py-algorand-sdk==1.20.1
 python-dotenv==0.19.1

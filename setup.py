@@ -16,8 +16,7 @@ setuptools.setup(
     project_urls={
         "Source": "https://github.com/Algofiorg/algofi-python-sdk",
     },
-    install_requires=["py-algorand-sdk >= 1.6.0"],
     packages=setuptools.find_packages(),
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     include_package_data=True,
 )
