@@ -57,6 +57,66 @@ def get_payment_txn(sender, params, receiver, amount, asset_id=ALGO_ASSET_ID):
     return txn
 
 
+def create_asset_transaction(
+    algod,
+    sender,
+    total,
+    decimals,
+    default_frozen,
+    manager,
+    reserve,
+    freeze,
+    clawback,
+    unit_name,
+    asset_name,
+    url,
+):
+    """Get an asset creation txn object.
+
+    :param algod: algod client
+    :type algod: :class:`AlgodClient`
+    :param sender: sender
+    :type sender: str
+    :param total: total amount of asset in base units
+    :type total: int
+    :param decimals: number of decimals for asset
+    :type decimals: int
+    :param default_frozen: asset is defaulted to frozen on launch
+    :type default_frozen: boolean
+    :param manager: manager address
+    :type manager: str
+    :param reserve: reserve address
+    :type reserve: str
+    :param freeze: freeze address
+    :type freeze: str
+    :param unit_name: unit name
+    :type unit_name: str
+    :param asset_name: asset name
+    :type asset_name: str
+    :param url: url for asset
+    :type url: str
+    :return: asset creation transaction object
+    :rtype: :class:`AssetCreateTxn`
+    """
+
+    params = get_default_params(algod)
+
+    return AssetCreateTxn(
+        sender=sender,
+        sp=params,
+        total=total,
+        decimals=decimals,
+        default_frozen=default_frozen,
+        manager=manager,
+        reserve=reserve,
+        freeze=freeze,
+        clawback=clawback,
+        unit_name=unit_name,
+        asset_name=asset_name,
+        url=url,
+    )
+
+
 def wait_for_confirmation(algod, txid):
     """Wait for confirmation from network for transaction with given id.
 

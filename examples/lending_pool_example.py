@@ -15,7 +15,7 @@ from algofipy.transaction_utils import (
     get_payment_txn,
     get_default_params,
 )
-from algofipy.utils import create_asset_transaction
+from algofipy.transaction_utils import create_asset_transaction
 
 my_path = os.path.abspath(os.path.dirname(__file__))
 ENV_PATH = os.path.join(my_path, "../.env")
