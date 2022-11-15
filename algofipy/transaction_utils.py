@@ -56,6 +56,7 @@ def get_payment_txn(sender, params, receiver, amount, asset_id=ALGO_ASSET_ID):
         )
     return txn
 
+
 def create_asset_transaction(
     algod,
     sender,

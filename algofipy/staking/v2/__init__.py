@@ -1,4 +1,3 @@
-
 # imports
 from . import rewards_program_state
 from . import staking_client
