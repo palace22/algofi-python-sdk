@@ -1,4 +1,4 @@
-![algofi-python-sdk](https://user-images.githubusercontent.com/18899131/201797943-48310933-418c-47c3-b224-63e87dc0fa5b.jpeg)
+![algofi-python-sdk](https://user-images.githubusercontent.com/18899131/201798470-e5831f45-9e57-42de-bf0c-de26e1b1812c.jpg)
 
 # algofi-python-sdk
 
