@@ -90,7 +90,7 @@ def get_validator_index(network, pool_type):
     """Gets the validator index for a given pool type and network
 
     :param network: network :class:`Network` ("testnet" or "mainnet")
-    :type network: str
+    :type network: :class:`Network`
     :param pool_type: a :class:`PoolType` object for the type of pool (e.g. 30bp, 100bp fee)
     :type pool_type: :class:`PoolType`
     :return: validator index for given type of pool
@@ -110,6 +110,29 @@ def get_validator_index(network, pool_type):
         elif pool_type == PoolType.NANOSWAP:
             return -1
 
+def get_pool_type(network, validator_index):
+    """Gets the pool type for a given validator index
+
+    :param network: network :class:`Network` ("testnet" or "mainnet")
+    :type network: :class:`Network`
+    :param validator_index: a :class:`PoolType` object for the type of pool (e.g. 30bp, 100bp fee)
+    :type validator_index: :class:`PoolType`
+    :return: pool type for given validator index
+    :rtype: :class:`PoolType`
+    """
+
+    if network == Network.MAINNET:
+        if validator_index == 0
+            return PoolType.CONSTANT_PRODUCT_25BP_FEE:
+        elif validator_index == 1
+            return PoolType.CONSTANT_PRODUCT_75BP_FEE:
+    elif network == Network.TESTNET:
+        if validator_index == 0
+            return PoolType.CONSTANT_PRODUCT_30BP_FEE:
+        elif validator_index == 1
+            return PoolType.CONSTANT_PRODUCT_100BP_FEE:
+        elif validator_index == -1
+            return PoolType.NANOSWAP
 
 def get_approval_program_by_pool_type(pool_type, network):
     """Gets the approval program for a given pool type
