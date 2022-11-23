@@ -110,6 +110,7 @@ def get_validator_index(network, pool_type):
         elif pool_type == PoolType.NANOSWAP:
             return -1
 
+
 def get_pool_type(network, validator_index):
     """Gets the pool type for a given validator index
 
@@ -122,17 +123,18 @@ def get_pool_type(network, validator_index):
     """
 
     if network == Network.MAINNET:
-        if validator_index == 0
-            return PoolType.CONSTANT_PRODUCT_25BP_FEE:
-        elif validator_index == 1
-            return PoolType.CONSTANT_PRODUCT_75BP_FEE:
+        if validator_index == 0:
+            return PoolType.CONSTANT_PRODUCT_25BP_FEE
+        elif validator_index == 1:
+            return PoolType.CONSTANT_PRODUCT_75BP_FEE
     elif network == Network.TESTNET:
-        if validator_index == 0
-            return PoolType.CONSTANT_PRODUCT_30BP_FEE:
-        elif validator_index == 1
-            return PoolType.CONSTANT_PRODUCT_100BP_FEE:
-        elif validator_index == -1
+        if validator_index == 0:
+            return PoolType.CONSTANT_PRODUCT_30BP_FEE
+        elif validator_index == 1:
+            return PoolType.CONSTANT_PRODUCT_100BP_FEE
+        elif validator_index == -1:
             return PoolType.NANOSWAP
+
 
 def get_approval_program_by_pool_type(pool_type, network):
     """Gets the approval program for a given pool type
@@ -277,50 +279,3 @@ class MANAGER_STRINGS:
     set_max_flash_loan_ratio = "smflr"
     set_validator = "sv"
     validator_index = "vi"
-
-
-# valid pool app ids
-b64_to_utf_keys = {
-    b64encode(bytes(POOL_STRINGS.asset1_id, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.asset1_id,
-    b64encode(bytes(POOL_STRINGS.asset2_id, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.asset2_id,
-    b64encode(bytes(POOL_STRINGS.pool, "utf-8")).decode("utf-8"): POOL_STRINGS.pool,
-    b64encode(bytes(MANAGER_STRINGS.validator_index, "utf-8")).decode(
-        "utf-8"
-    ): MANAGER_STRINGS.validator_index,
-    b64encode(bytes(POOL_STRINGS.balance_1, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.balance_1,
-    b64encode(bytes(POOL_STRINGS.balance_2, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.balance_2,
-    b64encode(bytes(POOL_STRINGS.cumsum_volume_asset1, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.cumsum_volume_asset1,
-    b64encode(bytes(POOL_STRINGS.cumsum_volume_asset2, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.cumsum_volume_asset2,
-    b64encode(
-        bytes(POOL_STRINGS.cumsum_volume_weighted_asset1_to_asset2_price, "utf-8")
-    ).decode("utf-8"): POOL_STRINGS.cumsum_volume_weighted_asset1_to_asset2_price,
-    b64encode(
-        bytes(POOL_STRINGS.cumsum_volume_weighted_asset2_to_asset1_price, "utf-8")
-    ).decode("utf-8"): POOL_STRINGS.cumsum_volume_weighted_asset2_to_asset1_price,
-    b64encode(
-        bytes(POOL_STRINGS.cumsum_time_weighted_asset2_to_asset1_price, "utf-8")
-    ).decode("utf-8"): POOL_STRINGS.cumsum_time_weighted_asset2_to_asset1_price,
-    b64encode(
-        bytes(POOL_STRINGS.cumsum_time_weighted_asset1_to_asset2_price, "utf-8")
-    ).decode("utf-8"): POOL_STRINGS.cumsum_time_weighted_asset1_to_asset2_price,
-    b64encode(bytes(POOL_STRINGS.cumsum_fees_asset1, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.cumsum_fees_asset1,
-    b64encode(bytes(POOL_STRINGS.cumsum_fees_asset2, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.cumsum_fees_asset2,
-}
-
-utf_to_b64_keys = {v: k for k, v in b64_to_utf_keys.items()}

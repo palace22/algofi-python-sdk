@@ -4,15 +4,13 @@
 from algosdk import logic
 from .amm_config import (
     Network,
-    b64_to_utf_keys,
-    utf_to_b64_keys,
     POOL_STRINGS,
     MANAGER_STRINGS,
     MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID,
     TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID,
-    get_pool_type
+    get_pool_type,
 )
-from ..state_utils import get_accounts_opted_into_app
+from algofipy.state_utils import get_accounts_opted_into_app, format_state
 from .logic_sig_generator import generate_logic_sig
 from .pool import Pool
 from .asset import Asset
@@ -99,24 +97,42 @@ class AMMClient:
             # get pool metadata from manager local state
             asset1_id = manager_app_local_state.get(POOL_STRINGS.asset1_id, "")
             asset2_id = manager_app_local_state.get(POOL_STRINGS.asset2_id, "")
-            validator_index = manager_app_local_state.get(POOL_STRINGS.validator_index, "")
+            validator_index = manager_app_local_state.get(
+                POOL_STRINGS.validator_index, ""
+            )
+            pool_app_id = manager_app_local_state.get(POOL_STRINGS.pool, "")
+            pool_type = get_pool_type(self.network, validator_index)
 
             # check logic sig equality to ensure no duplicate pools
             logic_sig_bytes = generate_logic_sig(
                 asset1_id, asset2_id, self.manager_application_id, validator_index
             )
             address = logic.address(logic_sig_bytes)
-
-            if address != account.get("address", None):
+            if address != account_data.get("address", None):
                 return None
-            
-            return {
-                "asset1_id": asset1_id,
-                "asset2_id": asset2_id,
-                "validator_index": validator_index
-            }
 
-        accounts = get_accounts_opted_into_app(self.indexer, self.manager_application_id)
-        valid_pool_data = list(filter(lambda x: x != None, [validate_pool(account) for account in accounts]))
+            try:
+                asset1 = Asset(self, asset1_id)
+                asset2 = Asset(self, asset2_id)
+            except:
+                # asset1, asset2, or both have been destroyed
+                return None
+
+            return (
+                pool_app_id,
+                Pool(self.algofi_client.amm, pool_type, asset1, asset2),
+            )
+
+        accounts = get_accounts_opted_into_app(
+            self.indexer, self.manager_application_id
+        )
+        valid_pool_data = dict(
+            list(
+                filter(
+                    lambda x: x != None,
+                    [validate_pool(account) for account in accounts],
+                )
+            )
+        )
 
         return valid_pool_data

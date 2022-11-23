@@ -223,12 +223,9 @@ def get_accounts_opted_into_app(indexer, app_id, exclude=None):
     accounts = []
     while next_page != None:
         accounts_interim = indexer.accounts(
-            next_page=next_page,
-            limit=1000,
-            application_id=app_id,
-            exclude=exclude
+            next_page=next_page, limit=1000, application_id=app_id, exclude=exclude
         )
         accounts.extend(accounts_interim.get("accounts", []))
         next_page = accounts_interim.get("next-token", None)
-    
+
     return accounts
