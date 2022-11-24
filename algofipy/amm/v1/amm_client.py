@@ -4,13 +4,18 @@
 from algosdk import logic
 from .amm_config import (
     Network,
-    b64_to_utf_keys,
-    utf_to_b64_keys,
     POOL_STRINGS,
     MANAGER_STRINGS,
     MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID,
     TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID,
+    MAINNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID,
+    TESTNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID,
+    NANOSWAP_LENDING_POOLS_ASSET_PAIR_TO_APP_ID,
+    CONSTANT_PRODUCT_LENDING_POOLS_ASSET_PAIR_TO_APP_ID,
+    get_pool_type,
+    PoolType,
 )
+from algofipy.state_utils import get_accounts_opted_into_app, format_state
 from .logic_sig_generator import generate_logic_sig
 from .pool import Pool
 from .asset import Asset
@@ -40,6 +45,11 @@ class AMMClient:
             MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID
             if self.network == Network.MAINNET
             else TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID
+        )
+        self.nanoswap_pool_app_ids = (
+            MAINNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID
+            if self.network == Network.MAINNET
+            else TESTNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID
         )
 
     def get_pool(self, pool_type, asset1_id, asset2_id):
@@ -80,56 +90,125 @@ class AMMClient:
         asset = Asset(self, asset_id)
         return asset
 
-    def get_valid_pool_app_ids(self):
-        """Returns a list of valid pool app ids.
+    def get_constant_product_pools(self):
+        """Returns a dict of valid constant product pools with relevant data
 
-        :return: a :class:`Pool` object for given assets and pool_type
-        :rtype: :class:`Pool`
+        :return: dict mapping pool app id -> :class:`Pool`
+        :rtype: dict
         """
 
-        nextpage = ""
-        accounts = []
-        # get accounts opted in to
-        while nextpage is not None:
-            account_data = self.indexer.accounts(
-                limit=1000,
-                next_page=nextpage,
-                application_id=self.manager_application_id,
-            )
-            accounts_interim = account_data.get("accounts", [])
-            if accounts_interim:
-                accounts.extend(accounts_interim)
-            nextpage = account_data.get("next-token", None)
-        # filter accounts by logic sig
-        pool_app_ids = []
-        for account in accounts:
-            account_local_state = account.get("apps-local-state", {})
-            # number of opted in apps is only 1
-            if len(account_local_state) == 1:
-                a1, a2, vi, p = None, None, None, None
-                account_local_state = account_local_state[0].get("key-value", [])
-                for data in account_local_state:
-                    key, value = data["key"], data["value"]
-                    # key must be in mapping
-                    if key not in b64_to_utf_keys:
-                        break
-                    if key == utf_to_b64_keys[POOL_STRINGS.asset1_id]:
-                        a1 = value["uint"]
-                    elif key == utf_to_b64_keys[POOL_STRINGS.asset2_id]:
-                        a2 = value["uint"]
-                    elif key == utf_to_b64_keys[MANAGER_STRINGS.validator_index]:
-                        vi = value["uint"]
-                    elif key == utf_to_b64_keys[POOL_STRINGS.pool]:
-                        p = value["uint"]
-                # has data for each field
-                if a1 and a2 and p and (vi != None):
-                    # compute address
-                    logic_sig_bytes = generate_logic_sig(
-                        a1, a2, self.manager_application_id, vi
-                    )
-                    address = logic.address(logic_sig_bytes)
-                    # check implied logic sig address matches opted in account address
-                    if address == account.get("address", None):
-                        pool_app_ids.append(p)
+        def validate_pool(account_data):
+            # process account data
+            account_local_state = account_data.get("apps-local-state", [])
+            if len(account_local_state) > 1:
+                return None
+            manager_app_local_state = format_state(account_local_state[0]["key-value"])
 
-        return pool_app_ids
+            # get pool metadata from manager local state
+            asset1_id = manager_app_local_state.get(POOL_STRINGS.asset1_id, "")
+            asset2_id = manager_app_local_state.get(POOL_STRINGS.asset2_id, "")
+            validator_index = manager_app_local_state.get(
+                POOL_STRINGS.validator_index, ""
+            )
+            pool_app_id = manager_app_local_state.get(POOL_STRINGS.pool, "")
+            pool_type = get_pool_type(self.network, validator_index)
+
+            # check logic sig equality to ensure no duplicate pools
+            logic_sig_bytes = generate_logic_sig(
+                asset1_id, asset2_id, self.manager_application_id, validator_index
+            )
+            address = logic.address(logic_sig_bytes)
+            if address != account_data.get("address", None):
+                return None
+
+            try:
+                pool = self.get_pool(pool_type, asset1_id, asset2_id)
+            except:
+                # asset1, asset2, or both have been destroyed
+                return None
+
+            return (pool_app_id, pool)
+
+        accounts = get_accounts_opted_into_app(
+            self.indexer, self.manager_application_id
+        )
+        valid_pool_data = dict(
+            list(
+                filter(
+                    lambda x: x != None,
+                    [validate_pool(account) for account in accounts],
+                )
+            )
+        )
+
+        return valid_pool_data
+
+    def get_nanoswap_pools(self):
+        """Returns a dict of valid nanoswap pools with relevant data
+
+        :return: dict mapping nanoswap pool app id -> :class:`Pool`
+        :rtype: dict
+        """
+
+        return dict(
+            [
+                (
+                    pool_app_id,
+                    self.get_pool(PoolType.NANOSWAP, asset1_id, asset2_id),
+                )
+                for (
+                    (asset1_id, asset2_id),
+                    pool_app_id,
+                ) in self.nanoswap_pool_app_ids.items()
+            ]
+        )
+
+    def get_constant_product_lending_pools(self):
+        """Returns a dict of valid constant product lending pools with relevant data
+
+        :return: dict mapping constant product lending pool app id -> :class:`Pool`
+        :rtype: dict
+        """
+
+        if self.network == Network.TESTNET:
+            raise Exception("Lending Pool is not on testnet")
+
+        return dict(
+            [
+                (
+                    pool_app_id,
+                    self.get_pool(
+                        PoolType.CONSTANT_PRODUCT_25BP_FEE_LENDING_POOL,
+                        asset1_id,
+                        asset2_id,
+                    ),
+                )
+                for (
+                    (asset1_id, asset2_id),
+                    pool_app_id,
+                ) in CONSTANT_PRODUCT_LENDING_POOLS_ASSET_PAIR_TO_APP_ID.items()
+            ]
+        )
+
+    def get_nanoswap_lending_pools(self):
+        """Returns a dict of valid nanoswap lending pools with relevant data
+
+        :return: dict mapping nanoswap lending pool app id -> :class:`Pool`
+        :rtype: dict
+        """
+
+        if self.network == Network.TESTNET:
+            raise Exception("Lending Pool is not on testnet")
+
+        return dict(
+            [
+                (
+                    pool_app_id,
+                    self.get_pool(PoolType.NANOSWAP_LENDING_POOL, asset1_id, asset2_id),
+                )
+                for (
+                    (asset1_id, asset2_id),
+                    pool_app_id,
+                ) in NANOSWAP_LENDING_POOLS_ASSET_PAIR_TO_APP_ID.items()
+            ]
+        )

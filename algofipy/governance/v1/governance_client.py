@@ -6,7 +6,7 @@ from base64 import b64encode, b64decode
 # INTERFACE
 from algofipy.globals import Network
 from algofipy.transaction_utils import get_default_params, TransactionGroup
-from algofipy.state_utils import format_state
+from algofipy.state_utils import format_state, get_accounts_opted_into_app
 from algofipy.governance.v1.governance_config import (
     GOVERNANCE_CONFIGS,
     ADMIN_STRINGS,
@@ -127,21 +127,9 @@ class GovernanceClient:
 
         # query all users opted into admin contract
         admin_app_id = self.governance_config.admin_app_id
-        next_page = ""
-        admin_app_accounts = []
-        while next_page != None:
-            users = self.indexer.accounts(
-                next_page=next_page,
-                limit=1000,
-                application_id=admin_app_id,
-                exclude="assets,created-apps,created-assets",
-            )
-            if len(users.get("accounts", [])):
-                admin_app_accounts.extend(users["accounts"])
-            if users.get("next-token", None):
-                next_page = users["next-token"]
-            else:
-                next_page = None
+        admin_app_accounts = get_accounts_opted_into_app(
+            self.indexer, admin_app_id, exclude="assets,created-apps,created-assets"
+        )
 
         # filter to accounts with relevant key
         user_data = {}
@@ -176,21 +164,11 @@ class GovernanceClient:
 
         # query all users opted into admin contract
         voting_escrow_app_id = self.governance_config.voting_escrow_app_id
-        next_page = ""
-        voting_escrow_app_accounts = []
-        while next_page != None:
-            users = self.indexer.accounts(
-                next_page=next_page,
-                limit=1000,
-                application_id=voting_escrow_app_id,
-                exclude="assets,created-apps,created-assets",
-            )
-            if len(users.get("accounts", [])):
-                voting_escrow_app_accounts.extend(users["accounts"])
-            if users.get("next-token", None):
-                next_page = users["next-token"]
-            else:
-                next_page = None
+        voting_escrow_app_accounts = get_accounts_opted_into_app(
+            self.indexer,
+            voting_escrow_app_id,
+            exclude="assets,created-apps,created-assets",
+        )
 
         # filter to accounts with relevant key
         user_data = {}
@@ -227,21 +205,9 @@ class GovernanceClient:
         """Function that uses indexer to query for governors' proposal state"""
 
         # query all users opted into admin contract
-        next_page = ""
-        proposal_app_accounts = []
-        while next_page != None:
-            users = self.indexer.accounts(
-                next_page=next_page,
-                limit=1000,
-                application_id=proposal_app_id,
-                exclude="assets,created-apps,created-assets",
-            )
-            if len(users.get("accounts", [])):
-                proposal_app_accounts.extend(users["accounts"])
-            if users.get("next-token", None):
-                next_page = users["next-token"]
-            else:
-                next_page = None
+        proposal_app_accounts = get_accounts_opted_into_app(
+            self.indexer, proposal_app_id, exclude="assets,created-apps,created-assets"
+        )
 
         # filter to accounts with relevant key
         user_data = {}

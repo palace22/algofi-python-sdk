@@ -98,6 +98,32 @@ def format_state(state, decode_byte_values=True):
     return formatted_state
 
 
+def format_prefix_state(state):
+    """Format state dict including prefixes.
+
+    :param state: state dict of base64 key -> dict
+    :type state: dict
+    :return: formatted state dict
+    :rtype: dict
+    """
+
+    formatted_state = {}
+    for key, value in state.items():
+        try:
+            index_of_underscore = key.index("_")
+        except:
+            index_of_underscore = -1
+        # if the prefix actually exist
+        if index_of_underscore > 0:
+            prefix = key[0 : index_of_underscore + 1]
+            raw_bytes = bytes(key[index_of_underscore + 1 :], "utf-8")
+            formatted = int.from_bytes(raw_bytes, "big")
+            formatted_state[prefix + str(formatted)] = value
+        else:
+            formatted_state[key] = value
+    return formatted_state
+
+
 def get_local_states(indexer, address, decode_byte_values=True, block=None):
     """Get local state of user for all opted in apps.
 
@@ -180,27 +206,26 @@ def get_global_state(indexer, app_id, decode_byte_values=True, block=None):
     )
 
 
-def format_prefix_state(state):
-    """Format state dict including prefixes.
+def get_accounts_opted_into_app(indexer, app_id, exclude=None):
+    """Get list of accounts opted into a given app
 
-    :param state: state dict of base64 key -> dict
-    :type state: dict
-    :return: formatted state dict
+    :param indexer: algorand indexer
+    :type indexer: :class:`IndexerClient`
+    :param app_id: app id
+    :type app_id: int
+    :param exclude: comma-delimited list of information to exclude from indexer call
+    :type exclude: str, optional
+    :return: formatted global state dict
     :rtype: dict
     """
 
-    formatted_state = {}
-    for key, value in state.items():
-        try:
-            index_of_underscore = key.index("_")
-        except:
-            index_of_underscore = -1
-        # if the prefix actually exist
-        if index_of_underscore > 0:
-            prefix = key[0 : index_of_underscore + 1]
-            raw_bytes = bytes(key[index_of_underscore + 1 :], "utf-8")
-            formatted = int.from_bytes(raw_bytes, "big")
-            formatted_state[prefix + str(formatted)] = value
-        else:
-            formatted_state[key] = value
-    return formatted_state
+    next_page = ""
+    accounts = []
+    while next_page != None:
+        accounts_interim = indexer.accounts(
+            next_page=next_page, limit=1000, application_id=app_id, exclude=exclude
+        )
+        accounts.extend(accounts_interim.get("accounts", []))
+        next_page = accounts_interim.get("next-token", None)
+
+    return accounts

@@ -2,6 +2,7 @@
 
 # external
 import pprint
+import requests as re
 
 # local
 from .amm_config import (
@@ -11,6 +12,7 @@ from .amm_config import (
     get_usdc_asset_id,
     get_stbl_asset_id,
     ALGO_ASSET_ID,
+    AMMEndpoints,
 )
 
 # INTERFACE
@@ -90,39 +92,45 @@ class Asset:
 
         return int(amount * 10**self.decimals)
 
+    def get_decimal_amount(self, amount):
+        """Returns a decimal representation of the input amount
+        :param amount: amount of asset in base units
+        :type amount: int
+        :return: float decimal amount of asset
+        :rtype: float
+        """
+
+        return amount / 10**self.decimals
+
     def refresh_price(self):
-        """Returns the dollar price of the asset with a simple matching algorithm"""
+        """Refreshes the dollar price of the asset"""
 
-        usdc_asset_id = get_usdc_asset_id(self.amm_client.network)
-        stbl_asset_id = get_stbl_asset_id(self.amm_client.network)
-
-        # is testnet
-        pool_type = (
-            PoolType.CONSTANT_PRODUCT_30BP_FEE
-            if (self.amm_client.network == Network.TESTNET)
-            else PoolType.CONSTANT_PRODUCT_25BP_FEE
-        )
-        usdc_pool = self.amm_client.get_pool(pool_type, self.asset_id, usdc_asset_id)
-        if usdc_pool == PoolStatus.ACTIVE:
-            self.price = usdc_pool.get_pool_price(self.asset_id)
-            return
-
-        stbl_pool = self.amm_client.get_pool(pool_type, self.asset_id, stbl_asset_id)
-        if stbl_pool.pool_status == PoolStatus.ACTIVE:
-            self.price = stbl_pool.get_pool_price(self.asset_id)
-            return
-
-        algo_pool = self.amm_client.get_pool(pool_type, self.asset_id, ALGO_ASSET_ID)
-        if algo_pool.pool_status == PoolStatus.ACTIVE:
-            price_in_algo = algo_pool.get_pool_price(self.asset_id)
-            usdc_algo_pool = self.amm_client.get_pool(
-                pool_type, usdc_asset_id, ALGO_ASSET_ID
+        try:
+            prices = dict(
+                [
+                    (x["asset_id"], x["price"])
+                    for x in (
+                        re.get(AMMEndpoints.ASSETS).json()
+                        + re.get(AMMEndpoints.AMM_LP_TOKENS).json()
+                    )
+                ]
             )
-            if usdc_algo_pool.pool_status == PoolStatus.ACTIVE:
-                self.price = price_in_algo * usdc_algo_pool.get_pool_price(
-                    ALGO_ASSET_ID
-                )
-                return
+            self.price = prices[self.asset_id]
+        except:
+            raise Exception(
+                "Failed to query price from endpoints "
+                + AMMEndpoints.ASSETS
+                + " and "
+                + AMMEndpoints.AMM_LP_TOKENS
+            )
 
-        # unable to find price
-        self.price = 0
+    def to_usd(self, amount):
+        """Returns a dollar amount of asset given an amount in base units
+        :param amount: amount of asset
+        :type amount: float
+        :return: decimal dollar amount of asset
+        :rtype: float
+        """
+
+        self.refresh_price()
+        return self.get_decimal_amount(amount) * self.price

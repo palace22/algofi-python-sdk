@@ -30,11 +30,15 @@ from .amm_config import (
     PARAMETER_SCALE_FACTOR,
     MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID,
     TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID,
-    LENDING_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID,
-    LENDING_POOLS_ASSET_PAIR_TO_APP_ID,
+    CONSTANT_PRODUCT_LENDING_POOLS_ASSET_PAIR_TO_APP_ID,
+    NANOSWAP_LENDING_POOLS_ASSET_PAIR_TO_APP_ID,
+    NANOSWAP_LENDING_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID,
+    CONSTANT_PRODUCT_LENDING_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID,
     TESTNET_NANOSWAP_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID,
     MAINNET_NANOSWAP_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID,
+    AMMEndpoints,
 )
+from .asset import Asset
 from .balance_delta import BalanceDelta
 from .logic_sig_generator import generate_logic_sig
 from .stable_swap_math import get_D, get_y
@@ -77,7 +81,7 @@ class Pool:
         self.asset2 = asset2
         self.validator_index = get_validator_index(self.network, pool_type)
 
-        # get pool app id using hard-coded dictionaries for NANOSWAP + LENDING_POOLS and on-chain logic sigs for vanilla AMM pools
+        # get pool app id using hard-coded dictionaries for NANOSWAP + LENDING_POOLS and on-chain logic sigs for constant product AMM pools
         self.application_id = None
         key = (asset1.asset_id, asset2.asset_id)
         if pool_type == PoolType.NANOSWAP:
@@ -92,17 +96,24 @@ class Pool:
                 if self.network == Network.TESTNET
                 else MAINNET_NANOSWAP_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID
             )[key]
-        elif (
-            pool_type == PoolType.NANOSWAP_LENDING_POOL
-            or pool_type == PoolType.CONSTANT_PRODUCT_25BP_FEE_LENDING_POOL
-        ):
+        elif pool_type == PoolType.NANOSWAP_LENDING_POOL:
             if self.network == Network.TESTNET:
                 raise Exception("Lending Pool is not on testnet")
             self.pool_status = PoolStatus.ACTIVE
-            self.application_id = LENDING_POOLS_ASSET_PAIR_TO_APP_ID[key]
-            self.manager_application_id = LENDING_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID[
+            self.application_id = NANOSWAP_LENDING_POOLS_ASSET_PAIR_TO_APP_ID[key]
+            self.manager_application_id = (
+                NANOSWAP_LENDING_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID[key]
+            )
+        elif pool_type == PoolType.CONSTANT_PRODUCT_25BP_FEE_LENDING_POOL:
+            if self.network == Network.TESTNET:
+                raise Exception("Lending Pool is not on testnet")
+            self.pool_status = PoolStatus.ACTIVE
+            self.application_id = CONSTANT_PRODUCT_LENDING_POOLS_ASSET_PAIR_TO_APP_ID[
                 key
             ]
+            self.manager_application_id = (
+                CONSTANT_PRODUCT_LENDING_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID[key]
+            )
         else:
             # get local state
             self.manager_application_id = (
@@ -150,12 +161,13 @@ class Pool:
                     MANAGER_STRINGS.registered_pool_id
                 ]
 
-        # if application id has been set, then either nanoswap pool or vanilla pool is active
+        # if application id has been set, then either nanoswap pool or constant product pool is active
         if self.application_id:
             self.address = get_application_address(self.application_id)
             # save down pool metadata
             pool_state = get_global_state(self.indexer, self.application_id)
             self.lp_asset_id = pool_state[POOL_STRINGS.lp_id]
+            self.lp_asset = Asset(self.amm_client, self.lp_asset_id)
             self.admin = pool_state[POOL_STRINGS.admin]
             self.reserve_factor = pool_state[POOL_STRINGS.reserve_factor]
             self.flash_loan_fee = pool_state[POOL_STRINGS.flash_loan_fee]
@@ -224,6 +236,7 @@ class Pool:
                 # get global state
                 pool_state = get_global_state(self.indexer, self.application_id)
                 self.lp_asset_id = pool_state[POOL_STRINGS.lp_id]
+                self.lp_asset = Asset(self.amm_client, self.lp_asset_id)
                 self.admin = pool_state[POOL_STRINGS.admin]
                 self.reserve_factor = pool_state[POOL_STRINGS.reserve_factor]
                 self.flash_loan_fee = pool_state[POOL_STRINGS.flash_loan_fee]
@@ -282,6 +295,11 @@ class Pool:
         ]
         self.cumsum_fees_asset1 = pool_state[POOL_STRINGS.cumsum_fees_asset1]
         self.cumsum_fees_asset2 = pool_state[POOL_STRINGS.cumsum_fees_asset2]
+
+    def refresh_lp_token_price(self):
+        """Refresh the dollar price of the LP token for this pool"""
+
+        self.lp_asset.refresh_price()
 
     def get_pool_price(self, asset_id):
         """Gets the price of the pool in terms of the asset with given asset_id

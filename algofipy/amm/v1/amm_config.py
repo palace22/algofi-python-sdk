@@ -20,7 +20,7 @@ from algofipy.globals import Network
 ALGO_ASSET_ID = 1
 PARAMETER_SCALE_FACTOR = 1000000
 
-# vanilla constant product pool app ids
+# constant product pool app ids
 MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID = 605753404
 TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID = 66008735
 
@@ -48,17 +48,20 @@ MAINNET_NANOSWAP_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID = {
 
 # lending pool app ids
 # (asset1_id, asset2_id) -> pool_app_id
-LENDING_POOLS_ASSET_PAIR_TO_APP_ID = {
-    (818182311, 841157954): 841170409,
+NANOSWAP_LENDING_POOLS_ASSET_PAIR_TO_APP_ID = {(818182311, 841157954): 841170409}
+CONSTANT_PRODUCT_LENDING_POOLS_ASSET_PAIR_TO_APP_ID = {
     (818179690, 841157954): 855716333,
     (818184214, 841157954): 870150391,
     (818188553, 841157954): 870143131,
     (841157954, 900919286): 900923609,
 }
+
 # lending pool manager app ids
 # (asset1_id, asset2_id) -> manager_app_id
-LENDING_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID = {
-    (818182311, 841157954): 841165954,
+NANOSWAP_LENDING_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID = {
+    (818182311, 841157954): 841165954
+}
+CONSTANT_PRODUCT_LENDING_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID = {
     (818179690, 841157954): 841165954,
     (818184214, 841157954): 841165954,
     (818188553, 841157954): 841165954,
@@ -85,12 +88,18 @@ class PoolStatus(Enum):
     ACTIVE = 1
 
 
+class AMMEndpoints:
+    ASSETS = "https://api.algofi.org/assets"
+    AMM_LP_TOKENS = "https://api.algofi.org/ammLPTokens"
+    POOLS = "https://api.algofi.org/pools"
+
+
 # lookup functions
 def get_validator_index(network, pool_type):
     """Gets the validator index for a given pool type and network
 
     :param network: network :class:`Network` ("testnet" or "mainnet")
-    :type network: str
+    :type network: :class:`Network`
     :param pool_type: a :class:`PoolType` object for the type of pool (e.g. 30bp, 100bp fee)
     :type pool_type: :class:`PoolType`
     :return: validator index for given type of pool
@@ -109,6 +118,31 @@ def get_validator_index(network, pool_type):
             return 1
         elif pool_type == PoolType.NANOSWAP:
             return -1
+
+
+def get_pool_type(network, validator_index):
+    """Gets the pool type for a given validator index
+
+    :param network: network :class:`Network` ("testnet" or "mainnet")
+    :type network: :class:`Network`
+    :param validator_index: a :class:`PoolType` object for the type of pool (e.g. 30bp, 100bp fee)
+    :type validator_index: :class:`PoolType`
+    :return: pool type for given validator index
+    :rtype: :class:`PoolType`
+    """
+
+    if network == Network.MAINNET:
+        if validator_index == 0:
+            return PoolType.CONSTANT_PRODUCT_25BP_FEE
+        elif validator_index == 1:
+            return PoolType.CONSTANT_PRODUCT_75BP_FEE
+    elif network == Network.TESTNET:
+        if validator_index == 0:
+            return PoolType.CONSTANT_PRODUCT_30BP_FEE
+        elif validator_index == 1:
+            return PoolType.CONSTANT_PRODUCT_100BP_FEE
+        elif validator_index == -1:
+            return PoolType.NANOSWAP
 
 
 def get_approval_program_by_pool_type(pool_type, network):
@@ -254,50 +288,3 @@ class MANAGER_STRINGS:
     set_max_flash_loan_ratio = "smflr"
     set_validator = "sv"
     validator_index = "vi"
-
-
-# valid pool app ids
-b64_to_utf_keys = {
-    b64encode(bytes(POOL_STRINGS.asset1_id, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.asset1_id,
-    b64encode(bytes(POOL_STRINGS.asset2_id, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.asset2_id,
-    b64encode(bytes(POOL_STRINGS.pool, "utf-8")).decode("utf-8"): POOL_STRINGS.pool,
-    b64encode(bytes(MANAGER_STRINGS.validator_index, "utf-8")).decode(
-        "utf-8"
-    ): MANAGER_STRINGS.validator_index,
-    b64encode(bytes(POOL_STRINGS.balance_1, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.balance_1,
-    b64encode(bytes(POOL_STRINGS.balance_2, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.balance_2,
-    b64encode(bytes(POOL_STRINGS.cumsum_volume_asset1, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.cumsum_volume_asset1,
-    b64encode(bytes(POOL_STRINGS.cumsum_volume_asset2, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.cumsum_volume_asset2,
-    b64encode(
-        bytes(POOL_STRINGS.cumsum_volume_weighted_asset1_to_asset2_price, "utf-8")
-    ).decode("utf-8"): POOL_STRINGS.cumsum_volume_weighted_asset1_to_asset2_price,
-    b64encode(
-        bytes(POOL_STRINGS.cumsum_volume_weighted_asset2_to_asset1_price, "utf-8")
-    ).decode("utf-8"): POOL_STRINGS.cumsum_volume_weighted_asset2_to_asset1_price,
-    b64encode(
-        bytes(POOL_STRINGS.cumsum_time_weighted_asset2_to_asset1_price, "utf-8")
-    ).decode("utf-8"): POOL_STRINGS.cumsum_time_weighted_asset2_to_asset1_price,
-    b64encode(
-        bytes(POOL_STRINGS.cumsum_time_weighted_asset1_to_asset2_price, "utf-8")
-    ).decode("utf-8"): POOL_STRINGS.cumsum_time_weighted_asset1_to_asset2_price,
-    b64encode(bytes(POOL_STRINGS.cumsum_fees_asset1, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.cumsum_fees_asset1,
-    b64encode(bytes(POOL_STRINGS.cumsum_fees_asset2, "utf-8")).decode(
-        "utf-8"
-    ): POOL_STRINGS.cumsum_fees_asset2,
-}
-
-utf_to_b64_keys = {v: k for k, v in b64_to_utf_keys.items()}
