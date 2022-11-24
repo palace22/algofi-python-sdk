@@ -112,16 +112,12 @@ class AMMClient:
                 return None
 
             try:
-                asset1 = Asset(self, asset1_id)
-                asset2 = Asset(self, asset2_id)
+                pool = self.get_pool(pool_type, asset1_id, asset2_id)
             except:
                 # asset1, asset2, or both have been destroyed
                 return None
 
-            return (
-                pool_app_id,
-                Pool(self.algofi_client.amm, pool_type, asset1, asset2),
-            )
+            return (pool_app_id, pool)
 
         accounts = get_accounts_opted_into_app(
             self.indexer, self.manager_application_id

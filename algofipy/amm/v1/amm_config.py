@@ -85,6 +85,10 @@ class PoolStatus(Enum):
     ACTIVE = 1
 
 
+class AMMEndpoints:
+    ASSETS = "https://api.algofi.org/assets"
+
+
 # lookup functions
 def get_validator_index(network, pool_type):
     """Gets the validator index for a given pool type and network
