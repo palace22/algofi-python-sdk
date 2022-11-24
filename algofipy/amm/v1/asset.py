@@ -92,6 +92,16 @@ class Asset:
 
         return int(amount * 10**self.decimals)
 
+    def get_decimal_amount(self, amount):
+        """Returns a decimal representation of the input amount
+        :param amount: amount of asset in base units
+        :type amount: int
+        :return: float decimal amount of asset
+        :rtype: float
+        """
+
+        return amount / 10**self.decimals
+
     def refresh_price(self):
         """Refreshes the dollar price of the asset"""
 
@@ -99,11 +109,28 @@ class Asset:
             prices = dict(
                 [
                     (x["asset_id"], x["price"])
-                    for x in (re.get(AMMEndpoints.ASSETS).json() + re.get(AMMEndpoints.AMM_LP_TOKENS).json())
+                    for x in (
+                        re.get(AMMEndpoints.ASSETS).json()
+                        + re.get(AMMEndpoints.AMM_LP_TOKENS).json()
+                    )
                 ]
             )
             self.price = prices[self.asset_id]
         except:
             raise Exception(
-                "Failed to query price from endpoints " + AMMEndpoints.ASSETS + " and " + AMMEndpoints.AMM_LP_TOKENS
+                "Failed to query price from endpoints "
+                + AMMEndpoints.ASSETS
+                + " and "
+                + AMMEndpoints.AMM_LP_TOKENS
             )
+
+    def to_usd(self, amount):
+        """Returns a dollar amount of asset given an amount in base units
+        :param amount: amount of asset
+        :type amount: float
+        :return: decimal dollar amount of asset
+        :rtype: float
+        """
+
+        self.refresh_price()
+        return self.get_decimal_amount(amount) * self.price

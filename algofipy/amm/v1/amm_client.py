@@ -8,7 +8,12 @@ from .amm_config import (
     MANAGER_STRINGS,
     MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID,
     TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID,
+    MAINNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID,
+    TESTNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID,
+    NANOSWAP_LENDING_POOLS_ASSET_PAIR_TO_APP_ID,
+    CONSTANT_PRODUCT_LENDING_POOLS_ASSET_PAIR_TO_APP_ID,
     get_pool_type,
+    PoolType,
 )
 from algofipy.state_utils import get_accounts_opted_into_app, format_state
 from .logic_sig_generator import generate_logic_sig
@@ -40,6 +45,11 @@ class AMMClient:
             MAINNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID
             if self.network == Network.MAINNET
             else TESTNET_CONSTANT_PRODUCT_POOLS_MANAGER_APP_ID
+        )
+        self.nanoswap_pool_app_ids = (
+            MAINNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID
+            if self.network == Network.MAINNET
+            else TESTNET_NANOSWAP_POOLS_ASSET_PAIR_TO_APP_ID
         )
 
     def get_pool(self, pool_type, asset1_id, asset2_id):
@@ -80,11 +90,11 @@ class AMMClient:
         asset = Asset(self, asset_id)
         return asset
 
-    def get_all_valid_pools(self):
-        """Returns a dict of valid pools with relevant data
+    def get_constant_product_pools(self):
+        """Returns a dict of valid constant product pools with relevant data
 
-        :return: a :class:`Pool` object for given assets and pool_type
-        :rtype: :class:`Pool`
+        :return: dict mapping pool app id -> :class:`Pool`
+        :rtype: dict
         """
 
         def validate_pool(account_data):
@@ -132,3 +142,69 @@ class AMMClient:
         )
 
         return valid_pool_data
+
+    def get_nanoswap_pools(self):
+        """Returns a dict of valid nanoswap pools with relevant data
+
+        :return: dict mapping nanoswap pool app id -> :class:`Pool`
+        :rtype: dict
+        """
+
+        return dict(
+            [
+                (
+                    pool_app_id,
+                    self.get_pool(PoolType.NANOSWAP, asset1_id, asset2_id),
+                )
+                for (
+                    (asset1_id, asset2_id),
+                    pool_app_id,
+                ) in self.nanoswap_pool_app_ids.items()
+            ]
+        )
+
+    def get_constant_product_lending_pools(self):
+        """Returns a dict of valid constant product lending pools with relevant data
+
+        :return: dict mapping constant product lending pool app id -> :class:`Pool`
+        :rtype: dict
+        """
+
+        if self.network == Network.TESTNET:
+            raise Exception("Lending Pool is not on testnet")
+
+        return dict(
+            [
+                (
+                    pool_app_id,
+                    self.get_pool(PoolType.CONSTANT_PRODUCT_25BP_FEE_LENDING_POOL, asset1_id, asset2_id),
+                )
+                for (
+                    (asset1_id, asset2_id),
+                    pool_app_id,
+                ) in CONSTANT_PRODUCT_LENDING_POOLS_ASSET_PAIR_TO_APP_ID.items()
+            ]
+        )
+
+    def get_nanoswap_lending_pools(self):
+        """Returns a dict of valid nanoswap lending pools with relevant data
+
+        :return: dict mapping nanoswap lending pool app id -> :class:`Pool`
+        :rtype: dict
+        """
+
+        if self.network == Network.TESTNET:
+            raise Exception("Lending Pool is not on testnet")
+
+        return dict(
+            [
+                (
+                    pool_app_id,
+                    self.get_pool(PoolType.NANOSWAP_LENDING_POOL, asset1_id, asset2_id),
+                )
+                for (
+                    (asset1_id, asset2_id),
+                    pool_app_id,
+                ) in NANOSWAP_LENDING_POOLS_ASSET_PAIR_TO_APP_ID.items()
+            ]
+        )
