@@ -31,7 +31,9 @@ class StakingClient:
         """Function that uses indexer to query for users' staking state"""
 
         # query all users opted into admin contract
-        staking_accounts = get_accounts_opted_into_app(self.indexer, staking_app_id, exclude="assets,created-apps,created-assets")
+        staking_accounts = get_accounts_opted_into_app(
+            self.indexer, staking_app_id, exclude="assets,created-apps,created-assets"
+        )
 
         # filter to accounts with relevant key
         user_data = {}

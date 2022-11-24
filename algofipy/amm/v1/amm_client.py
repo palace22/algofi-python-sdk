@@ -177,7 +177,11 @@ class AMMClient:
             [
                 (
                     pool_app_id,
-                    self.get_pool(PoolType.CONSTANT_PRODUCT_25BP_FEE_LENDING_POOL, asset1_id, asset2_id),
+                    self.get_pool(
+                        PoolType.CONSTANT_PRODUCT_25BP_FEE_LENDING_POOL,
+                        asset1_id,
+                        asset2_id,
+                    ),
                 )
                 for (
                     (asset1_id, asset2_id),

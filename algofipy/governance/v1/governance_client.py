@@ -127,7 +127,9 @@ class GovernanceClient:
 
         # query all users opted into admin contract
         admin_app_id = self.governance_config.admin_app_id
-        admin_app_accounts = get_accounts_opted_into_app(self.indexer, admin_app_id, exclude="assets,created-apps,created-assets")
+        admin_app_accounts = get_accounts_opted_into_app(
+            self.indexer, admin_app_id, exclude="assets,created-apps,created-assets"
+        )
 
         # filter to accounts with relevant key
         user_data = {}
@@ -162,7 +164,11 @@ class GovernanceClient:
 
         # query all users opted into admin contract
         voting_escrow_app_id = self.governance_config.voting_escrow_app_id
-        voting_escrow_app_accounts = get_accounts_opted_into_app(self.indexer, voting_escrow_app_id, exclude="assets,created-apps,created-assets")
+        voting_escrow_app_accounts = get_accounts_opted_into_app(
+            self.indexer,
+            voting_escrow_app_id,
+            exclude="assets,created-apps,created-assets",
+        )
 
         # filter to accounts with relevant key
         user_data = {}
@@ -199,7 +205,9 @@ class GovernanceClient:
         """Function that uses indexer to query for governors' proposal state"""
 
         # query all users opted into admin contract
-        proposal_app_accounts = get_accounts_opted_into_app(self.indexer, proposal_app_id, exclude="assets,created-apps,created-assets")
+        proposal_app_accounts = get_accounts_opted_into_app(
+            self.indexer, proposal_app_id, exclude="assets,created-apps,created-assets"
+        )
 
         # filter to accounts with relevant key
         user_data = {}
