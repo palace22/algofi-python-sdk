@@ -31,21 +31,7 @@ class StakingClient:
         """Function that uses indexer to query for users' staking state"""
 
         # query all users opted into admin contract
-        next_page = ""
-        staking_accounts = []
-        while next_page != None:
-            users = self.indexer.accounts(
-                next_page=next_page,
-                limit=1000,
-                application_id=staking_app_id,
-                exclude="assets,created-apps,created-assets",
-            )
-            if len(users.get("accounts", [])):
-                staking_accounts.extend(users["accounts"])
-            if users.get("next-token", None):
-                next_page = users["next-token"]
-            else:
-                next_page = None
+        staking_accounts = get_accounts_opted_into_app(self.indexer, staking_app_id, exclude="assets,created-apps,created-assets")
 
         # filter to accounts with relevant key
         user_data = {}
