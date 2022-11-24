@@ -87,6 +87,8 @@ class PoolStatus(Enum):
 
 class AMMEndpoints:
     ASSETS = "https://api.algofi.org/assets"
+    AMM_LP_TOKENS = "https://api.algofi.org/ammLPTokens"
+    POOLS = "https://api.algofi.org/pools"
 
 
 # lookup functions

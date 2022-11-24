@@ -93,17 +93,17 @@ class Asset:
         return int(amount * 10**self.decimals)
 
     def refresh_price(self):
-        """Returns the dollar price of the asset"""
+        """Refreshes the dollar price of the asset"""
 
         try:
             prices = dict(
                 [
                     (x["asset_id"], x["price"])
-                    for x in re.get(AMMEndpoints.ASSETS).json()
+                    for x in (re.get(AMMEndpoints.ASSETS).json() + re.get(AMMEndpoints.AMM_LP_TOKENS).json())
                 ]
             )
             self.price = prices[self.asset_id]
         except:
             raise Exception(
-                "Failed to query price from endpoint " + AMMEndpoints.ASSETS
+                "Failed to query price from endpoints " + AMMEndpoints.ASSETS + " and " + AMMEndpoints.AMM_LP_TOKENS
             )
