@@ -6,7 +6,7 @@ from base64 import b64encode, b64decode
 # INTERFACE
 from algofipy.globals import Network
 from algofipy.transaction_utils import get_default_params, TransactionGroup
-from algofipy.state_utils import format_state
+from algofipy.state_utils import format_state, get_accounts_opted_into_app
 from algofipy.governance.v1.governance_config import (
     GOVERNANCE_CONFIGS,
     ADMIN_STRINGS,

@@ -1,7 +1,7 @@
 from .staking_config import STAKING_CONFIGS, rewards_manager_app_id, STAKING_STRINGS
 from .staking import Staking
 from .staking_user import StakingUser
-from algofipy.state_utils import format_state
+from algofipy.state_utils import format_state, get_accounts_opted_into_app
 
 
 class StakingClient:
