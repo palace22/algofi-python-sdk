@@ -95,6 +95,9 @@ class Market:
         self.underlying_asset_id = market_config.underlying_asset_id
         self.b_asset_id = market_config.b_asset_id
         self.market_type = market_config.market_type
+        self.created_at_round = self.indexer.applications(self.app_id)["application"][
+            "created-at-round"
+        ]
 
         self.load_state()
 
