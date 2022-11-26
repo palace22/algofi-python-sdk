@@ -104,6 +104,7 @@ class Pool:
             self.manager_application_id = (
                 NANOSWAP_LENDING_POOLS_ASSET_PAIR_TO_MANAGER_APP_ID[key]
             )
+
         elif pool_type == PoolType.CONSTANT_PRODUCT_25BP_FEE_LENDING_POOL:
             if self.network == Network.TESTNET:
                 raise Exception("Lending Pool is not on testnet")
@@ -164,6 +165,9 @@ class Pool:
         # if application id has been set, then either nanoswap pool or constant product pool is active
         if self.application_id:
             self.address = get_application_address(self.application_id)
+            self.created_at_round = self.indexer.applications(self.application_id)[
+                "application"
+            ]["created-at-round"]
             # save down pool metadata
             pool_state = get_global_state(self.indexer, self.application_id)
             self.lp_asset_id = pool_state[POOL_STRINGS.lp_id]
