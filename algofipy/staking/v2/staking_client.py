@@ -17,12 +17,12 @@ class StakingClient:
         self.staking_contracts = {}
         self.load_state()
 
-    def load_state(self):
+    def load_state(self, block=None):
         for staking_config in self.staking_configs:
             self.staking_contracts[staking_config.app_id] = Staking(
                 self, rewards_manager_app_id[self.network], staking_config
             )
-            self.staking_contracts[staking_config.app_id].load_state()
+            self.staking_contracts[staking_config.app_id].load_state(block=block)
 
     def get_user(self, address):
         return StakingUser(self, address)

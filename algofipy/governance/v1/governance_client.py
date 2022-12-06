@@ -36,18 +36,18 @@ class GovernanceClient:
         self.governance_config = GOVERNANCE_CONFIGS[self.network]
         self.load_state()
 
-    def load_state(self):
+    def load_state(self, block=None):
         """Creates new admin, voting escrow, and rewards managers on the algofi client
         object and loads their state.
         """
 
         # load admin contract data
         self.admin = Admin(self)
-        self.admin.load_state()
+        self.admin.load_state(block=block)
 
         # load voting escrow contract data
         self.voting_escrow = VotingEscrow(self)
-        self.voting_escrow.load_state()
+        self.voting_escrow.load_state(block=block)
 
         # load rewards manager contract data
         self.rewards_manager = RewardsManager(self, self.governance_config)

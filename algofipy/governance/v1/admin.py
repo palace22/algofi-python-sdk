@@ -30,6 +30,7 @@ class Admin:
         self.governance_client = governance_client
         self.algod = self.governance_client.algod
         self.indexer = self.governance_client.indexer
+        self.historical_indexer = self.governance_client.historical_indexer
         self.admin_app_id = self.governance_client.governance_config.admin_app_id
         self.proposal_factory_app_id = (
             self.governance_client.governance_config.proposal_factory_app_id
@@ -39,14 +40,18 @@ class Admin:
         )
         self.admin_address = logic.get_application_address(self.admin_app_id)
 
-    def load_state(self):
+    def load_state(self, block=None):
         """Function to refresh and load all of the global and local state we need to
         keep track of on the admin, including all of the proposals that have been
         created.
         """
 
         # set state for the admin
-        global_state_admin = get_global_state(self.indexer, self.admin_app_id)
+        indexer = self.historical_indexer if block else self.indexer
+        global_state_admin = get_global_state(
+            indexer, self.admin_app_id, decode_byte_values=False, block=block
+        )
+
         self.quorum_value = global_state_admin.get(ADMIN_STRINGS.quorum_value, 0)
         self.super_majority = global_state_admin.get(ADMIN_STRINGS.super_majority, 0)
         self.proposal_duration = global_state_admin.get(
@@ -58,7 +63,7 @@ class Admin:
 
         # setting state for the proposal factory
         global_state_proposal_factory = get_global_state(
-            self.indexer, self.proposal_factory_app_id
+            indexer, self.proposal_factory_app_id, decode_byte_values=False, block=block
         )
 
         # put into config
@@ -74,14 +79,14 @@ class Admin:
 
         # get the proposals created from the factory
         proposal_factory_info = self.indexer.account_info(
-            self.proposal_factory_address
+            self.proposal_factory_address, round_num=block
         )["account"]
         self.proposals = {}
         for app_object in proposal_factory_info["created-apps"]:
             self.proposals[app_object["id"]] = Proposal(
                 self.governance_client, app_object["id"]
             )
-            self.proposals[app_object["id"]].load_state()
+            self.proposals[app_object["id"]].load_state(block=block)
 
     def get_update_user_vebank_txns(self, user_calling, user_updating):
         """Constructs a series of transactions to update a target user's vebank.

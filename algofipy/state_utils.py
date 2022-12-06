@@ -155,7 +155,9 @@ def get_local_states(indexer, address, decode_byte_values=True, block=None):
     return result
 
 
-def get_local_state_at_app(indexer, address, app_id, decode_byte_values=True):
+def get_local_state_at_app(
+    indexer, address, app_id, decode_byte_values=True, block=None
+):
     """Get local state of user for given app.
 
     :param indexer: algorand indexer
@@ -166,12 +168,14 @@ def get_local_state_at_app(indexer, address, app_id, decode_byte_values=True):
     :type app_id: int
     :param decode_byte_values: whether to base64 decode bytes values
     :type decode_byte_values: bool
+    :param block: block at which to query local state
+    :type block: int, optional
     :return: formatted local state dict
     :rtype: dict
     """
 
     local_states = get_local_states(
-        indexer, address, decode_byte_values=decode_byte_values
+        indexer, address, decode_byte_values=decode_byte_values, block=block
     )
     if app_id in local_states:
         return local_states[app_id]

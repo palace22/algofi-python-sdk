@@ -99,7 +99,7 @@ if pool.pool_status == PoolStatus.UNINITIALIZED:
     txid = algod.send_transactions(group.signed_transactions)
     wait_for_confirmation(algod, txid)
     pool.refresh_metadata()
-    pool.refresh_state()
+    pool.load_state()
 
 # opt into lp token if you're not opted in yet
 if not user.is_opted_in_to_asset(pool.lp_asset_id):

@@ -30,6 +30,9 @@ class LendingUser:
         """
 
         self.lending_client = lending_client
+        self.algod = self.lending_client.algod
+        self.indexer = self.lending_client.indexer
+        self.historical_indexer = self.lending_client.historical_indexer
         self.address = address
 
         self.load_state()
@@ -41,10 +44,10 @@ class LendingUser:
         :type block: int, optional
         """
 
+        indexer = self.historical_indexer if block else self.indexer
+
         manager_state = get_local_state_at_app(
-            self.lending_client.indexer,
-            self.address,
-            self.lending_client.manager.app_id,
+            indexer, self.address, self.lending_client.manager.app_id, block=block
         )
 
         # reset state
@@ -66,11 +69,6 @@ class LendingUser:
                 b64decode(manager_state[MANAGER_STRINGS.storage_account])
             )
 
-            indexer = (
-                self.lending_client.historical_indexer
-                if block
-                else self.lending_client.indexer
-            )
             storage_states = get_local_states(
                 indexer, self.storage_address, decode_byte_values=False, block=block
             )

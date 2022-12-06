@@ -20,12 +20,24 @@ STAKING_CONFIGS = {
     Network.MAINNET: [
         StakingConfig("USDC Lend and Earn", 821882730, 818182311, StakingType.BASSET),
         StakingConfig("USDT Lend and Earn", 821882927, 818190568, StakingType.BASSET),
-        StakingConfig("ALGO / STBL2 Lending Pool LP", 919964388, 855717054, StakingType.LP),
-        StakingConfig("goBTC / STBL2 Lending Pool LP", 919965019, 870151164, StakingType.LP),
-        StakingConfig("goETH / STBL2 Lending Pool LP", 919965630, 870150187, StakingType.LP),
-        StakingConfig("ALGO / USDC Lending Pool LP", 919964086, 919950894, StakingType.LP),
-        StakingConfig("ALGO / BANK Lending Pool LP", 962407544, 962367827, StakingType.LP),
-        StakingConfig("BANK / STBL2 Lending Pool LP", 900932886, 900924035, StakingType.LP),
+        StakingConfig(
+            "ALGO / STBL2 Lending Pool LP", 919964388, 855717054, StakingType.LP
+        ),
+        StakingConfig(
+            "goBTC / STBL2 Lending Pool LP", 919965019, 870151164, StakingType.LP
+        ),
+        StakingConfig(
+            "goETH / STBL2 Lending Pool LP", 919965630, 870150187, StakingType.LP
+        ),
+        StakingConfig(
+            "ALGO / USDC Lending Pool LP", 919964086, 919950894, StakingType.LP
+        ),
+        StakingConfig(
+            "ALGO / BANK Lending Pool LP", 962407544, 962367827, StakingType.LP
+        ),
+        StakingConfig(
+            "BANK / STBL2 Lending Pool LP", 900932886, 900924035, StakingType.LP
+        ),
     ],
     Network.TESTNET: [
         StakingConfig("USDC Lend and Earn", 104267989, 104207173, StakingType.BASSET),

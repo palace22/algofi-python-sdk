@@ -199,7 +199,7 @@ class Pool:
                 self.t = timestamp
 
             # refresh state
-            self.refresh_state()
+            self.load_state()
 
     def refresh_metadata(self):
         """Refresh the metadata of the pool (e.g. if now initialized)."""
@@ -267,7 +267,7 @@ class Pool:
             timestamp = block["block"]["ts"]
             self.t = timestamp
 
-    def refresh_state(self, block=None):
+    def load_state(self, block=None):
         """Refresh the global state of the pool
 
         :param block: block at which to query historical state
