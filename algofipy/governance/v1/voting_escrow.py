@@ -17,6 +17,7 @@ class VotingEscrow:
         self.governance_client = governance_client
         self.algod = self.governance_client.algod
         self.indexer = self.governance_client.indexer
+        self.historical_indexer = self.governance_client.historical_indexer
         self.app_id = self.governance_client.governance_config.voting_escrow_app_id
         self.governance_token = (
             self.governance_client.governance_config.governance_token
@@ -29,12 +30,16 @@ class VotingEscrow:
         )
         self.load_state()
 
-    def load_state(self):
+    def load_state(self, block=None):
         """Function which will update the data on the voting escrow object to match
         that of the global state of the voting escrow contract.
         """
 
-        global_state = get_global_state(self.indexer, self.app_id)
+        indexer = self.historical_indexer if block else self.indexer
+        global_state = get_global_state(
+            indexer, self.app_id, decode_byte_values=False, block=block
+        )
+
         self.total_locked = global_state.get(VOTING_ESCROW_STRINGS.total_locked, 0)
         self.total_vebank = global_state.get(VOTING_ESCROW_STRINGS.total_vebank, 0)
         self.asset_id = global_state.get(VOTING_ESCROW_STRINGS.asset_id, 0)

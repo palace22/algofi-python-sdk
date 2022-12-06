@@ -85,12 +85,12 @@ class LendingPoolInterface:
             Asset(self.algofi_client.amm, self.market2.b_asset_id),
         )
 
-    def load_state(self):
+    def load_state(self, block=None):
         # refresh markets + pool
-        self.market1.load_state()
-        self.market2.load_state()
-        self.lp_market.load_state()
-        self.pool.refresh_state()
+        self.market1.load_state(block=block)
+        self.market2.load_state(block=block)
+        self.lp_market.load_state(block=block)
+        self.pool.load_state(block=block)
 
     def get_pool_quote(self, asset_id, amount):
 

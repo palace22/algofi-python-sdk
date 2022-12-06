@@ -40,10 +40,10 @@ class LendingClient:
         for market_config in self.market_configs:
             self.markets[market_config.app_id] = Market(self, market_config)
 
-    def load_state(self):
+    def load_state(self, block=None):
         """Function to update the state of the lending client markets"""
         for market_app_id in self.markets:
-            self.markets[market_app_id].load_state()
+            self.markets[market_app_id].load_state(block=block)
 
     def get_user(self, user_address):
         """Gets an algofi lending v2 user given an address.

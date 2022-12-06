@@ -37,13 +37,8 @@ class GovernanceUser:
         """
 
         # get user local states
-        if block:
-            user_local_states = get_local_states(
-                self.historical_indexer, self.address, block=block
-            )
-        else:
-            user_local_states = get_local_states(self.indexer, self.address)
-
+        indexer = self.historical_indexer if block else self.indexer
+        user_local_states = get_local_states(indexer, self.address, block=block)
         self.opted_into_governance = False
 
         for app_id in user_local_states:
