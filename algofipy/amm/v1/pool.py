@@ -179,7 +179,7 @@ class Pool:
             self.swap_fee = pool_state[POOL_STRINGS.swap_fee_pct_scaled_var] / 1e6
 
             # additionally save down nanoswap metadata if applicable
-            if self.pool_type == PoolType.NANOSWAP:
+            if (self.pool_type == PoolType.NANOSWAP) or (self.pool_type == PoolType.NANOSWAP_LENDING_POOL):
                 self.initial_amplification_factor = pool_state.get(
                     POOL_STRINGS.initial_amplification_factor, 0
                 )
