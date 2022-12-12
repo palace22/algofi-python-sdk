@@ -179,7 +179,7 @@ class Pool:
             self.swap_fee = pool_state[POOL_STRINGS.swap_fee_pct_scaled_var] / 1e6
 
             # additionally save down nanoswap metadata if applicable
-            if self.pool_type == PoolType.NANOSWAP:
+            if (self.pool_type == PoolType.NANOSWAP) or (self.pool_type == PoolType.NANOSWAP_LENDING_POOL):
                 self.initial_amplification_factor = pool_state.get(
                     POOL_STRINGS.initial_amplification_factor, 0
                 )
@@ -204,7 +204,7 @@ class Pool:
     def refresh_metadata(self):
         """Refresh the metadata of the pool (e.g. if now initialized)."""
 
-        if self.pool_type != PoolType.NANOSWAP:
+        if (self.pool_type != PoolType.NANOSWAP) and (self.pool_type != PoolType.NANOSWAP_LENDING_POOL):
             try:
                 logic_sig_local_state = get_local_state_at_app(
                     self.indexer, self.logic_sig.address(), self.manager_application_id
@@ -337,7 +337,7 @@ class Pool:
         :rtype: :class:`SignedTransaction`
         """
         assert (
-            self.pool_type != PoolType.NANOSWAP
+            (self.pool_type != PoolType.NANOSWAP) and (self.pool_type != PoolType.NANOSWAP_LENDING_POOL)
         ), "Nanoswap pools are not compatible with manager logic sigs"
         return LogicSigTransaction(transaction, self.logic_sig)
 
@@ -349,7 +349,7 @@ class Pool:
         :return: unsigned CreatePool transaction with given sender
         :rtype: :class:`ApplicationCreateTxn`
         """
-        if self.pool_type == PoolType.NANOSWAP:
+        if (self.pool_type == PoolType.NANOSWAP) and (self.pool_type != PoolType.NANOSWAP_LENDING_POOL):
             raise Exception("Nanoswap pool creation is not supported")
 
         if self.pool_status == PoolStatus.ACTIVE:
@@ -808,7 +808,7 @@ class Pool:
         :rtype: :class:`BalanceDelta`
         """
 
-        if self.pool_type == PoolType.NANOSWAP:
+        if (self.pool_type == PoolType.NANOSWAP) or (self.pool_type == PoolType.NANOSWAP_LENDING_POOL):
             lps_issued, num_iter = get_D(
                 [asset2_pooled_amount, asset2_pooled_amount], self.amplification_factor
             )
@@ -854,7 +854,7 @@ class Pool:
                 asset2_pooled_amount * self.asset1_balance // self.asset2_balance
             )
 
-        if self.pool_type == PoolType.NANOSWAP:
+        if (self.pool_type == PoolType.NANOSWAP) or (self.pool_type == PoolType.NANOSWAP_LENDING_POOL):
             D0, num_iter_D0 = get_D(
                 [self.asset1_balance, self.asset2_balance], self.amplification_factor
             )
@@ -920,7 +920,7 @@ class Pool:
         )
 
         if swap_in_asset_id == self.asset1.asset_id:
-            if self.pool_type == PoolType.NANOSWAP:
+            if (self.pool_type == PoolType.NANOSWAP) or (self.pool_type == PoolType.NANOSWAP_LENDING_POOL):
                 D, num_iter_D = get_D(
                     [self.asset1_balance, self.asset2_balance],
                     self.amplification_factor,
@@ -943,7 +943,7 @@ class Pool:
                 num_iter = 0
             return BalanceDelta(self, -1 * swap_in_amount, swap_out_amount, 0, num_iter)
         else:
-            if self.pool_type == PoolType.NANOSWAP:
+            if (self.pool_type == PoolType.NANOSWAP) or (self.pool_type == PoolType.NANOSWAP_LENDING_POOL):
                 D, num_iter_D = get_D(
                     [self.asset1_balance, self.asset2_balance],
                     self.amplification_factor,
@@ -981,7 +981,7 @@ class Pool:
             raise Exception("Error: pool is empty")
 
         if swap_out_asset_id == self.asset1.asset_id:
-            if self.pool_type == PoolType.NANOSWAP:
+            if (self.pool_type == PoolType.NANOSWAP) or (self.pool_type == PoolType.NANOSWAP_LENDING_POOL):
                 D, num_iter_D = get_D(
                     [self.asset1_balance, self.asset2_balance],
                     self.amplification_factor,
@@ -1006,7 +1006,7 @@ class Pool:
                 )
                 num_iter = 0
         else:
-            if self.pool_type == PoolType.NANOSWAP:
+            if (self.pool_type == PoolType.NANOSWAP) or (self.pool_type == PoolType.NANOSWAP_LENDING_POOL):
                 D, num_iter_D = get_D(
                     [self.asset1_balance, self.asset2_balance],
                     self.amplification_factor,
