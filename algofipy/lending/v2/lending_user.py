@@ -19,7 +19,7 @@ from ...utils import int_to_bytes, bytes_to_int
 
 
 class LendingUser:
-    def __init__(self, lending_client, address):
+    def __init__(self, lending_client, address, storage_address=None):
         """An object that encapsulates user state on the lending protocol
         and creates transactions representing user actions
 
@@ -27,28 +27,29 @@ class LendingUser:
         :type lending_client: :class:`LendingClient`
         :param address: an address of the user wallet
         :type address: str
+        :param storage_address: a storage address of the user wallet
+        :type storage_address: str, optional
         """
 
         self.lending_client = lending_client
         self.algod = self.lending_client.algod
         self.indexer = self.lending_client.indexer
         self.historical_indexer = self.lending_client.historical_indexer
-        self.address = address
+        if storage_address:
+            self.storage_address = storage_address
+            self.load_storage_state(self.storage_address)
+        else:
+            self.address = address
+            self.load_state()
 
-        self.load_state()
+    def load_storage_state(self, storage_address, block=None):
+        """Populates storage state from the blockchain on the object
 
-    def load_state(self, block=None):
-        """Populates user state from the blockchain on the object
-
-        :param block: block at which to query the user local state
+        :param storage_address: storage account to query
+        :type storage_address: str
+        :param block: block at which to query the user storage state
         :type block: int, optional
         """
-
-        indexer = self.historical_indexer if block else self.indexer
-
-        manager_state = get_local_state_at_app(
-            indexer, self.address, self.lending_client.manager.app_id, block=block
-        )
 
         # reset state
         self.opted_in_market_count = 0
@@ -63,71 +64,88 @@ class LendingUser:
         self.net_supply_apr = 0
         self.net_borrow_apr = 0
 
+        indexer = self.historical_indexer if block else self.indexer
+
+        storage_states = get_local_states(
+            indexer, storage_address, decode_byte_values=False, block=block
+        )
+
+        self.opted_in_market_count = storage_states[
+            self.lending_client.manager.app_id
+        ].get(MANAGER_STRINGS.opted_in_market_count, 0)
+
+        for page_idx in range((self.opted_in_market_count // 3) + 1):
+            market_page = b64decode(
+                storage_states[self.lending_client.manager.app_id].get(
+                    MANAGER_STRINGS.opted_in_markets_page_prefix
+                    + int_to_bytes(page_idx).decode().strip(),
+                    "",
+                )
+            )
+            for market_offset in range(int(len(market_page) // 8)):
+                self.opted_in_markets.append(
+                    bytes_to_int(
+                        market_page[market_offset * 8 : (market_offset + 1) * 8]
+                    )
+                )
+
+        for market_app_id in self.opted_in_markets:
+            # cache local state
+            if market_app_id in self.lending_client.markets:
+                market = self.lending_client.markets[market_app_id]
+                market.load_state(block=block)
+
+                self.user_market_states[market_app_id] = UserMarketState(
+                    market, storage_states[market_app_id]
+                )
+
+                # total net values
+                user_market_state = self.user_market_states[market_app_id]
+                self.net_collateral += (
+                    user_market_state.b_asset_collateral_underlying.usd
+                )
+                self.net_scaled_collateral += (
+                    user_market_state.b_asset_collateral_underlying.usd
+                    * market.collateral_factor
+                    / FIXED_3_SCALE_FACTOR
+                )
+                self.net_borrow += user_market_state.borrowed_underlying.usd
+                self.net_scaled_borrow += (
+                    user_market_state.borrowed_underlying.usd
+                    * market.borrow_factor
+                    / FIXED_3_SCALE_FACTOR
+                )
+                dollar_totaled_supply_apr += (
+                    user_market_state.b_asset_collateral_underlying.usd
+                    * market.supply_apr
+                )
+                dollar_totaled_borrow_apr += (
+                    user_market_state.borrowed_underlying.usd * market.borrow_apr
+                )
+        if self.net_collateral > 0:
+            self.net_supply_apr = dollar_totaled_supply_apr / self.net_collateral
+        if self.net_borrow > 0:
+            self.net_borrow_apr = dollar_totaled_borrow_apr / self.net_borrow
+
+    def load_state(self, block=None):
+        """Populates user state from the blockchain on the object
+
+        :param block: block at which to query the user local state
+        :type block: int, optional
+        """
+
+        indexer = self.historical_indexer if block else self.indexer
+
+        manager_state = get_local_state_at_app(
+            indexer, self.address, self.lending_client.manager.app_id, block=block
+        )
+
         if manager_state:
             self.opted_in_to_manager = True
             self.storage_address = encode_address(
                 b64decode(manager_state[MANAGER_STRINGS.storage_account])
             )
-
-            storage_states = get_local_states(
-                indexer, self.storage_address, decode_byte_values=False, block=block
-            )
-
-            self.opted_in_market_count = storage_states[
-                self.lending_client.manager.app_id
-            ].get(MANAGER_STRINGS.opted_in_market_count, 0)
-            for page_idx in range((self.opted_in_market_count // 3) + 1):
-                market_page = b64decode(
-                    storage_states[self.lending_client.manager.app_id].get(
-                        MANAGER_STRINGS.opted_in_markets_page_prefix
-                        + int_to_bytes(page_idx).decode().strip(),
-                        "",
-                    )
-                )
-                for market_offset in range(int(len(market_page) // 8)):
-                    self.opted_in_markets.append(
-                        bytes_to_int(
-                            market_page[market_offset * 8 : (market_offset + 1) * 8]
-                        )
-                    )
-
-            for market_app_id in self.opted_in_markets:
-                # cache local state
-                if market_app_id in self.lending_client.markets:
-                    market = self.lending_client.markets[market_app_id]
-                    market.load_state(block=block)
-
-                    self.user_market_states[market_app_id] = UserMarketState(
-                        market, storage_states[market_app_id]
-                    )
-
-                    # total net values
-                    user_market_state = self.user_market_states[market_app_id]
-                    self.net_collateral += (
-                        user_market_state.b_asset_collateral_underlying.usd
-                    )
-                    self.net_scaled_collateral += (
-                        user_market_state.b_asset_collateral_underlying.usd
-                        * market.collateral_factor
-                        / FIXED_3_SCALE_FACTOR
-                    )
-                    self.net_borrow += user_market_state.borrowed_underlying.usd
-                    self.net_scaled_borrow += (
-                        user_market_state.borrowed_underlying.usd
-                        * market.borrow_factor
-                        / FIXED_3_SCALE_FACTOR
-                    )
-                    dollar_totaled_supply_apr += (
-                        user_market_state.b_asset_collateral_underlying.usd
-                        * market.supply_apr
-                    )
-                    dollar_totaled_borrow_apr += (
-                        user_market_state.borrowed_underlying.usd * market.borrow_apr
-                    )
-            if self.net_collateral > 0:
-                self.net_supply_apr = dollar_totaled_supply_apr / self.net_collateral
-            if self.net_borrow > 0:
-                self.net_borrow_apr = dollar_totaled_borrow_apr / self.net_borrow
+            self.load_storage_state(self.storage_address)
         else:
             self.opted_in_to_manager = False
 
