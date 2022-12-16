@@ -45,16 +45,21 @@ class LendingClient:
         for market_app_id in self.markets:
             self.markets[market_app_id].load_state(block=block)
 
-    def get_user(self, user_address):
+    def get_user(self, user_address, storage_address=None):
         """Gets an algofi lending v2 user given an address.
 
         :param user_address: the address of the user we are interested in.
         :type user_address: str
+        :param storage_address: a storage address of the user wallet
+        :type storage_address: str, optional
         :return: an algofi lending v2 user.
-        :rtype: :class:`GovernanceUser`
+        :rtype: :class:`LendingUser`
         """
 
-        return LendingUser(self, user_address)
+        if storage_address:
+            return LendingUser(self, None, storage_address=storage_address)
+        else:
+            return LendingUser(self, user_address)
 
     def get_storage_accounts(self, verbose=False):
         """Fetches the list of user storage accounts on the lending protocol from the blockchain
@@ -105,5 +110,15 @@ class LendingClient:
         if manager_state:
             return encode_address(
                 b64decode(manager_state[MANAGER_STRINGS.user_account])
+            )
+        return ""
+
+    def get_storage_account(self, user_account):
+        manager_state = get_local_state_at_app(
+            self.indexer, user_account, self.manager.app_id
+        )
+        if manager_state:
+            return encode_address(
+                b64decode(manager_state[MANAGER_STRINGS.storage_account])
             )
         return ""
