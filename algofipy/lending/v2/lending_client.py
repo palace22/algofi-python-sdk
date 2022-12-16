@@ -61,7 +61,6 @@ class LendingClient:
         else:
             return LendingUser(self, user_address)
 
-
     def get_storage_accounts(self, verbose=False):
         """Fetches the list of user storage accounts on the lending protocol from the blockchain
 
@@ -113,7 +112,7 @@ class LendingClient:
                 b64decode(manager_state[MANAGER_STRINGS.user_account])
             )
         return ""
-    
+
     def get_storage_account(self, user_account):
         manager_state = get_local_state_at_app(
             self.indexer, user_account, self.manager.app_id
