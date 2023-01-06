@@ -1,5 +1,5 @@
 # IMPORTS
-from algosdk.future.transaction import ApplicationNoOpTxn, AssetTransferTxn
+from algosdk.transaction import ApplicationNoOpTxn, AssetTransferTxn
 from algosdk import logic
 import time
 

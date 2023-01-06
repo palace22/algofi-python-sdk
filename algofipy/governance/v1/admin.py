@@ -1,6 +1,6 @@
 # IMPORTS
 from algosdk import logic
-from algosdk.future.transaction import (
+from algosdk.transaction import (
     PaymentTxn,
     ApplicationNoOpTxn,
     AssetTransferTxn,

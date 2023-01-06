@@ -5,7 +5,7 @@ from base64 import b64decode
 from algosdk.encoding import encode_address
 
 # external
-from algosdk.future.transaction import ApplicationNoOpTxn
+from algosdk.transaction import ApplicationNoOpTxn
 
 # local
 from .lending_config import MANAGER_STRINGS

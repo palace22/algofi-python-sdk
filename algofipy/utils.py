@@ -3,7 +3,7 @@ import base64
 
 # external
 from algosdk import account, mnemonic
-from algosdk.future.transaction import AssetCreateTxn
+from algosdk.transaction import AssetCreateTxn
 
 # local
 from .transaction_utils import get_default_params

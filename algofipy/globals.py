@@ -1,8 +1,8 @@
 # IMPORTS
 
 # external
-from algosdk.future.transaction import LogicSig
-from algosdk.future.transaction import LogicSigAccount
+from algosdk.transaction import LogicSig
+from algosdk.transaction import LogicSigAccount
 
 # CONSTANTS
 

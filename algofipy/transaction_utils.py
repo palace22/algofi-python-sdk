@@ -5,7 +5,7 @@ from algosdk.error import AlgodHTTPError
 from algosdk.v2client.algod import AlgodClient
 
 # local
-from algosdk.future.transaction import (
+from algosdk.transaction import (
     assign_group_id,
     PaymentTxn,
     AssetTransferTxn,
