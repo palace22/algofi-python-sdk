@@ -1,5 +1,5 @@
 # IMPORTS
-from algosdk.future.transaction import PaymentTxn, ApplicationOptInTxn
+from algosdk.transaction import PaymentTxn, ApplicationOptInTxn
 from algosdk.encoding import encode_address
 from base64 import b64encode, b64decode
 

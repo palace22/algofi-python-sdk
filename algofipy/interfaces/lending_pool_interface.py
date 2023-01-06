@@ -3,7 +3,7 @@
 # external
 from math import floor, ceil
 from algosdk import logic
-from algosdk.future.transaction import ApplicationNoOpTxn, LogicSigAccount
+from algosdk.transaction import ApplicationNoOpTxn, LogicSigAccount
 
 # local
 from .lending_pool_interface_config import LENDING_POOL_INTERFACE_STRINGS

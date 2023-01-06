@@ -1,7 +1,7 @@
 # IMPORTS
 
 # external
-from algosdk.future.transaction import *
+from algosdk.transaction import *
 
 from algosdk.logic import get_application_address
 
@@ -43,7 +43,7 @@ class Manager:
         :param storage_address: address created owned by the user, to be rekeyed to the manager
         :type storage_address: str
         :param params: algod params
-        :type params: :class: `algosdk.future.transaction.SuggestedParams`
+        :type params: :class: `algosdk.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing an opt in group transaction of size 3
         :rtype: :class:`TransactionGroup`
         """
@@ -83,7 +83,7 @@ class Manager:
         :param user: account for the sender
         :type user: :class:`LendingUser`
         :param params: algod params
-        :type params: :class: `algosdk.future.transaction.SuggestedParams`
+        :type params: :class: `algosdk.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing an close out group transaction of size 1
         :rtype: :class:`TransactionGroup`
         """
@@ -123,7 +123,7 @@ class Manager:
         :param market: market to opt in to
         :type market: :class:`LendingMarket`
         :param params: algod params
-        :type params: :class: `algosdk.future.transaction.SuggestedParams`
+        :type params: :class: `algosdk.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing an opt in group transaction of size 3
         :rtype: :class:`TransactionGroup`
         """
@@ -178,7 +178,7 @@ class Manager:
         :param market: market to opt in to
         :type market: :class:`LendingMarket`
         :param params: algod params
-        :type params: :class: `algosdk.future.transaction.SuggestedParams`
+        :type params: :class: `algosdk.transaction.SuggestedParams`
         :return: :class:`TransactionGroup` object representing an close out group transaction of size 1
         :rtype: :class:`TransactionGroup`
         """

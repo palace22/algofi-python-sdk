@@ -4,7 +4,7 @@
 import time
 import math
 from algosdk.logic import get_application_address
-from algosdk.future.transaction import (
+from algosdk.transaction import (
     LogicSigAccount,
     LogicSigTransaction,
     OnComplete,
