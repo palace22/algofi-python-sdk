@@ -18,10 +18,10 @@ my_path = os.path.abspath(os.path.dirname(__file__))
 ENV_PATH = os.path.join(my_path, "../.env")
 
 algod = AlgodClient(
-    "", "https://node.algoexplorerapi.io", headers={"User-Agent": "algosdk"}
+    "", "https://mainnet-api.algonode.cloud", headers={"User-Agent": "algosdk"}
 )
 indexer = IndexerClient(
-    "", "https://algoindexer.algoexplorerapi.io/", headers={"User-Agent": "algosdk"}
+    "", "https://mainnet-idx.algonode.cloud/", headers={"User-Agent": "algosdk"}
 )
 client = AlgofiClient(Network.MAINNET, algod, indexer)
 
