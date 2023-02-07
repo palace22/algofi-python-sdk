@@ -210,6 +210,34 @@ def get_global_state(indexer, app_id, decode_byte_values=True, block=None):
     )
 
 
+def get_global_state_field(
+    indexer, app_id, field_name, decode_byte_values=True, block=None
+):
+    """Get global state field of a given application.
+
+    :param indexer: algorand indexer
+    :type indexer: :class:`IndexerClient`
+    :param app_id: app id
+    :type app_id: int
+    :param field_name: name of the global state field
+    :type field_name: str
+    :param decode_byte_values: whether to base64 decode bytes values
+    :type decode_byte_values: bool
+    :param block: block at which to query global state
+    :type block: int, optional
+    :return: global state field
+    :rtype: int / bytes
+    """
+
+    global_state = get_global_state(
+        indexer, app_id, decode_byte_values=decode_byte_values, block=block
+    )
+    if field_name in global_state:
+        return global_state[field_name]
+    else:
+        raise Exception("Field not found")
+
+
 def get_accounts_opted_into_app(indexer, app_id, exclude=None):
     """Get list of accounts opted into a given app
 

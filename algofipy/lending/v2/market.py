@@ -11,7 +11,7 @@ from .oracle import Oracle
 # INTERFACE
 from ...asset_amount import AssetAmount
 from ...globals import FIXED_3_SCALE_FACTOR, FIXED_6_SCALE_FACTOR
-from ...state_utils import get_global_state
+from ...state_utils import get_global_state, get_global_state_field
 from ...transaction_utils import TransactionGroup, get_default_params, get_payment_txn
 from ...utils import int_to_bytes, bytes_to_int
 
@@ -157,6 +157,9 @@ class Market:
         self.underlying_reserves = state.get(MARKET_STRINGS.underlying_reserves, 0)
         self.borrow_share_circulation = state.get(
             MARKET_STRINGS.borrow_share_circulation, 0
+        )
+        self.b_asset_to_underlying_exchange_rate = state.get(
+            MARKET_STRINGS.b_asset_to_underlying_exchange_rate, 0
         )
         self.b_asset_circulation = state.get(MARKET_STRINGS.b_asset_circulation, 0)
         self.active_b_asset_collateral = state.get(
@@ -319,6 +322,25 @@ class Market:
         """
 
         return amount * self.b_asset_circulation / self.get_underlying_supplied()
+
+    def get_b_asset_to_underlying_exchange_rate(self, block=None):
+        """Returns b_asset_to_underlying_exchange_rate for this market
+
+        :param block: block at which to get historical data
+        :type block: int, optional
+        :return: b_asset_to_underlying_exchange_rate
+        :rtype: int
+        """
+        if block:
+            return get_global_state_field(
+                self.historical_indexer,
+                self.app_id,
+                MARKET_STRINGS.b_asset_to_underlying_exchange_rate,
+                decode_byte_values=False,
+                block=block,
+            )
+        else:
+            return self.b_asset_to_underlying_exchange_rate
 
     # TRANSACTION BUILDERS
     def get_b_asset_opt_in_txn(self, user, params=None):
