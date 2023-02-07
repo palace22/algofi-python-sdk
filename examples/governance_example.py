@@ -21,7 +21,7 @@ algod = AlgodClient(
     "", "https://mainnet-api.algonode.cloud", headers={"User-Agent": "algosdk"}
 )
 indexer = IndexerClient(
-    "", "https://mainnet-idx.algonode.cloud/", headers={"User-Agent": "algosdk"}
+    "", "https://mainnet-idx.algonode.cloud", headers={"User-Agent": "algosdk"}
 )
 client = AlgofiClient(Network.MAINNET, algod, indexer)
 
