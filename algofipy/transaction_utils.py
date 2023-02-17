@@ -11,6 +11,7 @@ from algosdk.transaction import (
     AssetTransferTxn,
     LogicSig,
     LogicSigTransaction,
+    AssetCreateTxn
 )
 
 from .globals import ALGO_ASSET_ID
