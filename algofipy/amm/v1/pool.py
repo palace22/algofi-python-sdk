@@ -44,6 +44,7 @@ from .logic_sig_generator import generate_logic_sig
 from .stable_swap_math import get_D, get_y
 from ...transaction_utils import TransactionGroup, get_payment_txn, get_default_params
 from ...state_utils import get_local_state_at_app, get_global_state
+from ...globals import FIXED_12_SCALE_FACTOR
 from ...utils import int_to_bytes
 
 # INTERFACE
@@ -199,6 +200,24 @@ class Pool:
                 block = self.algod.block_info(last_round)
                 timestamp = block["block"]["ts"]
                 self.t = timestamp
+
+            # lending nanoswap pool (moving ratio pool) metadata
+            if (self.pool_type == PoolType.NANOSWAP_LENDING_POOL):
+                self.target_ratio_adjustment_start_time = pool_state.get(
+                    POOL_STRINGS.target_ratio_adjustment_start_time, 0
+                )
+                self.target_ratio_adjustment_end_time = pool_state.get(
+                    POOL_STRINGS.target_ratio_adjustment_end_time, 0
+                )
+                self.initial_target_asset1_to_asset2_ratio = pool_state.get(
+                    POOL_STRINGS.initial_target_asset1_to_asset2_ratio, 0
+                )
+                self.current_target_asset1_to_asset2_ratio = pool_state.get(
+                    POOL_STRINGS.current_target_asset1_to_asset2_ratio, 0
+                )
+                self.goal_target_asset1_to_asset2_ratio = pool_state.get(
+                    POOL_STRINGS.goal_target_asset1_to_asset2_ratio, 0
+                )
 
             # refresh state
             self.load_state()
@@ -803,6 +822,32 @@ class Pool:
 
         return self.future_amplification_factor
 
+    @property
+    def target_ratio(self):
+        if self.t < self.target_ratio_adjustment_end_time:
+            return (
+                self.initial_target_asset1_to_asset2_ratio
+                + (self.goal_target_asset1_to_asset2_ratio
+                   - self.initial_target_asset1_to_asset2_ratio)
+                * (self.t - self.target_ratio_adjustment_start_time)
+                / (self.target_ratio_adjustment_end_time
+                   - self.target_ratio_adjustment_start_time)
+            )
+
+        return self.current_target_asset1_to_asset2_ratio
+
+    def scale_asset1(self, asset_amount):
+        if (self.pool_type == PoolType.NANOSWAP_LENDING_POOL):
+            return int(asset_amount * self.target_ratio / FIXED_12_SCALE_FACTOR)
+        else:
+            return asset_amount
+
+    def unscale_asset1(self, asset_amount):
+        if (self.pool_type == PoolType.NANOSWAP_LENDING_POOL):
+            return int(asset_amount * FIXED_12_SCALE_FACTOR / self.target_ratio)
+        else:
+            return asset_amount
+
     def get_empty_pool_quote(self, asset1_pooled_amount, asset2_pooled_amount):
         """Get pool quote for an empty pool
 
@@ -818,7 +863,8 @@ class Pool:
             self.pool_type == PoolType.NANOSWAP_LENDING_POOL
         ):
             lps_issued, num_iter = get_D(
-                [asset2_pooled_amount, asset2_pooled_amount], self.amplification_factor
+                [self.scale_asset1(asset1_pooled_amount), asset2_pooled_amount],
+                self.amplification_factor
             )
         else:
             num_iter = 0
@@ -866,11 +912,12 @@ class Pool:
             self.pool_type == PoolType.NANOSWAP_LENDING_POOL
         ):
             D0, num_iter_D0 = get_D(
-                [self.asset1_balance, self.asset2_balance], self.amplification_factor
+                [self.scale_asset1(self.asset1_balance), self.asset2_balance],
+                self.amplification_factor
             )
             D1, num_iter_D1 = get_D(
                 [
-                    self.asset1_balance + asset1_pooled_amount,
+                    self.scale_asset1(asset1_balance + asset1_pooled_amount),
                     self.asset2_balance + asset2_pooled_amount,
                 ],
                 self.amplification_factor,
@@ -934,14 +981,14 @@ class Pool:
                 self.pool_type == PoolType.NANOSWAP_LENDING_POOL
             ):
                 D, num_iter_D = get_D(
-                    [self.asset1_balance, self.asset2_balance],
+                    [self.scale_asset1(self.asset1_balance), self.asset2_balance],
                     self.amplification_factor,
                 )
                 y, num_iter_y = get_y(
                     0,
                     1,
-                    self.asset1_balance + swap_in_amount_less_fees,
-                    [self.asset1_balance, self.asset2_balance],
+                    self.scale_asset1(self.asset1_balance + swap_in_amount_less_fees),
+                    [self.scale_asset1(self.asset1_balance), self.asset2_balance],
                     D,
                     self.amplification_factor,
                 )
@@ -959,18 +1006,18 @@ class Pool:
                 self.pool_type == PoolType.NANOSWAP_LENDING_POOL
             ):
                 D, num_iter_D = get_D(
-                    [self.asset1_balance, self.asset2_balance],
+                    [self.scale_asset1(self.asset1_balance), self.asset2_balance],
                     self.amplification_factor,
                 )
                 y, num_iter_y = get_y(
                     1,
                     0,
                     self.asset2_balance + swap_in_amount_less_fees,
-                    [self.asset1_balance, self.asset2_balance],
+                    [self.scale_asset1(self.asset1_balance), self.asset2_balance],
                     D,
                     self.amplification_factor,
                 )
-                swap_out_amount = self.asset1_balance - y
+                swap_out_amount = self.asset1_balance - self.unscale_asset1(y)
                 num_iter = num_iter_D + num_iter_y
             else:
                 swap_out_amount = int(
@@ -999,14 +1046,14 @@ class Pool:
                 self.pool_type == PoolType.NANOSWAP_LENDING_POOL
             ):
                 D, num_iter_D = get_D(
-                    [self.asset1_balance, self.asset2_balance],
+                    [self.scale_asset1(self.asset1_balance), self.asset2_balance],
                     self.amplification_factor,
                 )
                 y, num_iter_y = get_y(
                     1,
                     0,
-                    self.asset1_balance - swap_out_amount,
-                    [self.asset1_balance, self.asset2_balance],
+                    self.scale_asset1(self.asset1_balance - swap_out_amount),
+                    [self.scale_asset1(self.asset1_balance), self.asset2_balance],
                     D,
                     self.amplification_factor,
                 )
@@ -1026,18 +1073,18 @@ class Pool:
                 self.pool_type == PoolType.NANOSWAP_LENDING_POOL
             ):
                 D, num_iter_D = get_D(
-                    [self.asset1_balance, self.asset2_balance],
+                    [self.scale_asset1(self.asset1_balance), self.asset2_balance],
                     self.amplification_factor,
                 )
                 y, num_iter_y = get_y(
                     0,
                     1,
                     self.asset2_balance - swap_out_amount,
-                    [self.asset1_balance, self.asset2_balance],
+                    [self.scale_asset1(self.asset1_balance), self.asset2_balance],
                     D,
                     self.amplification_factor,
                 )
-                swap_in_amount_less_fees = y - self.asset1_balance
+                swap_in_amount_less_fees = self.unscale_asset1(y) - self.asset1_balance
                 num_iter = num_iter_D + num_iter_y
             else:
                 swap_in_amount_less_fees = (

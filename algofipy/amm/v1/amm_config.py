@@ -273,6 +273,11 @@ class POOL_STRINGS:
     future_amplification_factor_time = "fat"
     ramp_amplification_factor = "raf"
     validator_index = "vi"
+    target_ratio_adjustment_start_time = "trast"
+    target_ratio_adjustment_end_time = "traet"
+    initial_target_asset1_to_asset2_ratio = "it1t2r"
+    current_target_asset1_to_asset2_ratio = "ct1t2r"
+    goal_target_asset1_to_asset2_ratio = "gt1t2r"
 
 
 class MANAGER_STRINGS:
