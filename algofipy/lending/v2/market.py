@@ -73,7 +73,7 @@ class RewardsProgramState:
 
 class Market:
     local_min_balance = 471000
-
+    last_update = 0
     def __init__(self, lending_client, market_config):
         """The python representation of an algofi lending market smart contract
 
@@ -101,7 +101,7 @@ class Market:
 
         self.load_state()
 
-    def load_state(self, block=None):
+    def load_state(self, last_update=None, block=None):
         """
         Loads market state from the blockchain
 
@@ -109,107 +109,109 @@ class Market:
         :type block: int, optional
         :rtype: None
         """
+        if not last_update or last_update != self.last_update:
+            self.last_update = last_update
 
-        indexer = self.historical_indexer if block else self.indexer
-        state = get_global_state(
-            indexer, self.app_id, decode_byte_values=False, block=block
-        )
+            indexer = self.historical_indexer if block else self.indexer
+            state = get_global_state(
+                indexer, self.app_id, decode_byte_values=False, block=block
+            )
 
-        # parameters
-        self.borrow_factor = state.get(MARKET_STRINGS.borrow_factor, 0)
-        self.collateral_factor = state.get(MARKET_STRINGS.collateral_factor, 0)
-        self.flash_loan_fee = state.get(MARKET_STRINGS.flash_loan_fee, 0)
-        self.flash_loan_protocol_fee = state.get(
-            MARKET_STRINGS.flash_loan_protocol_fee, 0
-        )
-        self.max_flash_loan_ratio = state.get(MARKET_STRINGS.max_flash_loan_ratio, 0)
-        self.liquidation_incentive = state.get(MARKET_STRINGS.liquidation_incentive, 0)
-        self.liquidation_fee = state.get(MARKET_STRINGS.liquidation_fee, 0)
-        self.reserve_factor = state.get(MARKET_STRINGS.reserve_factor, 0)
-        self.underlying_supply_cap = state.get(MARKET_STRINGS.underlying_supply_cap, 0)
-        self.underlying_borrow_cap = state.get(MARKET_STRINGS.underlying_borrow_cap, 0)
+            # parameters
+            self.borrow_factor = state.get(MARKET_STRINGS.borrow_factor, 0)
+            self.collateral_factor = state.get(MARKET_STRINGS.collateral_factor, 0)
+            self.flash_loan_fee = state.get(MARKET_STRINGS.flash_loan_fee, 0)
+            self.flash_loan_protocol_fee = state.get(
+                MARKET_STRINGS.flash_loan_protocol_fee, 0
+            )
+            self.max_flash_loan_ratio = state.get(MARKET_STRINGS.max_flash_loan_ratio, 0)
+            self.liquidation_incentive = state.get(MARKET_STRINGS.liquidation_incentive, 0)
+            self.liquidation_fee = state.get(MARKET_STRINGS.liquidation_fee, 0)
+            self.reserve_factor = state.get(MARKET_STRINGS.reserve_factor, 0)
+            self.underlying_supply_cap = state.get(MARKET_STRINGS.underlying_supply_cap, 0)
+            self.underlying_borrow_cap = state.get(MARKET_STRINGS.underlying_borrow_cap, 0)
 
-        # interest rate model
-        self.base_interest_rate = state.get(MARKET_STRINGS.base_interest_rate, 0)
-        self.base_interest_slope = state.get(MARKET_STRINGS.base_interest_slope, 0)
-        self.quadratic_interest_amplification_factor = state.get(
-            MARKET_STRINGS.quadratic_interest_amplification_factor, 0
-        )
-        self.target_utilization_ratio = state.get(
-            MARKET_STRINGS.target_utilization_ratio, 0
-        )
+            # interest rate model
+            self.base_interest_rate = state.get(MARKET_STRINGS.base_interest_rate, 0)
+            self.base_interest_slope = state.get(MARKET_STRINGS.base_interest_slope, 0)
+            self.quadratic_interest_amplification_factor = state.get(
+                MARKET_STRINGS.quadratic_interest_amplification_factor, 0
+            )
+            self.target_utilization_ratio = state.get(
+                MARKET_STRINGS.target_utilization_ratio, 0
+            )
 
-        # oracle
-        self.oracle = Oracle(
-            self.indexer,
-            self.historical_indexer,
-            state.get(MARKET_STRINGS.oracle_app_id, 0),
-            b64decode(
-                state.get(MARKET_STRINGS.oracle_price_field_name, "price")
-            ).decode("utf-8"),
-            state.get(MARKET_STRINGS.oracle_price_scale_factor, 0),
-        )
-        self.oracle.load_price(block=block)
+            # oracle
+            self.oracle = Oracle(
+                self.indexer,
+                self.historical_indexer,
+                state.get(MARKET_STRINGS.oracle_app_id, 0),
+                b64decode(
+                    state.get(MARKET_STRINGS.oracle_price_field_name, "price")
+                ).decode("utf-8"),
+                state.get(MARKET_STRINGS.oracle_price_scale_factor, 0),
+            )
+            self.oracle.load_price(block=block)
 
-        # balance
-        self.underlying_cash = state.get(MARKET_STRINGS.underlying_cash, 0)
-        self.underlying_borrowed = state.get(MARKET_STRINGS.underlying_borrowed, 0)
-        self.underlying_reserves = state.get(MARKET_STRINGS.underlying_reserves, 0)
-        self.borrow_share_circulation = state.get(
-            MARKET_STRINGS.borrow_share_circulation, 0
-        )
-        self.b_asset_to_underlying_exchange_rate = state.get(
-            MARKET_STRINGS.b_asset_to_underlying_exchange_rate, 0
-        )
-        self.b_asset_circulation = state.get(MARKET_STRINGS.b_asset_circulation, 0)
-        self.active_b_asset_collateral = state.get(
-            MARKET_STRINGS.active_b_asset_collateral, 0
-        )
-        self.underlying_protocol_reserve = state.get(
-            MARKET_STRINGS.underlying_protocol_reserve, 0
-        )
+            # balance
+            self.underlying_cash = state.get(MARKET_STRINGS.underlying_cash, 0)
+            self.underlying_borrowed = state.get(MARKET_STRINGS.underlying_borrowed, 0)
+            self.underlying_reserves = state.get(MARKET_STRINGS.underlying_reserves, 0)
+            self.borrow_share_circulation = state.get(
+                MARKET_STRINGS.borrow_share_circulation, 0
+            )
+            self.b_asset_to_underlying_exchange_rate = state.get(
+                MARKET_STRINGS.b_asset_to_underlying_exchange_rate, 0
+            )
+            self.b_asset_circulation = state.get(MARKET_STRINGS.b_asset_circulation, 0)
+            self.active_b_asset_collateral = state.get(
+                MARKET_STRINGS.active_b_asset_collateral, 0
+            )
+            self.underlying_protocol_reserve = state.get(
+                MARKET_STRINGS.underlying_protocol_reserve, 0
+            )
 
-        # interest
-        self.latest_time = state.get(MARKET_STRINGS.latest_time, 0)
-        self.borrow_index = state.get(MARKET_STRINGS.borrow_index, 0)
-        self.implied_borrow_index = state.get(MARKET_STRINGS.implied_borrow_index, 0)
+            # interest
+            self.latest_time = state.get(MARKET_STRINGS.latest_time, 0)
+            self.borrow_index = state.get(MARKET_STRINGS.borrow_index, 0)
+            self.implied_borrow_index = state.get(MARKET_STRINGS.implied_borrow_index, 0)
 
-        # calculated values
-        self.total_supplied = AssetAmount(
-            self.get_underlying_supplied()
-            / (
-                10
-                ** self.lending_client.algofi_client.assets[
-                    self.underlying_asset_id
-                ].decimals
-            ),
-            self.underlying_to_usd(self.get_underlying_supplied()),
-        )
+            # calculated values
+            self.total_supplied = AssetAmount(
+                self.get_underlying_supplied()
+                / (
+                    10
+                    ** self.lending_client.algofi_client.assets[
+                        self.underlying_asset_id
+                    ].decimals
+                ),
+                self.underlying_to_usd(self.get_underlying_supplied()),
+            )
 
-        self.total_borrowed = AssetAmount(
-            self.underlying_borrowed
-            / (
-                10
-                ** self.lending_client.algofi_client.assets[
-                    self.underlying_asset_id
-                ].decimals
-            ),
-            self.underlying_to_usd(self.underlying_borrowed),
-        )
+            self.total_borrowed = AssetAmount(
+                self.underlying_borrowed
+                / (
+                    10
+                    ** self.lending_client.algofi_client.assets[
+                        self.underlying_asset_id
+                    ].decimals
+                ),
+                self.underlying_to_usd(self.underlying_borrowed),
+            )
 
-        self.supply_apr, self.borrow_apr = self.get_aprs(
-            self.total_supplied.underlying, self.total_borrowed.underlying
-        )
+            self.supply_apr, self.borrow_apr = self.get_aprs(
+                self.total_supplied.underlying, self.total_borrowed.underlying
+            )
 
-        # rewards
-        self.rewards_escrow_account = encode_address(
-            b64decode(state.get(MARKET_STRINGS.rewards_escrow_account, ""))
-        )
-        self.rewards_latest_time = state.get(MARKET_STRINGS.rewards_latest_time, 0)
-        self.max_rewards_program_index = 1
-        self.rewards_programs = []
-        for i in range(self.max_rewards_program_index + 1):
-            self.rewards_programs.append(RewardsProgramState(state, i))
+            # rewards
+            self.rewards_escrow_account = encode_address(
+                b64decode(state.get(MARKET_STRINGS.rewards_escrow_account, ""))
+            )
+            self.rewards_latest_time = state.get(MARKET_STRINGS.rewards_latest_time, 0)
+            self.max_rewards_program_index = 1
+            self.rewards_programs = []
+            for i in range(self.max_rewards_program_index + 1):
+                self.rewards_programs.append(RewardsProgramState(state, i))
 
     # GETTERS
 

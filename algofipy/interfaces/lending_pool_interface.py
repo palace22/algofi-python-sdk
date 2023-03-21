@@ -21,6 +21,7 @@ from algofipy.transaction_utils import (
 )
 from algofipy.utils import int_to_bytes
 
+from threading import Thread
 # INTERFACE
 
 # constants
@@ -85,12 +86,16 @@ class LendingPoolInterface:
             Asset(self.algofi_client.amm, self.market2.b_asset_id),
         )
 
-    def load_state(self, block=None):
+    def load_state(self, last_update=None, block=None):
         # refresh markets + pool
-        self.market1.load_state(block=block)
-        self.market2.load_state(block=block)
-        self.lp_market.load_state(block=block)
-        self.pool.load_state(block=block)
+        threads = [
+            Thread(target=self.market1.load_state, args=[last_update, block]),
+            Thread(target=self.market2.load_state, args=[last_update, block]),
+            Thread(target=self.lp_market.load_state, args=[last_update, block]),
+            Thread(target=self.pool.load_state, args=[last_update, block]),
+        ]
+        [t.start() for t in threads]
+        [t.join() for t in threads]
 
     def get_pool_quote(self, asset_id, amount):
 

@@ -51,6 +51,7 @@ from ...utils import int_to_bytes
 
 
 class Pool:
+    last_update = 0
     def __init__(self, amm_client, pool_type, asset1, asset2):
         """Constructor method for :class:`Pool`
 
@@ -290,38 +291,40 @@ class Pool:
             timestamp = block["block"]["ts"]
             self.t = timestamp
 
-    def load_state(self, block=None):
+    def load_state(self, last_update=None, block=None):
         """Refresh the global state of the pool
 
         :param block: block at which to query historical state
         :type block: int, optional
         """
+        if not last_update or last_update != self.last_update:
+            self.last_update = last_update
 
-        # load pool state
-        indexer_client = self.historical_indexer if block else self.indexer
-        pool_state = get_global_state(indexer_client, self.application_id, block=block)
-        self.asset1_balance = pool_state[POOL_STRINGS.balance_1]
-        self.asset2_balance = pool_state[POOL_STRINGS.balance_2]
-        self.lp_circulation = pool_state[POOL_STRINGS.lp_circulation]
-        self.asset1_reserve = pool_state[POOL_STRINGS.asset1_reserve]
-        self.asset2_reserve = pool_state[POOL_STRINGS.asset2_reserve]
-        self.latest_time = pool_state[POOL_STRINGS.latest_time]
-        self.cumsum_time_weighted_asset1_to_asset2_price = pool_state[
-            POOL_STRINGS.cumsum_time_weighted_asset1_to_asset2_price
-        ]
-        self.cumsum_time_weighted_asset2_to_asset1_price = pool_state[
-            POOL_STRINGS.cumsum_time_weighted_asset2_to_asset1_price
-        ]
-        self.cumsum_volume_asset1 = pool_state[POOL_STRINGS.cumsum_volume_asset1]
-        self.cumsum_volume_asset2 = pool_state[POOL_STRINGS.cumsum_volume_asset2]
-        self.cumsum_volume_weighted_asset1_to_asset2_price = pool_state[
-            POOL_STRINGS.cumsum_volume_weighted_asset1_to_asset2_price
-        ]
-        self.cumsum_volume_weighted_asset2_to_asset1_price = pool_state[
-            POOL_STRINGS.cumsum_volume_weighted_asset2_to_asset1_price
-        ]
-        self.cumsum_fees_asset1 = pool_state[POOL_STRINGS.cumsum_fees_asset1]
-        self.cumsum_fees_asset2 = pool_state[POOL_STRINGS.cumsum_fees_asset2]
+            # load pool state
+            indexer_client = self.historical_indexer if block else self.indexer
+            pool_state = get_global_state(indexer_client, self.application_id, block=block)
+            self.asset1_balance = pool_state[POOL_STRINGS.balance_1]
+            self.asset2_balance = pool_state[POOL_STRINGS.balance_2]
+            self.lp_circulation = pool_state[POOL_STRINGS.lp_circulation]
+            self.asset1_reserve = pool_state[POOL_STRINGS.asset1_reserve]
+            self.asset2_reserve = pool_state[POOL_STRINGS.asset2_reserve]
+            self.latest_time = pool_state[POOL_STRINGS.latest_time]
+            self.cumsum_time_weighted_asset1_to_asset2_price = pool_state[
+                POOL_STRINGS.cumsum_time_weighted_asset1_to_asset2_price
+            ]
+            self.cumsum_time_weighted_asset2_to_asset1_price = pool_state[
+                POOL_STRINGS.cumsum_time_weighted_asset2_to_asset1_price
+            ]
+            self.cumsum_volume_asset1 = pool_state[POOL_STRINGS.cumsum_volume_asset1]
+            self.cumsum_volume_asset2 = pool_state[POOL_STRINGS.cumsum_volume_asset2]
+            self.cumsum_volume_weighted_asset1_to_asset2_price = pool_state[
+                POOL_STRINGS.cumsum_volume_weighted_asset1_to_asset2_price
+            ]
+            self.cumsum_volume_weighted_asset2_to_asset1_price = pool_state[
+                POOL_STRINGS.cumsum_volume_weighted_asset2_to_asset1_price
+            ]
+            self.cumsum_fees_asset1 = pool_state[POOL_STRINGS.cumsum_fees_asset1]
+            self.cumsum_fees_asset2 = pool_state[POOL_STRINGS.cumsum_fees_asset2]
 
     def refresh_lp_token_price(self):
         """Refresh the dollar price of the LP token for this pool"""
